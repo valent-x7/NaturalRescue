@@ -1,18 +1,5 @@
 from settings import *
-from button import Button
-from utils import draw_text
-
-# ? Dibujamos el juego
-def draw_game(screen, events):
-    
-    screen.fill('#38bdf8')
-
-    for event in events:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_m:
-                return "MENU"
-            
-    return "PLAYING"
+from ui.button import Button
 
 # ? Dibujamos el menu principal
 def draw_menu(screen, events):
@@ -37,18 +24,6 @@ def draw_menu(screen, events):
             return "TUTORIAL"
 
         elif settings_btn.is_clicked(event):
-            print('Settings')
+            return "SETTINGS"
 
     return "MENU"
-
-def draw_tutorial(screen, events):
-    screen.fill("#e7e5e4")
-    
-    draw_text(screen, 'Use the Keys To Move', "#FFFFFF", 250)
-
-    for event in events:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_m:
-                return "MENU"
-
-    return "TUTORIAL"

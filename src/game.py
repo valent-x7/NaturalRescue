@@ -1,5 +1,8 @@
 from settings import *
-from menu import draw_menu, draw_game, draw_tutorial
+from menus.menu import draw_menu
+from menus.settings import draw_settings
+from menus.tutorial import draw_tutorial
+from scenes.play import draw_game
 
 class Game:
     def __init__(self):
@@ -25,6 +28,9 @@ class Game:
 
             elif self.state == "TUTORIAL":
                 self.state = draw_tutorial(self.SCREEN, events)
+
+            elif self.state == "SETTINGS":
+                self.state = draw_settings(self.SCREEN, events)
 
             # Check Events
             self.check_events(events)
