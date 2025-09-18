@@ -3,7 +3,9 @@ from os.path import join
 
 pygame.init()
 
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+info = pygame.display.Info()
+
+WINDOW_WIDTH = info.current_w
+WINDOW_HEIGHT = info.current_h
 
 FONT = pygame.font.Font(None, 42)

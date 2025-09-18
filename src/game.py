@@ -8,7 +8,7 @@ class Game:
     def __init__(self):
         pygame.init()
 
-        self.SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.SCREEN = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
         self.running = True
         self.state = "MENU" # -> Estado del juego

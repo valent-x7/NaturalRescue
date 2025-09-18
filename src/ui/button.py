@@ -9,7 +9,7 @@ class Button:
 
         # ? Rectangulo superior del Texto
         self.top_rect = pygame.Rect(pos, (width, height))
-        self.top_rect.centerx = WINDOW_WIDTH // 2
+        self.top_rect.centerx = WINDOW_WIDTH // 4
 
         # ? Rectangulo inferior
         self.bottom_rect = pygame.Rect(pos, (width, height + 2))
