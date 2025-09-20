@@ -5,6 +5,7 @@ pygame.init()
 
 info = pygame.display.Info()
 
+TILE = 32
 WINDOW_WIDTH = info.current_w
 WINDOW_HEIGHT = info.current_h
 

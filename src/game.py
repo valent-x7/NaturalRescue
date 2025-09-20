@@ -3,14 +3,16 @@ from menus.menu import draw_menu
 from menus.settings import draw_settings
 from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
+from sprites import *
 
 class Game:
     def __init__(self):
         pygame.init()
-
         self.SCREEN = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-
+        self.clock = pygame.time.Clock()
         self.running = True
+        self.monkey_spritesheet = Spritesheet('../img/monkey_sprites.png')
+
         self.state = "MENU" # -> Estado del juego
 
     def run(self):
@@ -24,7 +26,7 @@ class Game:
                 self.state = draw_menu(self.SCREEN, events)
 
             elif self.state == "PLAYING":
-                self.state = draw_game(self.SCREEN, events)
+                self.state = draw_game(self.SCREEN, events, self)
 
             elif self.state == "TUTORIAL":
                 self.state = draw_tutorial(self.SCREEN, events)
@@ -38,6 +40,14 @@ class Game:
             pygame.display.flip()
         
         pygame.quit()
+    
+    def new(self):
+        self.playing = True
+        self.all_sprites = pygame.sprite.LayeredUpdates()
+
+        self.player = Monkey(self.monkey_spritesheet, 480, 640)
+        self.all_sprites.add(self.player)
+
 
     # ? Checar eventos
     def check_events(self, events):
