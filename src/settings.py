@@ -5,6 +5,7 @@ pygame.init()
 
 info = pygame.display.Info()
 
+MONKEY_SPEED = 1
 TILE = 32
 WINDOW_WIDTH = info.current_w
 WINDOW_HEIGHT = info.current_h

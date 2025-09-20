@@ -43,30 +43,46 @@ class Monkey(pygame.sprite.Sprite):
 
         self.direction = "down"
         self.frame = 1
-        self.animation_speed = 0.15
+        self.animation_speed = 0.02
 
     def update(self, keys_pressed): 
-        if keys_pressed[pygame.K_s]:
-            self.rect.y += 3
-            self.direction = "down"
-        elif keys_pressed[pygame.K_w]:
-            self.rect.y -= 3
-            self.direction = "up"
-        elif keys_pressed[pygame.K_a]:
-            self.rect.x -= 3
-            self.direction = "left"
-        elif keys_pressed[pygame.K_d]:
-            self.rect.x += 3
-            self.direction = "right"
+        moving = False
 
-        self.frame += self.animation_speed
-        if self.direction == "down":
-            self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
-        elif self.direction == "up":
-            self.image = self.up_animation[int(self.frame) % len(self.up_animation)]
-        elif self.direction == "left":
-            self.image = self.left_animation[int(self.frame) % len(self.left_animation)]
-        elif self.direction == "right":
-            self.image = self.right_animation[int(self.frame) % len(self.right_animation)]
+        if keys_pressed[pygame.K_s]:
+            self.rect.y += MONKEY_SPEED
+            self.direction = "down"
+            moving = True
+        elif keys_pressed[pygame.K_w]:
+            self.rect.y -= MONKEY_SPEED
+            self.direction = "up"
+            moving = True
+        elif keys_pressed[pygame.K_a]:
+            self.rect.x -= MONKEY_SPEED
+            self.direction = "left"
+            moving = True
+        elif keys_pressed[pygame.K_d]:
+            self.rect.x += MONKEY_SPEED
+            self.direction = "right"
+            moving = True
+
+        if moving: 
+            self.frame += self.animation_speed
+            if self.direction == "down":
+                self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
+            elif self.direction == "up":
+                self.image = self.up_animation[int(self.frame) % len(self.up_animation)]
+            elif self.direction == "left":
+                self.image = self.left_animation[int(self.frame) % len(self.left_animation)]
+            elif self.direction == "right":
+                self.image = self.right_animation[int(self.frame) % len(self.right_animation)]
+        else:
+            if self.direction == "down":
+                self.image = self.down_animation[1]
+            elif self.direction == "up":
+                self.image = self.up_animation[1]
+            elif self.direction == "right":
+                self.image = self.right_animation[1]
+            elif self.direction == "left":
+                self.image = self.left_animation[1]
         
         

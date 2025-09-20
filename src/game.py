@@ -10,8 +10,9 @@ class Game:
         pygame.init()
         self.SCREEN = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
+        self.clock.tick(60)
         self.running = True
-        self.monkey_spritesheet = Spritesheet('../img/monkey_sprites.png')
+        self.monkey_spritesheet = Spritesheet('./img/monkey_spritesheet.png')
 
         self.state = "MENU" # -> Estado del juego
 
@@ -26,6 +27,8 @@ class Game:
                 self.state = draw_menu(self.SCREEN, events)
 
             elif self.state == "PLAYING":
+                if not hasattr(self, 'all_sprites'):
+                    self.new()
                 self.state = draw_game(self.SCREEN, events, self)
 
             elif self.state == "TUTORIAL":
