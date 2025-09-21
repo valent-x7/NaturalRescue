@@ -4,7 +4,7 @@ from menus.settings import draw_settings
 from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
 from sprites import *
-
+from menus.level_select import draw_level_select
 class Game:
     def __init__(self):
         pygame.init()
@@ -25,6 +25,9 @@ class Game:
 
             if self.state == 'MENU':
                 self.state = draw_menu(self.SCREEN, events)
+
+            elif self.state == "LEVEL_SELECT":
+                 self.state = draw_level_select(self.SCREEN, events)  
 
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
