@@ -12,7 +12,9 @@ import settings as menu_settings
 # ? Dibujamos el menu principal
 def draw_menu(screen, events):
 
-    bg = pygame.image.load("./img/bg.png")
+    # ? Fondo principal 
+    bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
+                           "..", "..", "assets", "images", "Fondo.png"))
     bg = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
     screen.blit(bg, (0,0))
 

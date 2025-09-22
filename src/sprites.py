@@ -43,25 +43,28 @@ class Monkey(pygame.sprite.Sprite):
 
         self.direction = "down"
         self.frame = 1
-        self.animation_speed = 0.02
+        self.animation_speed = 0.12
 
-    def update(self, keys_pressed): 
+    def update(self, keys_pressed, delta_time): 
         moving = False
 
+        # ? Definimos la velocidad usando dt
+        speed = MONKEY_SPEED * delta_time
+
         if keys_pressed[pygame.K_s]:
-            self.rect.y += MONKEY_SPEED
+            self.rect.y += speed
             self.direction = "down"
             moving = True
         elif keys_pressed[pygame.K_w]:
-            self.rect.y -= MONKEY_SPEED
+            self.rect.y -= speed
             self.direction = "up"
             moving = True
         elif keys_pressed[pygame.K_a]:
-            self.rect.x -= MONKEY_SPEED
+            self.rect.x -= speed
             self.direction = "left"
             moving = True
         elif keys_pressed[pygame.K_d]:
-            self.rect.x += MONKEY_SPEED
+            self.rect.x += speed
             self.direction = "right"
             moving = True
 

@@ -75,11 +75,20 @@ def draw_level_select(screen, events):
 
     # ? Recorremos los eventos
     for event in events:
-        if level1_btn.is_clicked(event):
+
+        # ? Devolver al menu
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_m:
+                return "MENU"
+
+        # ? Manejar niveles
+        elif level1_btn.is_clicked(event):
             return "LEVEL_1"
         elif level2_btn.is_clicked(event):
-            return "LEVEL_2"
+            pass
+            # return "LEVEL_2"
         elif level3_btn.is_clicked(event):
-            return "LEVEL_3"
+            pass
+            # return "LEVEL_3"
 
     return "LEVEL_SELECT"
