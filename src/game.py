@@ -5,11 +5,15 @@ from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
 from sprites import *
 from menus.level_select import draw_level_select
+import settings as main_settings
 
 class Game:
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state = "MENU"):
         self.SCREEN = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+        width, height = self.SCREEN.get_size()
+        main_settings.WINDOW_WIDTH = width
+        main_settings.WINDOW_HEIGHT = height
         self.clock = pygame.time.Clock()
         self.running = True
         self.monkey_spritesheet = Spritesheet('./img/monkey_spritesheet.png')
