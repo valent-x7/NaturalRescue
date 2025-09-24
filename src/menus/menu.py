@@ -13,18 +13,18 @@ import settings as menu_settings
 # ? Variable global para definir el scroll
 scroll = 0
 
+# ? Fondo principal
+bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
+                           "..", "..", "assets", "images", "FonditoPro.png"))
+bg_scaled = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+# Conseguimos el ancho del fondo
+bg_width = bg_scaled.get_width()
+
 # ? Dibujamos el menu principal
 def draw_menu(screen, events):
     global scroll
 
-    # ? Fondo principal 
-    bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
-                           "..", "..", "assets", "images", "FonditoPro.png")).convert()
-    bg_scaled = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-    
     # ? Scroll del background
-    bg_width = bg_scaled.get_width()
-
     # Redondeamos cuantas veces cabe el ancho del fondo en la pantalla, le agregamos 1
     tiles = math.ceil(main_settings.WINDOW_WIDTH / bg_width) + 1
 
@@ -53,10 +53,14 @@ def draw_menu(screen, events):
     screen.blit(title_text, text_rect)
 
     # ? Botones del menu
-    play_btn = Button(screen, (main_settings.WINDOW_WIDTH // 2 - 150, 400), fuente_botones, 300, 90, 'Jugar', '#22d3ee', '#06b6d4')
-    tutorial_btn = Button(screen, (main_settings.WINDOW_WIDTH // 2 - 150, 520), fuente_botones, 300, 90, 'Tutorial', '#ef4444', '#dc2626')
-    settings_btn = Button(screen, (main_settings.WINDOW_WIDTH // 2 - 150, 640), fuente_botones, 300, 90, 'Settings', '#a8a29e', '#78716c')
-    salir_btn = Button(screen, (main_settings.WINDOW_WIDTH // 2 - 150, 760), fuente_botones, 300, 90, 'Salir', "#000000", "#050505")
+    play_btn = Button(screen, (main_settings.WINDOW_WIDTH // 4, 400), 
+                      fuente_botones, 300, 90, 'Jugar', 4, "assets/images/play_icon.png", 20, '#34D399', '#10B981')
+    tutorial_btn = Button(screen, (main_settings.WINDOW_WIDTH // 4, 520), 
+                          fuente_botones, 300, 90, 'Tutorial', 4, "assets/images/tutorial_icon.png", -2, '#FACC15', '#EAB308')
+    settings_btn = Button(screen, (main_settings.WINDOW_WIDTH // 4, 640), 
+                          fuente_botones, 300, 90, 'Settings', 4, "assets/images/settings_icon.png", -2, '#38BDF8', '#0EA5E9')
+    salir_btn = Button(screen, (main_settings.WINDOW_WIDTH // 4, 760), 
+                       fuente_botones, 300, 90, 'Salir', 4, "assets/images/salir_icon.png", 20, "#FB923C", "#F97316")
 
     play_btn.draw()
     tutorial_btn.draw()
