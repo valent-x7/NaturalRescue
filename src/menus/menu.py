@@ -2,6 +2,7 @@ import sys
 import os
 from ui.button import Button
 import pygame
+import math
 
 sys.path.append(os.path.abspath(".."))
 import settings as main_settings
@@ -9,14 +10,34 @@ import settings as main_settings
 sys.path.append(os.path.abspath("."))
 import settings as menu_settings
 
+# ? Variable global para definir el scroll
+scroll = 0
+
 # ? Dibujamos el menu principal
 def draw_menu(screen, events):
+    global scroll
 
     # ? Fondo principal 
     bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
-                           "..", "..", "assets", "images", "Fondo.png"))
-    bg = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-    screen.blit(bg, (0,0))
+                           "..", "..", "assets", "images", "FonditoPro.png")).convert()
+    bg_scaled = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+    
+    # ? Scroll del background
+    bg_width = bg_scaled.get_width()
+
+    # Redondeamos cuantas veces cabe el ancho del fondo en la pantalla, le agregamos 1
+    tiles = math.ceil(main_settings.WINDOW_WIDTH / bg_width) + 1
+
+    # Recorremos los tiles para dibujar el fondo varias veces
+    for i in range(0, tiles):
+        screen.blit(bg_scaled, (i * bg_width + scroll, 0))
+
+    # Disminuimos el scroll
+    scroll -= 2
+
+    # Si el valor absoluto del scroll es mayor al ancho del fondo
+    if abs(scroll) > bg_width:
+        scroll = 0
 
     # ? Fuentes de texto estilo 8 bit
 
@@ -57,7 +78,6 @@ def draw_menu(screen, events):
     # ? Dibujamos el pingüino y el chango en las posiciones calculadas y asignadas previamente.
     screen.blit(pinguino, (pinguino_x, posicion_y))
     screen.blit(chango, (chango_x, posicion_y))
-
 
     # ? Recorremos los eventos
     for event in events:
