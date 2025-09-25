@@ -15,7 +15,7 @@ scroll = 0
 
 # ? Fondo principal
 bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
-                           "..", "..", "assets", "images", "FonditoPro.png"))
+                           "..", "..", "assets", "images", "Fondo.png"))
 bg_scaled = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
 # Conseguimos el ancho del fondo
 bg_width = bg_scaled.get_width()
@@ -52,7 +52,7 @@ def draw_menu(screen, events, font_title, play_btn : Button, tut_btn : Button, s
         scroll = 0
 
     # ? Título del videojuego
-    title_surf = font_title.render("Titulo provisional", True, (255, 255, 255))
+    title_surf = font_title.render("Natural rescue", True, (255, 255, 255))
     title_rect = title_surf.get_frect(center = (main_settings.WINDOW_WIDTH / 2, 100))
     screen.blit(title_surf, title_rect)
 

@@ -10,6 +10,14 @@ import settings as main_settings
 import os
 
 class Game:
+    
+    # Música
+    try: 
+        pygame.mixer.music.load("assets/music.mp3")
+        pygame.mixer.music.play(loops = 0, start=0, fade_ms=5000)
+    except Exception as e:
+        print("Error al reproducir la música", e)
+
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state = "MENU"):
         self.SCREEN = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
