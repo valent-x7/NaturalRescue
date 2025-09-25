@@ -20,6 +20,7 @@ class Monkey(pygame.sprite.Sprite):
         self.y = y * TILE
         self.width = TILE
         self.height = TILE
+        self.health = 150
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
                                self.spritesheet.get_sprite(32, 0, self.width, self.height),
@@ -87,5 +88,7 @@ class Monkey(pygame.sprite.Sprite):
                 self.image = self.right_animation[1]
             elif self.direction == "left":
                 self.image = self.left_animation[1]
+
+        
         
         
