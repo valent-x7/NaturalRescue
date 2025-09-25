@@ -1,42 +1,56 @@
 from settings import *
 
 class Button:
-    def __init__(self, screen, pos, font, width, height, text, base_color, hover_color=None):
+    def __init__(self, screen, pos, font, width, height, text, thickness, image_path, image_text_spacing, base_color, hover_color=None):
         self.screen = screen
         self.text = text
         self.base_color = base_color
         self.hover_color = hover_color
 
-        # Rectángulo del botón
+        # Rectángulo principal del botón
         self.top_rect = pygame.Rect(pos, (width, height))
-        self.top_rect.centerx = WINDOW_WIDTH // 4
+        self.top_rect.centerx = pos[0]
+        self.top_rect.centery = pos[1]
 
-        # Rectángulo de la sombra (solo se mostrará al hacer hover)
-        self.bottom_rect = pygame.Rect(pos, (width, height + 2))
-        self.bottom_rect.centerx = self.top_rect.centerx
-        self.bottom_rect.centery = self.top_rect.centery + 2  # offset hacia abajo
+        # ? Rectangulo del borde
+        # Creamos el thickness rect
+        self.thickness_rect = pygame.Rect(pos, (width + (2 * thickness), height + (2 * thickness)))
+        # Le asignamos la posición del botón principal
+        self.thickness_rect.centerx = self.top_rect.centerx
+        self.thickness_rect.centery = self.top_rect.centery
 
         # Texto
         self.text_surface = font.render(text, True, '#fafaf9')
         self.text_rect = self.text_surface.get_rect()
         self.text_rect.center = self.top_rect.center  # centra el texto en el botón
 
+        # ? Imagen del botón
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (64, 64))
+        self.image_rect = self.image.get_frect()
+        # Le asignamos posición (x, y)
+        self.image_rect.x = self.top_rect.left + image_text_spacing # Espacio de la imagen y rectangulo principal
+        self.image_rect.centery = self.text_rect.centery
+
     # Dibujar
     def draw(self):
         mouse_pos = pygame.mouse.get_pos()
 
+        # ? Dibujamos el botón
+        # Boton del borde
+        pygame.draw.rect(self.screen, "black", self.thickness_rect, 0, 12)
         # Siempre dibuja el botón
         pygame.draw.rect(self.screen, self.base_color, self.top_rect, 0, 12)
 
-        # Si hay hover, dibuja sombra negra detrás y color hover
+        # Si hay hover, dibuja el botón con el color del hover
         if self.top_rect.collidepoint(mouse_pos) and self.hover_color:
-            # Sombra
-            pygame.draw.rect(self.screen, 'black', self.bottom_rect, 0, 12)
             # Botón hover encima
             pygame.draw.rect(self.screen, self.hover_color, self.top_rect, 0, 12)
 
         # Dibujar texto
         self.screen.blit(self.text_surface, self.text_rect)
+        # Dibujar imagen del botón
+        self.screen.blit(self.image, self.image_rect)
 
     # Detectar clic
     def is_clicked(self, event):
