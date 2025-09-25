@@ -4,8 +4,10 @@ from menus.settings import draw_settings
 from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
 from sprites import *
+from ui.button import Button
 from menus.level_select import draw_level_select
 import settings as main_settings
+import os
 
 class Game:
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
@@ -20,6 +22,34 @@ class Game:
 
         self.state = state # -> Estado del juego
 
+        # Creamos instancias del menú
+        self.setup_menu()
+
+    # ? Este método creará las instancias del menu (botones y fuentes)
+    def setup_menu(self):
+        # Letra del titulo
+        self.fuente_titulo = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 64)
+        # Letra de los botones
+        self.fuente_botones = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 24)
+
+        # ? Definimos el directorio para las imagenes
+        working_directory = os.getcwd()
+
+        # Instancias de los botones
+        # ! Usamos el directorio de trabajo y con join lo unimos para crear la ruta
+        self.play_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 400), 
+                               self.fuente_botones, 300, 90, 'Jugar', 4, 
+                               os.path.join(working_directory, "assets", "images", "play_icon.png"), 20, '#34D399', '#10B981')
+        self.tutorial_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 520), 
+                               self.fuente_botones, 300, 90, 'Tutorial', 4, 
+                               os.path.join(working_directory, "assets", "images", "tutorial_icon.png"), 0, '#FACC15', '#EAB308')
+        self.settings_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 640), 
+                               self.fuente_botones, 300, 90, 'Ajustes', 4, 
+                               os.path.join(working_directory, "assets", "images", "settings_icon.png"), 0, '#38BDF8', '#0EA5E9')
+        self.exit_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 760), 
+                               self.fuente_botones, 300, 90, 'Salir', 4, 
+                               os.path.join(working_directory, "assets", "images", "salir_icon.png"), 20, '#FB923C', '#F97316')
+
     def run(self):
 
         while self.running:
@@ -31,7 +61,8 @@ class Game:
             events = pygame.event.get()
 
             if self.state == 'MENU':
-                self.state = draw_menu(self.SCREEN, events)
+                self.state = draw_menu(self.SCREEN, events, self.fuente_titulo, self.play_btn, 
+                                       self.tutorial_btn, self.settings_btn, self.exit_btn)
 
             elif self.state == "LEVEL_SELECT":
                  self.state = draw_level_select(self.SCREEN, events)  
