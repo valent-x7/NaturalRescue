@@ -43,8 +43,52 @@ class Game:
         # ? Definimos el directorio para las imagenes
         working_directory = os.getcwd()
 
-        # Instancias de los botones
-        # ! Usamos el directorio de trabajo y con join lo unimos para crear la ruta
+        # ? Capas del fondo
+        # Capa 1
+        capa1 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
+                                                    "background_menu1.png")).convert()
+        capa1 = pygame.transform.scale(capa1, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+        self.capa1 = capa1.convert()
+        self.bg_menu_width = capa1.get_width() # Ancho del fondo
+
+        # Capa 2
+        capa2 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
+                                                    "background_menu2.png")).convert_alpha()
+        capa2 = pygame.transform.scale(capa2, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+        self.capa2 = capa2.convert_alpha()
+
+        # Capa 3
+        capa3 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
+                                                    "background_menu3.png")).convert_alpha()
+        capa3 = pygame.transform.scale(capa3, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+        self.capa3 = capa3.convert_alpha()
+
+        # Capa 4
+        capa4 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
+                                                    "background_menu4.png")).convert_alpha()
+        capa4 = pygame.transform.scale(capa4, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+        self.capa4 = capa4.convert_alpha()
+
+        # Capa 5
+        capa5 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
+                                                    "background_menu5.png")).convert_alpha()
+        capa5 = pygame.transform.scale(capa5, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
+        self.capa5 = capa5.convert_alpha()
+
+        # ? Imagenes del mono y pinguino
+        self.mono = pygame.image.load(os.path.join(working_directory, "img", "chango.png")).convert_alpha()
+        self.pinguino = pygame.image.load(os.path.join(working_directory, "img", "pinguino.png")).convert_alpha()
+
+        # Tamaño del pinguino
+        self.pinguino_rect = self.pinguino.get_frect()
+
+        # Calculamos una posición para el pingüino y asignamos una posición fija para el chango.
+        self.position_y = 400
+        self.pinguino_x = main_settings.WINDOW_WIDTH - self.pinguino_rect.width - 80
+        self.chango_x = 900
+
+        # ? Instancias de los botones
+        # Usamos el directorio de trabajo y con join lo unimos para crear la ruta
         self.play_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 400), 
                                self.fuente_botones, 300, 90, 'Jugar', 4, 
                                os.path.join(working_directory, "assets", "images", "play_icon.png"), 20, '#34D399', '#10B981')
@@ -69,7 +113,9 @@ class Game:
             events = pygame.event.get()
 
             if self.state == 'MENU':
-                self.state = draw_menu(self.SCREEN, events, self.fuente_titulo, self.play_btn, 
+                self.state = draw_menu(self.SCREEN, events, self.bg_menu_width, self.capa1, self.capa2, self.capa3, 
+                                       self.capa4, self.capa5, self.mono, self.pinguino, self.position_y, self.chango_x, 
+                                       self.pinguino_x, self.fuente_titulo, self.play_btn, 
                                        self.tutorial_btn, self.settings_btn, self.exit_btn)
 
             elif self.state == "LEVEL_SELECT":

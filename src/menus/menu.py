@@ -10,46 +10,58 @@ import settings as main_settings
 sys.path.append(os.path.abspath("."))
 import settings as menu_settings
 
-# ? Variable global para definir el scroll
-scroll = 0
-
-# ? Fondo principal
-bg = pygame.image.load(os.path.join(os.path.dirname(__file__),
-                           "..", "..", "assets", "images", "Fondo.png"))
-bg_scaled = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-# Conseguimos el ancho del fondo
-bg_width = bg_scaled.get_width()
-
-# ? Pinguino y mono
-chango = pygame.image.load("./img/chango.png")
-pinguino = pygame.image.load("./img/pinguino.png")
-
-# Tamaño de la imagen
-pinguino_rect = pinguino.get_rect()
-
-# Calculamos una posición para el pingüino y asignamos una posición fija para el chango.
-posicion_y = 400
-pinguino_x = main_settings.WINDOW_WIDTH - pinguino_rect.width - 80
-chango_x = 900
+# ? Variables de scroll
+scroll_capa2 = 0
+scroll_capa3 = 0
+scroll_capa4 = 0
+scroll_capa5 = 0
 
 # ? Dibujamos el menu principal
-def draw_menu(screen, events, font_title, play_btn : Button, tut_btn : Button, set_btn : Button, salir_btn : Button):
-    global scroll
+def draw_menu(screen, events, bg_width, capa1, capa2, capa3, capa4, capa5, chango, pinguino, pos_y, chango_x, pinguino_x,
+            font_title, play_btn : Button, tut_btn : Button, set_btn : Button, salir_btn : Button):
+    global scroll_capa2, scroll_capa3, scroll_capa4, scroll_capa5
 
     # ? Scroll del background
     # Redondeamos cuantas veces cabe el ancho del fondo en la pantalla, le agregamos 1
     tiles = math.ceil(main_settings.WINDOW_WIDTH / bg_width) + 1
 
-    # Recorremos los tiles para dibujar el fondo varias veces
-    for i in range(0, tiles):
-        screen.blit(bg_scaled, (i * bg_width + scroll, 0))
+    # Fondito (Capa 1)
+    screen.blit(capa1, (0, 0))
 
-    # Disminuimos el scroll
-    scroll -= 2
+    # Dibujamos capa 2
+    for i in range(0, tiles + 1):
+        screen.blit(capa2, (i * bg_width + scroll_capa2, 0))
 
-    # Si el valor absoluto del scroll es mayor al ancho del fondo
-    if abs(scroll) > bg_width:
-        scroll = 0
+    # Dibujamos capa 3
+    for i in range(0, tiles + 1):
+        screen.blit(capa3, (i * bg_width + scroll_capa3, 0))
+
+    # Dibujamos capa 4
+    for i in range(0, tiles + 1):
+        screen.blit(capa4, (i * bg_width + scroll_capa4, 0))
+
+    # Dibujamos capa 5
+    for i in range(0, tiles + 1):
+        screen.blit(capa5, (i * bg_width + scroll_capa5, 0))
+    
+    # Modificamos scroll
+    scroll_capa2 -= 0.5
+    scroll_capa3 -= 1.5
+    scroll_capa4 -= 2.5
+    scroll_capa5 -= 3.5
+
+    # Reseteamos el scroll
+    if abs(scroll_capa2) > bg_width:
+        scroll_capa2 = 0
+
+    elif abs(scroll_capa3) > bg_width:
+        scroll_capa3 = 0
+
+    elif abs(scroll_capa4) > bg_width:
+        scroll_capa4 = 0
+
+    elif abs(scroll_capa5) > bg_width:
+        scroll_capa5 = 0
 
     # ? Título del videojuego
     title_surf = font_title.render("Natural rescue", True, (255, 255, 255))
@@ -63,8 +75,8 @@ def draw_menu(screen, events, font_title, play_btn : Button, tut_btn : Button, s
     salir_btn.draw()
 
     # ? Dibujamos el pingüino y el chango en las posiciones calculadas y asignadas previamente.
-    screen.blit(pinguino, (pinguino_x, posicion_y))
-    screen.blit(chango, (chango_x, posicion_y))
+    screen.blit(pinguino, (pinguino_x, pos_y))
+    screen.blit(chango, (chango_x, pos_y))
 
     # ? Recorremos los eventos
     for event in events:
