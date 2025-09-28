@@ -5,7 +5,7 @@ from ui.utils import draw_text
 def draw_tutorial(screen, events):
     screen.fill("#e7e5e4")
     
-    draw_text(screen, 'Use the Keys To Move', "#FFFFFF", 250)
+    draw_text(screen, TITLE_FONT_PATH, 42, 'Use the Keys To Move', "#FFFFFF", WINDOW_WIDTH / 2, 100)
 
     # ? Recorremos los eventos
     for event in events:
