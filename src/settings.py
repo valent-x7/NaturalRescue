@@ -9,4 +9,4 @@ TILE = 32
 WINDOW_WIDTH = info.current_w
 WINDOW_HEIGHT = info.current_h
 
-FONT = pygame.font.Font(None, 42)
+TITLE_FONT_PATH = "src/menus/fuentestexto/prstartk.ttf"

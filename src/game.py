@@ -5,9 +5,14 @@ from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
 from sprites import *
 from ui.button import Button
+from ui.utils import *
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
+import json
+
+# Cargamos traducciones
+translations = load_language("languajes.json")
 
 class Game:
     
@@ -29,6 +34,9 @@ class Game:
         self.monkey_spritesheet = Spritesheet('./img/monkey_spritesheet.png')
 
         self.state = state # -> Estado del juego
+
+        # Config del lenguaje del juego
+        self.current_lang = load_config("config.json")
 
         # Creamos instancias del menú
         self.setup_menu()
@@ -90,17 +98,45 @@ class Game:
         # ? Instancias de los botones
         # Usamos el directorio de trabajo y con join lo unimos para crear la ruta
         self.play_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 400), 
-                               self.fuente_botones, 300, 90, 'Jugar', 4, 
+                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "play"), 4, 
                                os.path.join(working_directory, "assets", "images", "play_icon.png"), 20, '#34D399', '#10B981')
         self.tutorial_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 520), 
-                               self.fuente_botones, 300, 90, 'Tutorial', 4, 
+                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "tutorial"), 4, 
                                os.path.join(working_directory, "assets", "images", "tutorial_icon.png"), 0, '#FACC15', '#EAB308')
         self.settings_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 640), 
-                               self.fuente_botones, 300, 90, 'Ajustes', 4, 
+                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "settings"), 4, 
                                os.path.join(working_directory, "assets", "images", "settings_icon.png"), 0, '#38BDF8', '#0EA5E9')
         self.exit_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 760), 
-                               self.fuente_botones, 300, 90, 'Salir', 4, 
+                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "exit"), 4, 
                                os.path.join(working_directory, "assets", "images", "salir_icon.png"), 20, '#FB923C', '#F97316')
+
+    # ? Este metodo creará las instancias de ajustes
+    def setup_settings(self):
+
+        # Definimos el directorio
+        working_directory = os.getcwd()
+
+        # ? Cargamos capa 1
+        capa1 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings1.png")).convert()
+        self.settings_capa1 = pygame.transform.scale(capa1, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert()
+        self.settings_bg_width = self.settings_capa1.get_width()
+
+        # ? Cargamos capa 2
+        capa2 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings2.png")).convert_alpha()
+        self.settings_capa2 = pygame.transform.scale(capa2, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert_alpha()
+
+        # ? Cargamos imagen de flecha
+        arrow_image = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "flecha.png")).convert_alpha()
+        self.arrow_image = pygame.transform.scale(arrow_image, (96, 96)).convert_alpha()
+
+        # ? Creamos botones
+
+        self.english_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 400), 
+                                    self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-english"), 4,
+                                    os.path.join(working_directory, "assets", 'images', "ajustes", "usFlag.png"), 10, "#4D96FF", "#6DAFFF")
+        self.spanish_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 520), 
+                                    self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-spanish"), 4,
+                                    os.path.join(working_directory, "assets", 'images', "ajustes", "mxFlag.png"), 10, "#38B000", "#70E000")
 
     def run(self):
 
@@ -144,7 +180,9 @@ class Game:
 
             # Ajustes
             elif self.state == "SETTINGS":
-                self.state = draw_settings(self.SCREEN, events)
+                self.setup_settings()
+                self.state = draw_settings(self.SCREEN, self, events, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
+                                           self.arrow_image, self.english_button, self.spanish_button)
 
             # Salir del juego
             elif self.state == "SALIR":

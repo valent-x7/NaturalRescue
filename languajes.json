@@ -1,0 +1,22 @@
+{
+    "en" : {
+        "play" : "Play",
+        "tutorial": "Tutorial",
+        "settings": "Settings",
+        "exit": "Exit",
+        "settings-title": "Settings",
+        "settings-language": "Language",
+        "settings-to-english": "English",
+        "settings-to-spanish": "Spanish"
+    },
+    "es" : {
+        "play" : "Jugar",
+        "tutorial": "Tutorial",
+        "settings": "Ajustes",
+        "exit": "Salir",
+        "settings-title": "Ajustes",
+        "settings-language": "Idioma",
+        "settings-to-english": "Inglés",
+        "settings-to-spanish": "Español"
+    }
+}
