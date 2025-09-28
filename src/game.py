@@ -116,6 +116,15 @@ class Game:
         # Definimos el directorio
         working_directory = os.getcwd()
 
+        # ? Cargamos capa 1
+        capa1 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings1.png")).convert()
+        self.settings_capa1 = pygame.transform.scale(capa1, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert()
+        self.settings_bg_width = self.settings_capa1.get_width()
+
+        # ? Cargamos capa 2
+        capa2 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings2.png")).convert_alpha()
+        self.settings_capa2 = pygame.transform.scale(capa2, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert_alpha()
+
         # ? Cargamos imagen de flecha
         arrow_image = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "flecha.png")).convert_alpha()
         self.arrow_image = pygame.transform.scale(arrow_image, (96, 96)).convert_alpha()
@@ -172,7 +181,8 @@ class Game:
             # Ajustes
             elif self.state == "SETTINGS":
                 self.setup_settings()
-                self.state = draw_settings(self.SCREEN, self, events, self.arrow_image, self.english_button, self.spanish_button)
+                self.state = draw_settings(self.SCREEN, self, events, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
+                                           self.arrow_image, self.english_button, self.spanish_button)
 
             # Salir del juego
             elif self.state == "SALIR":

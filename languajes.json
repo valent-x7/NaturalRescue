@@ -5,6 +5,7 @@
         "settings": "Settings",
         "exit": "Exit",
         "settings-title": "Settings",
+        "settings-language": "Language",
         "settings-to-english": "English",
         "settings-to-spanish": "Spanish"
     },
@@ -14,6 +15,7 @@
         "settings": "Ajustes",
         "exit": "Salir",
         "settings-title": "Ajustes",
+        "settings-language": "Idioma",
         "settings-to-english": "Inglés",
         "settings-to-spanish": "Español"
     }
