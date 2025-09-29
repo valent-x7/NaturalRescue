@@ -20,13 +20,31 @@ def draw_game(screen, events, game_instance=None, delta_time = 0):
 
         screen.blit(bg, (-offset_x, -offset_y))
 
+        health_bar.draw(screen)
+
         for sprite in game_instance.all_sprites:
             screen.blit(sprite.image, sprite.rect.move(-offset_x, -offset_y))
-    
-    # ? Recorremos los eventos
+        # ? Recorremos los eventos
     for event in events:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_m:
                 return "LEVEL_SELECT"   
             
     return "PLAYING"
+
+class HealthBar():
+    def __init__(self, x, y, w, h, max_hp):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.hp = max_hp
+        self.max_hp = max_hp
+    
+    def draw(self, surface):
+        ratio = self.hp / self.max_hp
+        pygame.draw.rect(surface, "red", (self.x, self.y, self.w, self.h))
+        pygame.draw.rect(surface, "green", (self.x, self.y, self.w * ratio, self.h))
+
+health_bar = HealthBar(64, 64, 64*6, 32, 100)
+health_bar.hp=50

@@ -20,7 +20,7 @@ class Monkey(pygame.sprite.Sprite):
         self.y = y * TILE
         self.width = TILE
         self.height = TILE
-        self.health = 150
+        self.health = MONKEY_HEALTH
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
                                self.spritesheet.get_sprite(32, 0, self.width, self.height),
@@ -44,7 +44,7 @@ class Monkey(pygame.sprite.Sprite):
 
         self.direction = "down"
         self.frame = 1
-        self.animation_speed = 0.12
+        self.animation_speed = 0.1
 
     def update(self, keys_pressed, delta_time): 
         moving = False
