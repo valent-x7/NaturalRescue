@@ -176,7 +176,7 @@ class Game:
 
             # Tutorial del juego
             elif self.state == "TUTORIAL":
-                self.state = draw_tutorial(self.SCREEN, events)
+                self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang)
 
             # Ajustes
             elif self.state == "SETTINGS":
