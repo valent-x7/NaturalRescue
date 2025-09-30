@@ -154,3 +154,39 @@ class CollisionSprite(pygame.sprite.Sprite):
         self.mask = None
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
+
+# ? Clase de los sprites!!
+class AllSprites(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        self.camera_offset = pygame.Vector2(0, 0)
+        self.half_w = self.display_surface.get_width() // 2
+        self.half_h = self.display_surface.get_height() // 2
+
+        self.zoom = 2
+
+    # ? Metodo para centrar la camara en el jugador
+    def center_on_target(self, target):
+        self.camera_offset.x = target.rect.centerx - self.half_w
+        self.camera_offset.y = target.rect.centery - self.half_h
+
+    # ? Dibujar sprites
+    def draw_sprites(self):
+
+        # ? Superficie del mundo inicial
+        surface = pygame.Surface(self.display_surface.get_size(), pygame.SRCALPHA)
+
+        # Recorremos sprites
+        for sprite in self.sprites():
+            offset_rect = sprite.rect.copy()
+            offset_rect.topleft -= self.camera_offset
+            surface.blit(sprite.image, offset_rect)
+
+        # ? Escalamos
+        scaled_surf = pygame.transform.scale_by(surface, self.zoom)
+
+        # Dibujamos todo en base a la superficie escalada
+        rect = scaled_surf.get_frect(center = self.display_surface.get_frect().center)
+        self.display_surface.blit(scaled_surf, rect)

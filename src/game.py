@@ -200,7 +200,7 @@ class Game:
         self.playing = True
 
         # Grupos de sprites
-        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()
 
         self.setup_map()
