@@ -10,6 +10,7 @@ from menus.level_select import draw_level_select
 import settings as main_settings
 import os
 import json
+from pytmx import load_pygame
 
 # Cargamos traducciones
 translations = load_language("languajes.json")
@@ -197,11 +198,41 @@ class Game:
     
     def new(self):
         self.playing = True
+
+        # Grupos de sprites
         self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.collision_sprites = pygame.sprite.Group()
 
-        self.player = Monkey(self.monkey_spritesheet, 480, 640)
-        self.all_sprites.add(self.player)
+        self.setup_map()
 
+    def setup_map(self):
+
+        # Directorio
+        working_directory = os.getcwd()
+
+        map = load_pygame(os.path.join(working_directory, "assets", "maps", "tmx", "bosque.tmx"))
+        
+        # ? Layers o capas
+        for layer_name in ["Ground", "Decoration", "Collision", "Damage"]:
+            layer = map.get_layer_by_name(layer_name)
+
+            for x, y, image in layer.tiles():
+                if layer.name == "Ground" or layer.name == "Decoration":
+                    Sprite(self.all_sprites, (x * TILE, y * TILE), image)
+                else:
+                    CollisionSprite((self.all_sprites, self.collision_sprites), "Limit", (x * TILE, y * TILE), image)
+
+        # ? Objectos
+        for obj in map.objects:
+            if obj.name == "Tree":
+                if hasattr(obj, "gid") and obj.gid:
+                    image = map.get_tile_image_by_gid(obj.gid)
+
+                    CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
+
+        # ? Creamos el jugador en la posición indicada
+        player_obj = map.get_object_by_name("Player")
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites)
 
     # ? Checar eventos del menú
     def check_events(self, events):
