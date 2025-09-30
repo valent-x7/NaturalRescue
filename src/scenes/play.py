@@ -22,7 +22,7 @@ def draw_game(screen, events, game_instance=None, delta_time = 0):
         # for sprite in game_instance.all_sprites:
         #     screen.blit(sprite.image, sprite.rect.move(-offset_x, -offset_y))
     
-        game_instance.all_sprites.draw(screen)
+        game_instance.all_sprites.draw_sprites()
 
     # ? Recorremos los eventos
     for event in events:
