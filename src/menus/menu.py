@@ -45,10 +45,10 @@ def draw_menu(screen, events, bg_width, capa1, capa2, capa3, capa4, capa5, chang
         screen.blit(capa5, (i * bg_width + scroll_capa5, 0))
     
     # Modificamos scroll
-    scroll_capa2 -= 0.5
-    scroll_capa3 -= 1.5
-    scroll_capa4 -= 2.5
-    scroll_capa5 -= 3.5
+    scroll_capa2 -= 0.2
+    scroll_capa3 -= 0.5
+    scroll_capa4 -= 1.5
+    scroll_capa5 -= 2.5
 
     # Reseteamos el scroll
     if abs(scroll_capa2) > bg_width:
