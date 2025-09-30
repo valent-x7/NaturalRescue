@@ -1,5 +1,6 @@
 # -> Aquí se dibujará el juego
 from settings import *
+from sprites import Monkey
 
 bg = pygame.image.load("./img/bosque.png")
 
