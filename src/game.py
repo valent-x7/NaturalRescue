@@ -230,6 +230,9 @@ class Game:
 
                     CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
 
+        self.map_width = map.width * TILE
+        self.map_height = map.height * TILE
+
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites)
