@@ -168,25 +168,42 @@ class AllSprites(pygame.sprite.Group):
         self.zoom = 2
 
     # ? Metodo para centrar la camara en el jugador
-    def center_on_target(self, target):
-        self.camera_offset.x = target.rect.centerx - self.half_w
-        self.camera_offset.y = target.rect.centery - self.half_h
+    def center_on_target(self, target, map_width, map_height):
+        # ? Obtenemos los valores reales, basados en el zoom!!
+        screen_w = self.display_surface.get_width() / self.zoom
+        screen_h = self.display_surface.get_height() / self.zoom
+
+        # Offset calculado para centrar al jugador
+        x = target.rect.centerx - (screen_w / 2)
+        y = target.rect.centery - (screen_h / 2)
+
+        # ? Limitar movimiento de la cámara
+        if map_width > screen_w:
+            x = max(0, min(x, map_width - screen_w))
+        else:
+            x = (map_width - screen_w) / 2
+
+        if map_height > screen_h:
+            y = max(0, min(y, map_height - screen_h))
+        else:
+            y = (map_height - screen_h) / 2
+
+        self.camera_offset.x = x
+        self.camera_offset.y = y
 
     # ? Dibujar sprites
     def draw_sprites(self):
-
-        # ? Superficie del mundo inicial
+        # Superficie base del tamaño de la ventana
         surface = pygame.Surface(self.display_surface.get_size(), pygame.SRCALPHA)
 
-        # Recorremos sprites
+        # ? Dibujar sprites con offset
         for sprite in self.sprites():
             offset_rect = sprite.rect.copy()
             offset_rect.topleft -= self.camera_offset
             surface.blit(sprite.image, offset_rect)
 
-        # ? Escalamos
+        # ? Escalar la superficie
         scaled_surf = pygame.transform.scale_by(surface, self.zoom)
 
-        # Dibujamos todo en base a la superficie escalada
-        rect = scaled_surf.get_frect(center = self.display_surface.get_frect().center)
-        self.display_surface.blit(scaled_surf, rect)
+        # Dibujar superficie
+        self.display_surface.blit(scaled_surf, (0, 0))
