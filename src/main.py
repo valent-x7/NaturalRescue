@@ -3,7 +3,7 @@ pygame.init()
 
 from game import Game
 
-g = Game("PLAYING")
+g = Game("MENU")
 
 if __name__ == "__main__":
     g.run()

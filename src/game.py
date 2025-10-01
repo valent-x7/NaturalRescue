@@ -156,7 +156,7 @@ class Game:
                                        self.tutorial_btn, self.settings_btn, self.exit_btn)
 
             elif self.state == "LEVEL_SELECT":
-                 self.state = draw_level_select(self.SCREEN, events)  
+                 self.state = draw_level_select(self.SCREEN, events, translations, self.current_lang)  
 
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):

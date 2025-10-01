@@ -14,7 +14,12 @@
         "tutorial-control-down": "Press S to move down",
         "tutorial-control-left": "Press A to move left",
         "tutorial-control-right": "Press D to move right",
-        "tutorial-control-menu": "Press M to return to menu"
+        "tutorial-control-menu": "Press M to return to menu",
+
+        "level-select-title": "Select a Level",
+        "level-select-level-1": "Level 1",
+        "level-select-level-2": "Level 2",
+        "level-select-level-3": "Level 3"
     },
     "es": {
         "play": "Jugar",
@@ -31,6 +36,11 @@
         "tutorial-control-down": "Presiona S para bajar",
         "tutorial-control-left": "Presiona A para ir a la izquierda",
         "tutorial-control-right": "Presiona D para ir a la derecha",
-        "tutorial-control-menu": "Presiona M para volver al menú"
+        "tutorial-control-menu": "Presiona M para volver al menú",
+
+        "level-select-title": "Selecciona un Nivel",
+        "level-select-level-1": "Nivel 1",
+        "level-select-level-2": "Nivel 2",
+        "level-select-level-3": "Nivel 3"
     }
 }
