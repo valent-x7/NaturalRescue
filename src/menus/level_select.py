@@ -16,6 +16,10 @@ class Button:
         self.hover_color = pygame.Color(hover_color)
         self.current_color = self.color
 
+        # ? Musica
+        working_directory = os.getcwd()
+        self.sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "button_click.mp3"))
+
     def draw(self):
         # ? Cambiamos el color al pasar el mouse
         if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -34,6 +38,7 @@ class Button:
     def is_clicked(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
+                self.sound.play()
                 return True
         return False
 
