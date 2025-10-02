@@ -33,11 +33,11 @@ def draw_tutorial(screen, events, translations, lang, tutorial_assets):
         monkey_rect.center = (WINDOW_WIDTH // 2 + 100, y)
         screen.blit(monkey_img, monkey_rect)
 
-    # Mensaje traducido para regresar al menú
+    # Mensaje traducido para regresar al menú (parpadea)
     exit_hint = get_text(translations, lang, "tutorial-control-menu")
     time = pygame.time.get_ticks() / 500
     alpha = sin(time) * 0.5 + 0.5
-    color_blink = [int(100 + alpha * 155)] * 3  # RGB: gris brillante
+    color_blink = [int(100 + alpha * 155)] * 3  
 
     draw_text(screen, TITLE_FONT_PATH, 24, exit_hint,
               color_blink, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 60)
