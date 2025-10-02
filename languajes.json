@@ -10,10 +10,6 @@
         "settings-to-spanish": "Spanish",
 
         "tutorial-title": "HOW TO MOVE",
-        "tutorial-control-up": "Press W to move up",
-        "tutorial-control-down": "Press S to move down",
-        "tutorial-control-left": "Press A to move left",
-        "tutorial-control-right": "Press D to move right",
         "tutorial-control-menu": "Press M to return to menu"
     },
     "es": {
@@ -27,10 +23,6 @@
         "settings-to-spanish": "Español",
 
         "tutorial-title": "CÓMO MOVERSE",
-        "tutorial-control-up": "Presiona W para subir",
-        "tutorial-control-down": "Presiona S para bajar",
-        "tutorial-control-left": "Presiona A para ir a la izquierda",
-        "tutorial-control-right": "Presiona D para ir a la derecha",
         "tutorial-control-menu": "Presiona M para volver al menú"
     }
 }
