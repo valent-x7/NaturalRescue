@@ -143,6 +143,25 @@ class Game:
                                     self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-spanish"), 4,
                                     os.path.join(working_directory, "assets", 'images', "ajustes", "mxFlag.png"), 10, "#38B000", "#70E000")
 
+    # ? Este metodo creará las instancias de tutorial
+    def setup_tutorial(self):
+        self.tutorial_assets = {
+        "keys": {
+            "W": pygame.image.load("assets/images/keys/key_w.png").convert_alpha(),
+            "A": pygame.image.load("assets/images/keys/key_a.png").convert_alpha(),
+            "S": pygame.image.load("assets/images/keys/key_s.png").convert_alpha(),
+            "D": pygame.image.load("assets/images/keys/key_d.png").convert_alpha()
+        },
+        "monkey": {
+            "W": pygame.image.load("assets/images/chango/chango_up.png").convert_alpha(),
+            "A": pygame.image.load("assets/images/chango/chango_left.png").convert_alpha(),
+            "S": pygame.image.load("assets/images/chango/chango_down.png").convert_alpha(),
+            "D": pygame.image.load("assets/images/chango/chango_right.png").convert_alpha()
+        }
+    }
+
+
+
     def run(self):
 
         while self.running:
@@ -181,7 +200,10 @@ class Game:
 
             # Tutorial del juego
             elif self.state == "TUTORIAL":
-                self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang)
+                self.setup_tutorial()
+                self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang, self.tutorial_assets)
+
+
 
             # Ajustes
             elif self.state == "SETTINGS":
