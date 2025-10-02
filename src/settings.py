@@ -3,8 +3,9 @@ from os.path import join
 
 info = pygame.display.Info()
 
-MONKEY_SPEED = 150
+MONKEY_SPEED = 128
 MONKEY_HEALTH = 100
+MONKEY_SEEDS = 10
 TILE = 32
 
 WINDOW_WIDTH = info.current_w

@@ -1,4 +1,5 @@
 from settings import *
+import os
 
 class Button:
     def __init__(self, screen, pos, font, width, height, text, thickness, image_path, image_text_spacing, base_color, hover_color=None):
@@ -6,6 +7,10 @@ class Button:
         self.text = text
         self.base_color = base_color
         self.hover_color = hover_color
+
+        # ? Sonido de click
+        working_directory = os.getcwd() 
+        self.sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "button_click.mp3"))
 
         # Rectángulo principal del botón
         self.top_rect = pygame.Rect(pos, (width, height))
@@ -56,5 +61,6 @@ class Button:
     def is_clicked(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.top_rect.collidepoint(event.pos):
+                self.sound.play()
                 return True
         return False

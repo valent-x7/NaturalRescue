@@ -11,6 +11,9 @@
 
         "tutorial-title": "HOW TO MOVE",
         "tutorial-control-menu": "Press M to return to menu"
+
+        "paused-title": "Game Paused",
+        "paused-description": "Press P to play"
     },
     "es": {
         "play": "Jugar",
@@ -24,5 +27,8 @@
 
         "tutorial-title": "CÓMO MOVERSE",
         "tutorial-control-menu": "Presiona M para volver al menú"
+
+        "paused-title": "Juego Pausado",
+        "paused-description": "Presiona P para jugar"
     }
 }
