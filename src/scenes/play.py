@@ -2,6 +2,7 @@
 from settings import *
 from ui.healthbar import HealthBar
 from ui.utils import draw_text, get_text
+from sprites import Monkey
 
 def draw_game(screen, events, translations, healthbar : HealthBar, game_instance=None, delta_time = 0):
     
@@ -41,5 +42,8 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
                 return "LEVEL_SELECT" 
             if event.key == pygame.K_p:
                 game_instance.paused = not game_instance.paused
+
+            if event.key == pygame.K_h:
+                player.plant()
             
     return "PLAYING"
