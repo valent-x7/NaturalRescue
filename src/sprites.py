@@ -1,5 +1,6 @@
 import pygame
 from settings import *
+import os
 import math
 import random
 
@@ -13,8 +14,7 @@ class Spritesheet:
         return sprite
     
 class Monkey(pygame.sprite.Sprite):
-    
-    def __init__(self, spritesheet, x, y, groups, collision_sprites):
+    def __init__(self, spritesheet, x, y, groups, collision_sprites, damage_sprites):
         super().__init__(groups)
         self.spritesheet = spritesheet
         self.width = TILE
@@ -49,6 +49,11 @@ class Monkey(pygame.sprite.Sprite):
         self.animation_speed = 0.1
 
         self.collision_sprites = collision_sprites
+        self.damage_sprites = damage_sprites
+
+        # ? Sonido de daño
+        working_directory = os.getcwd()
+        self.hit_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "hit.mp3"))
 
         self.vec = pygame.Vector2()
         self.last_axis = None
@@ -150,6 +155,20 @@ class Monkey(pygame.sprite.Sprite):
                     if self.vec.y > 0: self.hitbox_rect.bottom = sprite.rect.top
                     if self.vec.y < 0: self.hitbox_rect.top = sprite.rect.bottom
 
+        for sprite in self.damage_sprites:
+            if sprite.rect.colliderect(self.hitbox_rect):
+                # ? Si es colision horizontal
+                if direction == "horizontal":
+                    if self.vec.x > 0:self.hitbox_rect.right = sprite.rect.left - 5
+                    if self.vec.x < 0: self.hitbox_rect.left = sprite.rect.right + 5
+                # ? Si es colision vertical
+                else:
+                    if self.vec.y > 0: self.hitbox_rect.bottom = sprite.rect.top - 5
+                    if self.vec.y < 0: self.hitbox_rect.top = sprite.rect.bottom + 5
+                # Le bajamos vida al monito y activamos sonido
+                self.hit_sound.play()
+                self.health -= 10
+
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, groups, position, image):
@@ -163,6 +182,12 @@ class CollisionSprite(pygame.sprite.Sprite):
         super().__init__(groups)
         self.name = name
         self.mask = None
+        self.image = image
+        self.rect = self.image.get_frect(topleft = position)
+
+class DamageSprite(pygame.sprite.Sprite):
+    def __init__(self, groups, position, image):
+        super().__init__(groups)
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 

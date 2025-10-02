@@ -206,6 +206,7 @@ class Game:
         # Grupos de sprites
         self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()
+        self.damage_sprites = pygame.sprite.Group()
 
         self.setup_map()
 
@@ -217,7 +218,7 @@ class Game:
         map = load_pygame(os.path.join(working_directory, "assets", "maps", "tmx", "bosque.tmx"))
         
         # ? Layers o capas
-        for layer_name in ["Ground", "Decoration", "Collision", "Damage"]:
+        for layer_name in ["Ground", "Decoration", "Collision"]:
             layer = map.get_layer_by_name(layer_name)
 
             for x, y, image in layer.tiles():
@@ -233,13 +234,18 @@ class Game:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
+            elif obj.name == "Branch":
+                if hasattr(obj, "gid") and obj.gid:
+                    image = map.get_tile_image_by_gid(obj.gid)
+
+                    DamageSprite((self.all_sprites, self.damage_sprites), (obj.x, obj.y), image)
 
         self.map_width = map.width * TILE
         self.map_height = map.height * TILE
 
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites)
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites)
 
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
 
