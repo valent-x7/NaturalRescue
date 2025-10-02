@@ -8,32 +8,22 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
     screen.fill("black")
 
     if game_instance:
-        # ? Jugador
         player = game_instance.player
-        # ? Barra de vida
         healthbar.hp = player.health
 
         if not game_instance.paused:
-            # ? Actualizamos los sprites si no esta en pausa
-            player.input(events)
-            game_instance.all_sprites.update(delta_time, events)
+            player.input()  # opcional
+            game_instance.all_sprites.update(delta_time)
 
-        # Dibujamos juego
-        # ? Centramos en el jugador
         game_instance.all_sprites.center_on_target(player, game_instance.map_width, game_instance.map_height)
-
-        # ? Dibujamos los sprites
         game_instance.all_sprites.draw_sprites()
 
-        # ? Dibujamos barra de vida
         healthbar.draw(screen)
 
-        # Texto de pausa
         if game_instance.paused:
             draw_text(screen, TITLE_FONT_PATH, 64, get_text(translations, game_instance.current_lang, "paused-title"), "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
             draw_text(screen, TITLE_FONT_PATH, 36, get_text(translations, game_instance.current_lang, "paused-description"), "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
 
-    # ? Recorremos los eventos
     for event in events:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_m:
