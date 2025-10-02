@@ -6,6 +6,7 @@ from scenes.play import draw_game
 from sprites import *
 from ui.button import Button
 from ui.utils import *
+from ui.healthbar import HealthBar
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
@@ -38,6 +39,9 @@ class Game:
 
         # Config del lenguaje del juego
         self.current_lang = load_config("config.json")
+
+        # Estado de pausa
+        self.paused = False
 
         # Creamos instancias del menú
         self.setup_menu()
@@ -161,7 +165,7 @@ class Game:
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
                     self.new()
-                self.state = draw_game(self.SCREEN, events, self, dt)
+                self.state = draw_game(self.SCREEN, events, translations, self.player_healthbar, self, dt)
 
             # Nivel 1
             elif self.state == "LEVEL_1":
@@ -236,6 +240,8 @@ class Game:
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites)
+
+        self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
 
     # ? Checar eventos del menú
     def check_events(self, events):

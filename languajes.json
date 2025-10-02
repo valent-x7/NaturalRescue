@@ -14,7 +14,10 @@
         "tutorial-control-down": "Press S to move down",
         "tutorial-control-left": "Press A to move left",
         "tutorial-control-right": "Press D to move right",
-        "tutorial-control-menu": "Press M to return to menu"
+        "tutorial-control-menu": "Press M to return to menu",
+
+        "paused-title": "Game Paused",
+        "paused-description": "Press P to play"
     },
     "es": {
         "play": "Jugar",
@@ -31,6 +34,9 @@
         "tutorial-control-down": "Presiona S para bajar",
         "tutorial-control-left": "Presiona A para ir a la izquierda",
         "tutorial-control-right": "Presiona D para ir a la derecha",
-        "tutorial-control-menu": "Presiona M para volver al menú"
+        "tutorial-control-menu": "Presiona M para volver al menú",
+
+        "paused-title": "Juego Pausado",
+        "paused-description": "Presiona P para jugar"
     }
 }
