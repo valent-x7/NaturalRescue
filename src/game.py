@@ -19,11 +19,17 @@ translations = load_language("languajes.json")
 class Game:
     
     # Música
-    try: 
-        pygame.mixer.music.load("assets/music.mp3")
-        pygame.mixer.music.play(loops = 0, start=0, fade_ms=5000)
-    except Exception as e:
-        print("Error al reproducir la música", e)
+    def play_music(self, filepath, loop=-1, fade_ms=500):
+     try:
+        # Si hay música sonando, hacemos fadeout
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.fadeout(fade_ms)
+        # Cargamos y reproducimos la nueva música
+        pygame.mixer.music.load(filepath)
+        pygame.mixer.music.play(loop)
+     except Exception as e:
+        print("Error al reproducir la música:", e)
+
 
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state = "MENU"):
@@ -168,6 +174,35 @@ class Game:
 
             # ? Usamos delta Time
             dt = self.clock.tick(60) / 1000 # Segundos por Frame
+            if self.state == 'MENU':
+             if getattr(self, 'current_music', None) != "menu":
+              self.play_music("assets/music/menu.ogg")
+              self.current_music = "menu"
+
+            elif self.state == "LEVEL_SELECT":
+             if getattr(self, 'current_music', None) != "level_select":
+              self.play_music("assets/music/levelselect.ogg")
+              self.current_music = "level_select"
+
+            elif self.state == "TUTORIAL":
+             if getattr(self, 'current_music', None) != "tutorial":
+              self.play_music("assets/music/tutorial.ogg")
+              self.current_music = "tutorial"
+              self.setup_tutorial()
+
+            elif self.state == "SETTINGS":
+             if getattr(self, 'current_music', None) != "settings":
+              self.play_music("assets/music/settings.ogg")
+              self.current_music = "settings"
+              self.setup_settings()
+
+            elif self.state == "PLAYING" or self.state == "LEVEL_1":
+             if getattr(self, 'current_music', None) != "level1":
+              self.play_music("assets/music/level1.ogg")
+              self.current_music = "level1"
+             if not hasattr(self, 'all_sprites'):
+              self.new()
+
 
             # ? Obtener Eventos
             events = pygame.event.get()
