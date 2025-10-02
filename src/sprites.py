@@ -13,12 +13,14 @@ class Spritesheet:
         return sprite
     
 class Monkey(pygame.sprite.Sprite):
+    
     def __init__(self, spritesheet, x, y, groups, collision_sprites):
         super().__init__(groups)
         self.spritesheet = spritesheet
         self.width = TILE
         self.height = TILE
         self.health = MONKEY_HEALTH
+        self.seeds = MONKEY_SEEDS
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
                                self.spritesheet.get_sprite(32, 0, self.width, self.height),
@@ -52,6 +54,15 @@ class Monkey(pygame.sprite.Sprite):
         self.last_axis = None
 
         self.moving = False # -> Por defecto el mono no se mueve
+
+
+    def plant(self):
+        if self.seeds > 0:
+            print("Arbol plantado, te quedan", self.seeds)
+            self.seeds -= 1
+        else:
+            print("No tienes mas semillas")
+
 
     def update(self, delta_time, events): 
         self.moving = False
