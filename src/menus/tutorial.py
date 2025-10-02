@@ -1,6 +1,8 @@
 from settings import *
-from ui.utils import get_text, draw_text
+from ui.utils import draw_text, get_text
 import pygame
+from math import sin
+
 
 def draw_tutorial(screen, events, translations, lang, tutorial_assets):
     screen.fill("#1e1e1e")
@@ -33,8 +35,12 @@ def draw_tutorial(screen, events, translations, lang, tutorial_assets):
 
     # Mensaje traducido para regresar al menú
     exit_hint = get_text(translations, lang, "tutorial-control-menu")
-    draw_text(screen, TITLE_FONT_PATH, 28, exit_hint, "#FFFF00",
-              WINDOW_WIDTH // 2, WINDOW_HEIGHT - 80)
+    time = pygame.time.get_ticks() / 500
+    alpha = sin(time) * 0.5 + 0.5
+    color_blink = [int(100 + alpha * 155)] * 3  # RGB: gris brillante
+
+    draw_text(screen, TITLE_FONT_PATH, 24, exit_hint,
+              color_blink, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 60)
 
     # Eventos
     for event in events:
