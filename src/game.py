@@ -306,7 +306,7 @@ class Game:
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites)
 
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
-        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH, 32, 150)
+        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)
 
     # ? Checar eventos del menú
     def check_events(self, events):
