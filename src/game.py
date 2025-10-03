@@ -7,6 +7,7 @@ from sprites import *
 from ui.button import Button
 from ui.utils import *
 from ui.healthbar import HealthBar
+from ui.timebar import TimeBar
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
@@ -184,7 +185,7 @@ class Game:
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
                     self.new()
-                self.state = draw_game(self.SCREEN, events, translations, self.player_healthbar, self, dt)
+                self.state = draw_game(self.SCREEN, events, translations, self.player_TimeBar, self.player_healthbar, self, dt)
 
             # Nivel 1
             elif self.state == "LEVEL_1":
@@ -270,6 +271,7 @@ class Game:
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites)
 
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
+        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH, 32, 150)
 
     # ? Checar eventos del menú
     def check_events(self, events):
@@ -278,9 +280,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     sys.exit()
-
+    
                 # ? Teclas presionadas
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
                         sys.exit()
+        
+        self.player_TimeBar.update()

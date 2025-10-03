@@ -1,10 +1,11 @@
 # -> Aquí se dibujará el juego
 from settings import *
 from ui.healthbar import HealthBar
+from ui.timebar import TimeBar
 from ui.utils import draw_text, get_text
 from sprites import Monkey
 
-def draw_game(screen, events, translations, healthbar : HealthBar, game_instance=None, delta_time = 0):
+def draw_game(screen, events, translations, TimeBar : TimeBar, healthbar : HealthBar, game_instance=None, delta_time = 0):
     
     screen.fill("black")
 
@@ -13,6 +14,8 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
         player = game_instance.player
         # ? Barra de vida
         healthbar.hp = player.health
+        #TimeBar
+        TimeBar.maxt = 150
 
         if not game_instance.paused:
             # ? Actualizamos los sprites si no esta en pausa
@@ -28,6 +31,7 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
 
         # ? Dibujamos barra de vida
         healthbar.draw(screen)
+        TimeBar.draw(screen)
 
         # Texto de pausa
         if game_instance.paused:
