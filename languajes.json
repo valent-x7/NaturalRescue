@@ -17,7 +17,9 @@
 
         "tree-sprout": "Tree Sprout",
 
-        "gameover-instructions": "Press M to return to menu"
+        "gameover-title": "GAME OVER",
+        "press-m-to-menu": "Press M to go to Menu",
+        "press-r-to-restart": "Press R to Restart Level"
     },
     "es": {
         "play": "Jugar",
@@ -36,7 +38,9 @@
         "paused-description": "Presiona P para jugar",
 
         "tree-sprout": "Brote de Árbol",
-        
-        "gameover-instructions": "Presiona M para volver al menú"
+
+        "gameover-title": "FIN DEL JUEGO",
+        "press-m-to-menu": "Presiona M para ir al Menú",
+        "press-r-to-restart": "Presiona R para reiniciar el nivel"
     }
 }

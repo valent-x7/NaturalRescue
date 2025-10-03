@@ -23,16 +23,25 @@ class Game:
     
     # Música
     def play_music(self, filepath, loop=-1, fade_ms=500):
-     try:
-        # Si hay música sonando, hacemos fadeout
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.fadeout(fade_ms)
-        # Cargamos y reproducimos la nueva música
-        pygame.mixer.music.load(filepath)
-        pygame.mixer.music.play(loop)
-     except Exception as e:
-        print("Error al reproducir la música:", e)
+        try:
+            # Si hay música sonando, hacemos fadeout
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.fadeout(fade_ms)
+            # Cargamos y reproducimos la nueva música
+            pygame.mixer.music.load(filepath)
+            pygame.mixer.music.play(loop)
+        except Exception as e:
+            print("Error al reproducir la música:", e)
 
+    def play_music_once(self, path, key):
+        if getattr(self, "current_music", None) != key:
+            pygame.mixer.music.stop()
+            try:
+                pygame.mixer.music.load(path)
+                pygame.mixer.music.play(loops=0)  # solo una vez
+                self.current_music = key
+            except Exception as e:
+                print("Error al reproducir música:", e)
 
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state = "MENU"):
@@ -154,6 +163,7 @@ class Game:
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
+        # Cargamos las imágenes de las teclas normales
         self.tutorial_assets = {
         "keys": {
             "W": pygame.image.load("assets/images/keys/key_w.png").convert_alpha(),
@@ -166,8 +176,32 @@ class Game:
             "A": pygame.image.load("assets/images/chango/chango_left.png").convert_alpha(),
             "S": pygame.image.load("assets/images/chango/chango_down.png").convert_alpha(),
             "D": pygame.image.load("assets/images/chango/chango_right.png").convert_alpha()
+        },
+        "extras": {
+            "H_brote": pygame.image.load("assets/images/items/brote.png").convert_alpha(),  # Imagen al lado de H
+            "R_restart": pygame.image.load("assets/images/keys/restart.png").convert_alpha(),  # Imagen al lado de R
+            "P_pause": self.combine_pause_images(
+                "assets/images/keys/pause1.png",
+                "assets/images/keys/pause2.png"
+            )  # Imagen al lado de P (dos imágenes combinadas)
         }
     }
+
+    # Función para combinar dos imágenes de pausa en un solo Surface
+    def combine_pause_images(self, path1, path2):
+       img1 = pygame.image.load(path1).convert_alpha()
+       img2 = pygame.image.load(path2).convert_alpha()
+    
+       # Creamos un surface con el ancho de ambas imágenes y altura máxima
+       width = img1.get_width() + img2.get_width() + 10  # +10 px de espacio entre ellas
+       height = max(img1.get_height(), img2.get_height())
+       combined = pygame.Surface((width, height), pygame.SRCALPHA)
+    
+       # Pegamos las imágenes
+       combined.blit(img1, (0, 0))
+       combined.blit(img2, (img1.get_width() + 10, 0))
+    
+       return combined
 
 
 
@@ -177,37 +211,57 @@ class Game:
 
             # ? Usamos delta Time
             dt = self.clock.tick(60) / 1000 # Segundos por Frame
+
+            # -------------------
+            # Reproducir música según el estado
+            # -------------------
             if self.state == 'MENU':
-             if getattr(self, 'current_music', None) != "menu":
-              self.play_music("assets/music/menu.ogg")
-              self.current_music = "menu"
+                if getattr(self, "entered_gameover", False):
+                    self.entered_gameover = False
+                if getattr(self, 'current_music', None) != "menu":
+                    self.play_music("assets/music/menu.ogg")
+                    self.current_music = "menu"
 
             elif self.state == "LEVEL_SELECT":
-             if getattr(self, 'current_music', None) != "level_select":
-              self.play_music("assets/music/levelselect.ogg")
-              self.current_music = "level_select"
+                if getattr(self, "entered_gameover", False):
+                    self.entered_gameover = False
+                if getattr(self, 'current_music', None) != "level_select":
+                    self.play_music("assets/music/levelselect.ogg")
+                    self.current_music = "level_select"
 
             elif self.state == "TUTORIAL":
-             if getattr(self, 'current_music', None) != "tutorial":
-              self.play_music("assets/music/tutorial.ogg")
-              self.current_music = "tutorial"
-              self.setup_tutorial()
+                if getattr(self, 'current_music', None) != "tutorial":
+                    self.play_music("assets/music/tutorial.ogg")
+                    self.current_music = "tutorial"
+                    self.setup_tutorial()
 
             elif self.state == "SETTINGS":
-             if getattr(self, 'current_music', None) != "settings":
-              self.play_music("assets/music/settings.ogg")
-              self.current_music = "settings"
-              self.setup_settings()
+                if getattr(self, 'current_music', None) != "settings":
+                    self.play_music("assets/music/settings.ogg")
+                    self.current_music = "settings"
+                    self.setup_settings()
 
             elif self.state == "PLAYING" or self.state == "LEVEL_1":
-             if getattr(self, 'current_music', None) != "level1":
-              self.play_music("assets/music/level1.ogg")
-              self.current_music = "level1"
-             if not hasattr(self, 'all_sprites'):
-              self.new()
+                if getattr(self, 'current_music', None) != "level1":
+                    self.play_music("assets/music/level1.ogg")
+                    self.current_music = "level1"
+                if not hasattr(self, 'all_sprites'):
+                    self.new()
 
+            elif self.state == "GAMEOVER":
+                # reproducir música de Game Over solo una vez al entrar
+                if not getattr(self, "entered_gameover", False):
+                    pygame.mixer.music.stop()
+                    try:
+                        pygame.mixer.music.load("assets/sound/gameover.ogg")
+                        pygame.mixer.music.play(loops=0)  # una sola vez
+                    except Exception as e:
+                        print("Error al reproducir música Game Over:", e)
+                    self.entered_gameover = True
 
-            # ? Obtener Eventos
+            # -------------------
+            # Obtener Eventos
+            # -------------------
             events = pygame.event.get()
 
             if self.state == 'MENU':
@@ -241,8 +295,6 @@ class Game:
                 self.setup_tutorial()
                 self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang, self.tutorial_assets)
 
-
-
             # Ajustes
             elif self.state == "SETTINGS":
                 self.setup_settings()
@@ -254,7 +306,23 @@ class Game:
                 self.running = False
 
             elif self.state == "GAMEOVER":
-                self.state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
+               new_state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
+
+               # Solo revisamos new_state dentro del mismo bloque
+               if new_state == "MENU":
+                   self.state = "MENU"
+                   self.entered_gameover = False
+
+               elif new_state == "RESTART_LEVEL":
+                self.state = "PLAYING"
+                self.entered_gameover = False
+
+                if hasattr(self, 'all_sprites'):
+                   del self.all_sprites  # Fuerza a recrear el nivel
+
+                # Forzar que la música del nivel 1 vuelva a sonar
+                self.play_music("assets/music/level1.ogg")
+                self.current_music = "level1"
 
             # Checar eventos del menú
             self.check_events(events)
@@ -335,3 +403,5 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
                         sys.exit()
+        
+        self.player_TimeBar.update()
