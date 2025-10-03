@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="32" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="220">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="32" tilewidth="32" tileheight="32" infinite="0" nextlayerid="19" nextobjectid="239">
  <tileset firstgid="1" source="../tsx/ForestTileSet.tsx"/>
  <tileset firstgid="257" source="../tsx/forest_objects.tsx"/>
  <layer id="11" name="Ground" width="60" height="32">
@@ -183,10 +183,30 @@
   <object id="194" name="Branch" gid="257" x="352.187" y="767.93" width="32" height="32"/>
   <object id="196" name="Branch" gid="259" x="287.653" y="767.738" width="32" height="32"/>
   <object id="198" name="Branch" gid="259" x="351.755" y="640.276" width="32" height="32"/>
-  <object id="200" name="Branch" gid="257" x="384.253" y="608.255" width="32" height="32"/>
+  <object id="200" name="Branch" gid="257" x="384.465" y="607.535" width="31.024" height="31.0891"/>
   <object id="202" name="Branch" gid="259" x="640.278" y="223.666" width="32" height="32"/>
   <object id="207" name="Branch" gid="259" x="703.928" y="288.388" width="32" height="32"/>
   <object id="209" name="Branch" gid="257" x="672.486" y="256.027" width="32" height="32"/>
   <object id="216" name="Branch" gid="258" x="959.95" y="672.084" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="18" name="Plant Position">
+  <object id="233" name="Plant Position" x="175.194" y="817.054">
+   <point/>
+  </object>
+  <object id="234" name="Plant Position" x="334.574" y="817.674">
+   <point/>
+  </object>
+  <object id="235" name="Plant Position" x="1167.55" y="817.284">
+   <point/>
+  </object>
+  <object id="236" name="Plant Position" x="879.481" y="434.284">
+   <point/>
+  </object>
+  <object id="237" name="Plant Position" x="1679.08" y="209.263">
+   <point/>
+  </object>
+  <object id="238" name="Plant Position" x="1679.08" y="369.553">
+   <point/>
+  </object>
  </objectgroup>
 </map>

@@ -7,6 +7,7 @@ from sprites import *
 from ui.button import Button
 from ui.utils import *
 from ui.healthbar import HealthBar
+from ui.item import TreeSprout
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
@@ -165,7 +166,7 @@ class Game:
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
                     self.new()
-                self.state = draw_game(self.SCREEN, events, translations, self.player_healthbar, self, dt)
+                self.state = draw_game(self.SCREEN, events, translations, self, dt)
 
             # Nivel 1
             elif self.state == "LEVEL_1":
@@ -204,9 +205,10 @@ class Game:
         self.playing = True
 
         # Grupos de sprites
-        self.all_sprites = AllSprites()
-        self.collision_sprites = pygame.sprite.Group()
-        self.damage_sprites = pygame.sprite.Group()
+        self.all_sprites = AllSprites() # -> Todos los sprites
+        self.collision_sprites = pygame.sprite.Group() # -> Sprites limitadores o de colisión
+        self.damage_sprites = pygame.sprite.Group() # -> Sprites que hacen daño
+        self.plant_spots = pygame.sprite.Group() # -> Lugares de plantación
 
         self.setup_map()
 
@@ -229,25 +231,33 @@ class Game:
 
         # ? Objectos
         for obj in map.objects:
+            # Creamos árboles
             if obj.name == "Tree":
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
+            # Creamos ramas
             elif obj.name == "Branch":
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     DamageSprite((self.all_sprites, self.damage_sprites), (obj.x, obj.y), image)
+            # Creamos lugares de cultivo
+            elif obj.name == "Plant Position":
+                PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
 
         self.map_width = map.width * TILE
         self.map_height = map.height * TILE
 
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites)
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites, self.plant_spots)
 
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
+
+        # Item de los brotes de árbol en pantalla
+        self.item = TreeSprout(os.path.join(working_directory, "assets", "images", "items", "brote.png"))
 
     # ? Checar eventos del menú
     def check_events(self, events):

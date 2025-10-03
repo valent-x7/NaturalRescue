@@ -14,7 +14,7 @@ class Spritesheet:
         return sprite
     
 class Monkey(pygame.sprite.Sprite):
-    def __init__(self, spritesheet, x, y, groups, collision_sprites, damage_sprites):
+    def __init__(self, spritesheet, x, y, groups, collision_sprites, damage_sprites, plant_spots):
         super().__init__(groups)
         self.spritesheet = spritesheet
         self.width = TILE
@@ -50,6 +50,9 @@ class Monkey(pygame.sprite.Sprite):
 
         self.collision_sprites = collision_sprites
         self.damage_sprites = damage_sprites
+        self.plant_spots = plant_spots
+
+        self.all_solid_sprites = list(self.collision_sprites) + list(self.damage_sprites) + list(self.plant_spots)
 
         # ? Sonido de daño
         working_directory = os.getcwd()
@@ -60,14 +63,12 @@ class Monkey(pygame.sprite.Sprite):
 
         self.moving = False # -> Por defecto el mono no se mueve
 
-
     def plant(self):
         if self.seeds > 0:
-            print("Arbol plantado, te quedan", self.seeds)
             self.seeds -= 1
+            print("Arbol plantado, te quedan", self.seeds)
         else:
             print("No tienes mas semillas")
-
 
     def update(self, delta_time, events): 
         self.moving = False
@@ -142,32 +143,34 @@ class Monkey(pygame.sprite.Sprite):
 
     # ? Función para ver colisiones
     def collision(self, direction):
-        for sprite in self.collision_sprites:
 
-            # ? Colision rectangular
+        for sprite in self.all_solid_sprites:
+            # ? Checamos si hay colisión
             if sprite.rect.colliderect(self.hitbox_rect):
-                # ? Si es colision horizontal
-                if direction == "horizontal":
-                    if self.vec.x > 0: self.hitbox_rect.right = sprite.rect.left
-                    if self.vec.x < 0: self.hitbox_rect.left = sprite.rect.right
-                # ? Si es colision vertical
-                else:
-                    if self.vec.y > 0: self.hitbox_rect.bottom = sprite.rect.top
-                    if self.vec.y < 0: self.hitbox_rect.top = sprite.rect.bottom
 
-        for sprite in self.damage_sprites:
-            if sprite.rect.colliderect(self.hitbox_rect):
-                # ? Si es colision horizontal
+                # Tipo de sprite
+                is_SpriteDamage = getattr(sprite, "sprite_type", None) == "Damage"
+
+                # Push si es de daño
+                push_offset = 5 if is_SpriteDamage else 0
+
+                # ? Colisión horizontal
                 if direction == "horizontal":
-                    if self.vec.x > 0:self.hitbox_rect.right = sprite.rect.left - 5
-                    if self.vec.x < 0: self.hitbox_rect.left = sprite.rect.right + 5
-                # ? Si es colision vertical
+                    if self.vec.x > 0:
+                        self.hitbox_rect.right = sprite.rect.left - push_offset
+                    if self.vec.x < 0:
+                        self.hitbox_rect.left = sprite.rect.right + push_offset
+                # ? Colisión vertical
                 else:
-                    if self.vec.y > 0: self.hitbox_rect.bottom = sprite.rect.top - 5
-                    if self.vec.y < 0: self.hitbox_rect.top = sprite.rect.bottom + 5
-                # Le bajamos vida al monito y activamos sonido
-                self.hit_sound.play()
-                self.health -= 10
+                    if self.vec.y > 0:
+                        self.hitbox_rect.bottom = sprite.rect.top - push_offset
+                    if self.vec.y < 0:
+                        self.hitbox_rect.top = sprite.rect.bottom + push_offset
+                
+                # Si es de daño bajamos vida y activamos sonido
+                if is_SpriteDamage:
+                    self.hit_sound.play()
+                    self.health -= 10
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -181,15 +184,51 @@ class CollisionSprite(pygame.sprite.Sprite):
     def __init__(self, groups, name, position, image):
         super().__init__(groups)
         self.name = name
+        self.sprite_type = "Collision"
         self.mask = None
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
+# ? Sprites de daño
 class DamageSprite(pygame.sprite.Sprite):
     def __init__(self, groups, position, image):
         super().__init__(groups)
+        self.sprite_type = "Damage"
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
+
+# ? Sprites de lugar de cultivo
+class PlantSpot(pygame.sprite.Sprite):
+    def __init__(self, groups, x, y):
+        super().__init__(groups)
+
+        self.sprite_type = "Collision"
+
+        # Working Directory
+        working_directory = os.getcwd()
+
+        # Sonido al plantar
+        self.shine_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "shine.mp3"))
+
+        self.is_used = False
+        self.death_spot_path = os.path.join(working_directory, "assets", "images", "DeadSpot.png")
+        self.spot_path = os.path.join(working_directory, "assets", "images", "brote.png")
+        self.image = pygame.image.load(self.death_spot_path).convert_alpha()
+        self.rect = self.image.get_frect(topleft = (x - (TILE / 2), y - (TILE / 2)))
+
+    # Checar si el rect colisiona con el jugador
+    def check_collision(self, player):
+        if player.rect.colliderect(self.rect):
+            return True
+
+    # Actualizar la imagen y plantar árbol
+    def update(self, player):
+        keystate = pygame.key.get_pressed()
+        if self.check_collision(player) and keystate[pygame.K_h] and not self.is_used:
+            self.is_used = True
+            self.shine_sound.play()
+            player.plant() # Plantamos
+            self.image = pygame.image.load(self.spot_path).convert_alpha() # Cambiamos imagen
 
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
@@ -202,6 +241,13 @@ class AllSprites(pygame.sprite.Group):
         self.half_h = self.display_surface.get_height() // 2
 
         self.zoom = 2
+
+    def update(self, delta_time, events, player = None):
+        for sprite in self.sprites():
+            if isinstance(sprite, PlantSpot):
+                sprite.update(player)
+            else:
+                sprite.update(delta_time, events)
 
     # ? Metodo para centrar la camara en el jugador
     def center_on_target(self, target, map_width, map_height):

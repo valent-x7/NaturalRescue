@@ -4,7 +4,7 @@ from ui.healthbar import HealthBar
 from ui.utils import draw_text, get_text
 from sprites import Monkey
 
-def draw_game(screen, events, translations, healthbar : HealthBar, game_instance=None, delta_time = 0):
+def draw_game(screen, events, translations, game_instance=None, delta_time = 0):
     
     screen.fill("black")
 
@@ -12,12 +12,13 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
         # ? Jugador
         player = game_instance.player
         # ? Barra de vida
-        healthbar.hp = player.health
+        healthbar = game_instance.player_healthbar
+        healthbar.hp = player.health # Definimos vida en base a la del jugador
 
         if not game_instance.paused:
             # ? Actualizamos los sprites si no esta en pausa
             player.input(events)
-            game_instance.all_sprites.update(delta_time, events)
+            game_instance.all_sprites.update(delta_time, events, player)
 
         # Dibujamos juego
         # ? Centramos en el jugador
@@ -28,6 +29,9 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
 
         # ? Dibujamos barra de vida
         healthbar.draw(screen)
+
+        # ? Dibujamos item
+        game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds)
 
         # Texto de pausa
         if game_instance.paused:
@@ -42,8 +46,5 @@ def draw_game(screen, events, translations, healthbar : HealthBar, game_instance
                 return "LEVEL_SELECT" 
             if event.key == pygame.K_p:
                 game_instance.paused = not game_instance.paused
-
-            if event.key == pygame.K_h:
-                player.plant()
             
     return "PLAYING"
