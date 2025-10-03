@@ -13,6 +13,7 @@ import settings as main_settings
 import os
 import json
 from pytmx import load_pygame
+from scenes.gameover import draw_gameover
 
 # Cargamos traducciones
 translations = load_language("languajes.json")
@@ -250,6 +251,9 @@ class Game:
             # Salir del juego
             elif self.state == "SALIR":
                 self.running = False
+
+            elif self.state == "GAMEOVER":
+                self.state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
 
             # Checar eventos del menú
             self.check_events(events)

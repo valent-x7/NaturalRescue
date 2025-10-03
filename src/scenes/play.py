@@ -33,6 +33,9 @@ def draw_game(screen, events, translations, TimeBar : TimeBar, healthbar : Healt
         healthbar.draw(screen)
         TimeBar.draw(screen)
 
+        if healthbar.hp <= 0 or TimeBar.t <= 0:
+            return "GAMEOVER"
+
         # Texto de pausa
         if game_instance.paused:
             draw_text(screen, TITLE_FONT_PATH, 64, get_text(translations, game_instance.current_lang, "paused-title"), "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
