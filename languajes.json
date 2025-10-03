@@ -15,7 +15,9 @@
         "paused-title": "Game Paused",
         "paused-description": "Press P to play",
 
-        "tree-sprout": "Tree Sprout"
+        "tree-sprout": "Tree Sprout",
+
+        "gameover-instructions": "Press M to return to menu"
     },
     "es": {
         "play": "Jugar",
@@ -33,6 +35,8 @@
         "paused-title": "Juego Pausado",
         "paused-description": "Presiona P para jugar",
 
-        "tree-sprout": "Brote de Árbol"
+        "tree-sprout": "Brote de Árbol",
+        
+        "gameover-instructions": "Presiona M para volver al menú"
     }
 }

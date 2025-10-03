@@ -22,6 +22,7 @@ def draw_game(screen, events, translations, TimeBar: TimeBar, healthbar : Health
             # ? Actualizamos los sprites si no esta en pausa
             player.input(events)
             game_instance.all_sprites.update(delta_time, events, player)
+            TimeBar.update()
 
         # Dibujamos juego
         # ? Centramos en el jugador

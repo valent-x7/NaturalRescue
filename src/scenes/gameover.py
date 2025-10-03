@@ -7,7 +7,7 @@ def draw_gameover(screen, events, translations, current_lang):
 
     draw_text(screen, TITLE_FONT_PATH, 80, "GAME OVER", "white", WINDOW_WIDTH/2+80, WINDOW_HEIGHT/3)
 
-    draw_text(screen, TITLE_FONT_PATH, 36, get_text(translations, current_lang, "press-m-to-menu"), "white", WINDOW_WIDTH/2+80, WINDOW_HEIGHT/2)
+    draw_text(screen, TITLE_FONT_PATH, 36, get_text(translations, current_lang, "gameover-instructions"), "white", WINDOW_WIDTH/2+80, WINDOW_HEIGHT/2)
 
     for event in events:
         if event.type == pygame.KEYDOWN:

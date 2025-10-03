@@ -335,5 +335,3 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
                         sys.exit()
-        
-        self.player_TimeBar.update()
