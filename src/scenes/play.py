@@ -54,5 +54,9 @@ def draw_game(screen, events, translations, TimeBar: TimeBar, healthbar : Health
                 return "LEVEL_SELECT" 
             if event.key == pygame.K_p:
                 game_instance.paused = not game_instance.paused
+        # ? Crear bellota
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            player.shoot((game_instance.all_sprites), player, event.pos,
+                         game_instance.all_sprites.camera_offset, game_instance.all_sprites.zoom)
             
     return "PLAYING"
