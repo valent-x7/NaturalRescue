@@ -156,10 +156,10 @@ class Game:
 
         self.english_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 400), 
                                     self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-english"), 4,
-                                    os.path.join(working_directory, "assets", 'images', "ajustes", "usFlag.png"), 10, "#4D96FF", "#6DAFFF")
+                                    os.path.join(working_directory, "assets", 'images', "ajustes", "ukFlag.png"), 10, "#4D96FF", "#6DAFFF")
         self.spanish_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 520), 
                                     self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-spanish"), 4,
-                                    os.path.join(working_directory, "assets", 'images', "ajustes", "mxFlag.png"), 10, "#38B000", "#70E000")
+                                    os.path.join(working_directory, "assets", 'images', "ajustes", "spainFlag.png"), 10, "#38B000", "#70E000")
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
