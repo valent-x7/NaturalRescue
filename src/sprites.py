@@ -335,6 +335,12 @@ class Acorn(pygame.sprite.Sprite):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (16, 16)).convert_alpha()
 
+        # ? Audio de la bellota
+        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
+        self.throw_sound.set_volume(0.4)
+        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "impact.ogg"))
+        self.impact_sound.set_volume(0.8)
+
         # Rectangulo
         self.rect = self.image.get_frect(center = pos)
 
@@ -348,6 +354,9 @@ class Acorn(pygame.sprite.Sprite):
         self.time_to_live = 1000
         self.collision_sprites = collision_sprites
 
+        # ? Sonido de throw
+        self.throw_sound.play()
+
     def update(self, dt, events = None):
         # Descontamos tiempo de vida
         self.time_to_live -= (dt * 1000)
@@ -355,6 +364,7 @@ class Acorn(pygame.sprite.Sprite):
         # Eliminamos sprite si su tiempo de vida pasó o colisiona
         if self.time_to_live <= 0 or self.check_collisions():
             self.kill()
+            self.impact_sound.play()
             print("Bellota eliminada!!!")
         else:
             # Movemos sprite
