@@ -163,13 +163,15 @@ class Game:
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
-        # Cargamos las imágenes de las teclas normales
         self.tutorial_assets = {
         "keys": {
             "W": pygame.image.load("assets/images/keys/key_w.png").convert_alpha(),
             "A": pygame.image.load("assets/images/keys/key_a.png").convert_alpha(),
             "S": pygame.image.load("assets/images/keys/key_s.png").convert_alpha(),
-            "D": pygame.image.load("assets/images/keys/key_d.png").convert_alpha()
+            "D": pygame.image.load("assets/images/keys/key_d.png").convert_alpha(),
+            "H": pygame.image.load("assets/images/keys/key_h.png").convert_alpha(),  
+            "R": pygame.image.load("assets/images/keys/key_r.png").convert_alpha(), 
+            "P": pygame.image.load("assets/images/keys/key_p.png").convert_alpha()   
         },
         "monkey": {
             "W": pygame.image.load("assets/images/chango/chango_up.png").convert_alpha(),
@@ -178,30 +180,37 @@ class Game:
             "D": pygame.image.load("assets/images/chango/chango_right.png").convert_alpha()
         },
         "extras": {
-            "H_brote": pygame.image.load("assets/images/items/brote.png").convert_alpha(),  # Imagen al lado de H
-            "R_restart": pygame.image.load("assets/images/keys/restart.png").convert_alpha(),  # Imagen al lado de R
+            "H_brote": pygame.image.load("assets/images/items/brote.png").convert_alpha(),
+            "R_restart": pygame.image.load("assets/images/keys/restart.png").convert_alpha(),
             "P_pause": self.combine_pause_images(
                 "assets/images/keys/pause1.png",
                 "assets/images/keys/pause2.png"
-            )  # Imagen al lado de P (dos imágenes combinadas)
+            )
         }
     }
 
     # Función para combinar dos imágenes de pausa en un solo Surface
     def combine_pause_images(self, path1, path2):
-       img1 = pygame.image.load(path1).convert_alpha()
-       img2 = pygame.image.load(path2).convert_alpha()
-    
-       # Creamos un surface con el ancho de ambas imágenes y altura máxima
-       width = img1.get_width() + img2.get_width() + 10  # +10 px de espacio entre ellas
-       height = max(img1.get_height(), img2.get_height())
-       combined = pygame.Surface((width, height), pygame.SRCALPHA)
-    
-       # Pegamos las imágenes
-       combined.blit(img1, (0, 0))
-       combined.blit(img2, (img1.get_width() + 10, 0))
-    
-       return combined
+     img1 = pygame.image.load(path1).convert_alpha()
+     img2 = pygame.image.load(path2).convert_alpha()
+
+    # Recortamos el rect que ocupa realmente la imagen (quita transparencia)
+     rect1 = img1.get_bounding_rect()
+     rect2 = img2.get_bounding_rect()
+     img1 = img1.subsurface(rect1)
+     img2 = img2.subsurface(rect2)
+
+    # Creamos surface con ancho sumado (sin espacio extra)
+     width = img1.get_width() + img2.get_width() + 2
+     height = max(img1.get_height(), img2.get_height())
+     combined = pygame.Surface((width, height), pygame.SRCALPHA)
+
+    # Dibujamos pegadas
+     combined.blit(img1, (0, 0))
+     combined.blit(img2, (img1.get_width() + 2, 0))
+
+     return combined
+
 
 
 
