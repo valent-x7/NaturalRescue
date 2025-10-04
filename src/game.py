@@ -346,6 +346,7 @@ class Game:
         # Grupos de sprites
         self.all_sprites = AllSprites() # -> Todos los sprites
         self.collision_sprites = pygame.sprite.Group() # -> Sprites limitadores o de colisión
+        self.water_collision_sprites = pygame.sprite.Group() # -> Sprites de colisión de agua
         self.damage_sprites = pygame.sprite.Group() # -> Sprites que hacen daño
         self.plant_spots = pygame.sprite.Group() # -> Lugares de plantación
 
@@ -359,12 +360,14 @@ class Game:
         map = load_pygame(os.path.join(working_directory, "assets", "maps", "tmx", "bosque.tmx"))
         
         # ? Layers o capas
-        for layer_name in ["Ground", "Decoration", "Collision"]:
+        for layer_name in ["Ground", "Decoration", "WaterCollision", "Collision"]:
             layer = map.get_layer_by_name(layer_name)
 
             for x, y, image in layer.tiles():
                 if layer.name == "Ground" or layer.name == "Decoration":
                     Sprite(self.all_sprites, (x * TILE, y * TILE), image)
+                elif layer.name == "WaterCollision":
+                    WaterCollisionSprite((self.all_sprites, self.water_collision_sprites), "Limit", (x * TILE, y * TILE), image)
                 else:
                     CollisionSprite((self.all_sprites, self.collision_sprites), "Limit", (x * TILE, y * TILE), image)
 
@@ -391,7 +394,7 @@ class Game:
 
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites, self.plant_spots)
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.water_collision_sprites, self.damage_sprites, self.plant_spots)
 
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
         self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)

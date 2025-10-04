@@ -14,7 +14,7 @@ class Spritesheet:
         return sprite
     
 class Monkey(pygame.sprite.Sprite):
-    def __init__(self, spritesheet, x, y, groups, collision_sprites, damage_sprites, plant_spots):
+    def __init__(self, spritesheet, x, y, groups, collision_sprites, water_collision_sprites, damage_sprites, plant_spots):
         super().__init__(groups)
         self.spritesheet = spritesheet
         self.width = TILE
@@ -49,18 +49,25 @@ class Monkey(pygame.sprite.Sprite):
         self.animation_speed = 0.1
 
         # Cooldown de disparo
-        self.cooldown_shot = 500
+        self.cooldown_shot = 300
         self.last_shot = 0
 
+        # Cooldown de riego
+        self.can_water = True
+        self.water_cooldown = 500
+        self.last_water_time = 0
+
         self.collision_sprites = collision_sprites
+        self.water_collision_sprites = water_collision_sprites
         self.damage_sprites = damage_sprites
         self.plant_spots = plant_spots
 
-        self.all_solid_sprites = list(self.collision_sprites) + list(self.damage_sprites) + list(self.plant_spots)
+        self.all_solid_sprites = list(self.collision_sprites) + list(self.water_collision_sprites) + list(self.damage_sprites) + list(self.plant_spots)
 
-        # ? Sonido de daño
+        # ? Sonidos
         working_directory = os.getcwd()
-        self.hit_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "hit.mp3"))
+        self.hit_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "hit.mp3")) # Sonido de daño
+        self.refill_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "refill.mp3")) # Refill
 
         self.vec = pygame.Vector2()
         self.last_axis = None
@@ -72,6 +79,10 @@ class Monkey(pygame.sprite.Sprite):
         self.invincibily_duration = 2000 # -> # 2 segundos
         self.hit_time = 0
 
+        # ? Recursos de agua del jugador
+        self.water_amount = 0
+        self.max_player_water = 50
+
     def plant(self):
         if self.seeds > 0:
             self.seeds -= 1
@@ -79,13 +90,36 @@ class Monkey(pygame.sprite.Sprite):
         else:
             print("No tienes mas semillas")
 
-    def update(self, delta_time, events): 
+    def update(self, delta_time, events):
+        current_time = pygame.time.get_ticks()
+
         self.moving = False
 
-        self.update_invincibility()
+        self.update_invincibility(current_time)
         self.input(events)
+        self.check_water_interaction(current_time)
         self.move(delta_time)
         self.animate(self.moving)
+
+    # ? Checar interacción con el agua
+    def check_water_interaction(self, current_time):
+        keystate = pygame.key.get_pressed()
+
+        # Si el jugador colisiona con el agua!
+        is_colliding = pygame.sprite.spritecollideany(self, self.water_collision_sprites)
+
+        # Si colisiona, presiona h y puede interactuar con agua
+        if is_colliding and keystate[pygame.K_h] and self.can_water:
+
+            # ? Aplicamos cooldown para que no presione h infinitamente
+            self.can_water = False
+            self.last_water_time = current_time
+
+            # ? Llenar agua
+            if self.water_amount < self.max_player_water:
+                self.refill_sound.play() # Tocamos sonido de refill
+                self.water_amount += 25
+                print(self.water_amount)
 
     # Disparar bellotas
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
@@ -160,10 +194,8 @@ class Monkey(pygame.sprite.Sprite):
                 self.image = self.left_animation[1]
 
     # Checar si estamos inmunes
-    def update_invincibility(self):
+    def update_invincibility(self, current_time):
         if self.invincible:
-            current_time = pygame.time.get_ticks()
-
             if current_time - self.hit_time >= self.invincibily_duration:
                 self.invincible = False
 
@@ -213,6 +245,16 @@ class Sprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
+# ? Clase Sprite de Collisión de Agua   
+class WaterCollisionSprite(pygame.sprite.Sprite):
+    def __init__(self, groups, name, position, image):
+        super().__init__(groups)
+        self.name = name
+        self.sprite_type = "Water Collision"
+        self.mask = None
+        self.image = image
+        self.rect = self.image.get_frect(topleft = position)
+
 # ? Clase Sprite de Collisión     
 class CollisionSprite(pygame.sprite.Sprite):
     def __init__(self, groups, name, position, image):
@@ -241,28 +283,103 @@ class PlantSpot(pygame.sprite.Sprite):
         # Working Directory
         working_directory = os.getcwd()
 
-        # Sonido al plantar
-        self.shine_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "shine.mp3"))
+        # Imagenes de estado
+        self.image_states = {
+            "full": os.path.join(working_directory, "assets", "images", "brote_full.png"),
+            "high": os.path.join(working_directory, "assets", "images", "brote_high.png"),
+            "mid": os.path.join(working_directory, "assets", "images", "brote_mid.png"),
+            "low": os.path.join(working_directory, "assets", "images", "brote_low.png"),
+            "dead": os.path.join(working_directory, "assets", "images", "DeadSpot.png"),
+        }
 
-        self.is_used = False
-        self.death_spot_path = os.path.join(working_directory, "assets", "images", "DeadSpot.png")
-        self.spot_path = os.path.join(working_directory, "assets", "images", "brote.png")
-        self.image = pygame.image.load(self.death_spot_path).convert_alpha()
+        # ? Cargar imagenes de estado
+        self.loaded_images = {
+            key: pygame.image.load(path).convert_alpha()
+            for key, path in self.image_states.items()
+        }
+
+        # ? Sonidos
+        self.shine_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "shine.mp3")) # Plantar
+        self.error_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "error.mp3")) # Erorr al plantar
+        self.upgrade_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "upgrade.mp3")) # Mejora de planta
+
+        # Atributos
+        self.is_used = False # -> El spot esta usado ?
+        self.max_water = 100
+        self.current_water = 0
+
+        # ? Imagen inicial
+        self.image = self.loaded_images["dead"]
+        
         self.rect = self.image.get_frect(topleft = (x - (TILE / 2), y - (TILE / 2)))
 
     # Checar si el rect colisiona con el jugador
     def check_collision(self, player):
         if player.rect.colliderect(self.rect):
             return True
+        
+    # Devolver la imagen en base al porcentaje de agua
+    def get_image_by_water(self):
+        if self.max_water <= 0:
+            return self.image_states["dead"]
+        
+        percent = (self.current_water / self.max_water) * 100
+
+        if percent > 75:
+            key = "full" # -> Devuelve brote.full
+        elif percent > 50:
+            key = "high" # -> Devuelve brote.high
+        elif percent > 25:
+            key = "mid" # -> Devuelve brote.mid
+        elif percent > 0:
+            key = "low" # -> Devuelve brote.low
+        else:
+            key = "dead"
+
+        return self.loaded_images[key] # Devuelve la imagen ya cargada con convert_alpha
 
     # Actualizar la imagen y plantar árbol
-    def update(self, player):
+    def update(self, player, dt):
         keystate = pygame.key.get_pressed()
-        if self.check_collision(player) and keystate[pygame.K_h] and not self.is_used:
-            self.is_used = True
-            self.shine_sound.play()
-            player.plant() # Plantamos
-            self.image = pygame.image.load(self.spot_path).convert_alpha() # Cambiamos imagen
+        current_time = pygame.time.get_ticks()
+
+        # ? Cooldown de riego de player
+        if not player.can_water and current_time - player.last_water_time >= player.water_cooldown:
+            player.can_water = True # El jugador ahora puede plantar
+
+        if self.check_collision(player) and keystate[pygame.K_h] and player.can_water:
+
+            # Si la cantidad de agua es mayor a 0
+            if player.water_amount > 0:
+            
+                # Cooldown de riego
+                player.can_water = False
+                player.last_water_time = current_time # Guardamos el tiempo actual
+
+                player.water_amount -= 25 # Restamos agua del player
+
+                # ----------------------------
+                #   Logica de plantar o regar
+                # ----------------------------
+                if not self.is_used:
+                    self.is_used = True
+                    self.shine_sound.play() # Sonido
+                    player.plant() # Plantamos
+                    self.current_water = 25
+
+                # ? Riego de planta
+                else:
+                    self.upgrade_sound.play()
+                    self.current_water += 25
+                    self.current_water = min(self.current_water, self.max_water) # Que no exceda el máximo
+
+                # ? Cambiamos imagen si o si
+                self.image = self.get_image_by_water()
+            
+            # Sonido de error al plantar
+            else:
+                self.error_sound.play()
+
 
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
@@ -279,7 +396,7 @@ class AllSprites(pygame.sprite.Group):
     def update(self, delta_time, events, player = None):
         for sprite in self.sprites():
             if isinstance(sprite, PlantSpot):
-                sprite.update(player)
+                sprite.update(player, delta_time)
             else:
                 sprite.update(delta_time, events)
 
@@ -335,6 +452,12 @@ class Acorn(pygame.sprite.Sprite):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (16, 16)).convert_alpha()
 
+        # ? Audio de la bellota
+        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
+        self.throw_sound.set_volume(0.4)
+        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "impact.ogg"))
+        self.impact_sound.set_volume(0.8)
+
         # Rectangulo
         self.rect = self.image.get_frect(center = pos)
 
@@ -348,6 +471,9 @@ class Acorn(pygame.sprite.Sprite):
         self.time_to_live = 1000
         self.collision_sprites = collision_sprites
 
+        # ? Sonido de throw
+        self.throw_sound.play()
+
     def update(self, dt, events = None):
         # Descontamos tiempo de vida
         self.time_to_live -= (dt * 1000)
@@ -355,6 +481,7 @@ class Acorn(pygame.sprite.Sprite):
         # Eliminamos sprite si su tiempo de vida pasó o colisiona
         if self.time_to_live <= 0 or self.check_collisions():
             self.kill()
+            self.impact_sound.play()
             print("Bellota eliminada!!!")
         else:
             # Movemos sprite
