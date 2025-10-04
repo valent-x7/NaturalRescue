@@ -2,6 +2,7 @@ import sys
 import os 
 from ui.button import Button
 import pygame 
+from ui.utils import get_text
 
 sys.path.append(os.path.abspath(".."))
 import settings as main_settings
@@ -44,7 +45,7 @@ class Button:
 
 
 # ? Dibujamos la pantalla de selección de niveles
-def draw_level_select(screen, events):
+def draw_level_select(screen, events, translations, current_lang):
 
     bg = pygame.image.load("./img/bg.png")
     bg = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
@@ -54,7 +55,7 @@ def draw_level_select(screen, events):
     fuente_pixel = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 40)
 
     # ? Título de la pantalla
-    title_text = fuente_pixel.render("Selecciona un Nivel", True, (255, 255, 255))
+    title_text = fuente_pixel.render(get_text(translations, current_lang, "level-select-title"), True, (255, 255, 255))
     text_rect = title_text.get_rect(center=(main_settings.WINDOW_WIDTH / 2, 100))
     screen.blit(title_text, text_rect)
 
@@ -69,9 +70,9 @@ def draw_level_select(screen, events):
     center_y = 380
 
     # ? Botones para los niveles
-    level1_btn = Button(screen, start_x, center_y, button_width, button_height, "Nivel 1", fuente_pixel, '#3b82f6',  '#1d4ed8')
-    level2_btn = Button(screen, start_x + button_width + spacing, center_y, button_width, button_height, "Nivel 2", fuente_pixel, '#ef4444', '#dc2626')
-    level3_btn = Button(screen, start_x + 2*(button_width + spacing), center_y, button_width, button_height, "Nivel 3", fuente_pixel, '#22c55e','#16a34a')
+    level1_btn = Button(screen, start_x, center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-1"), fuente_pixel, '#3b82f6',  '#1d4ed8')
+    level2_btn = Button(screen, start_x + button_width + spacing, center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-2"), fuente_pixel, '#ef4444', '#dc2626')
+    level3_btn = Button(screen, start_x + 2*(button_width + spacing), center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-3"), fuente_pixel, '#22c55e','#16a34a')
 
     # ? Dibujamos los botones en la pantalla
     level1_btn.draw()
