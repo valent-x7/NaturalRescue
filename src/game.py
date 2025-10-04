@@ -6,11 +6,15 @@ from scenes.play import draw_game
 from sprites import *
 from ui.button import Button
 from ui.utils import *
+from ui.healthbar import HealthBar
+from ui.timebar import TimeBar
+from ui.item import TreeSprout
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
 import json
 from pytmx import load_pygame
+from scenes.gameover import draw_gameover
 
 # Cargamos traducciones
 translations = load_language("languajes.json")
@@ -18,11 +22,26 @@ translations = load_language("languajes.json")
 class Game:
     
     # Música
-    try: 
-        pygame.mixer.music.load("assets/music.mp3")
-        pygame.mixer.music.play(loops = 0, start=0, fade_ms=5000)
-    except Exception as e:
-        print("Error al reproducir la música", e)
+    def play_music(self, filepath, loop=-1, fade_ms=500):
+        try:
+            # Si hay música sonando, hacemos fadeout
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.fadeout(fade_ms)
+            # Cargamos y reproducimos la nueva música
+            pygame.mixer.music.load(filepath)
+            pygame.mixer.music.play(loop)
+        except Exception as e:
+            print("Error al reproducir la música:", e)
+
+    def play_music_once(self, path, key):
+        if getattr(self, "current_music", None) != key:
+            pygame.mixer.music.stop()
+            try:
+                pygame.mixer.music.load(path)
+                pygame.mixer.music.play(loops=0)  # solo una vez
+                self.current_music = key
+            except Exception as e:
+                print("Error al reproducir música:", e)
 
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state = "MENU"):
@@ -38,6 +57,9 @@ class Game:
 
         # Config del lenguaje del juego
         self.current_lang = load_config("config.json")
+
+        # Estado de pausa
+        self.paused = False
 
         # Creamos instancias del menú
         self.setup_menu()
@@ -139,6 +161,59 @@ class Game:
                                     self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-spanish"), 4,
                                     os.path.join(working_directory, "assets", 'images', "ajustes", "mxFlag.png"), 10, "#38B000", "#70E000")
 
+    # ? Este metodo creará las instancias de tutorial
+    def setup_tutorial(self):
+        self.tutorial_assets = {
+        "keys": {
+            "W": pygame.image.load("assets/images/keys/key_w.png").convert_alpha(),
+            "A": pygame.image.load("assets/images/keys/key_a.png").convert_alpha(),
+            "S": pygame.image.load("assets/images/keys/key_s.png").convert_alpha(),
+            "D": pygame.image.load("assets/images/keys/key_d.png").convert_alpha(),
+            "H": pygame.image.load("assets/images/keys/key_h.png").convert_alpha(),  
+            "R": pygame.image.load("assets/images/keys/key_r.png").convert_alpha(), 
+            "P": pygame.image.load("assets/images/keys/key_p.png").convert_alpha()   
+        },
+        "monkey": {
+            "W": pygame.image.load("assets/images/chango/chango_up.png").convert_alpha(),
+            "A": pygame.image.load("assets/images/chango/chango_left.png").convert_alpha(),
+            "S": pygame.image.load("assets/images/chango/chango_down.png").convert_alpha(),
+            "D": pygame.image.load("assets/images/chango/chango_right.png").convert_alpha()
+        },
+        "extras": {
+            "H_brote": pygame.image.load("assets/images/items/brote.png").convert_alpha(),
+            "R_restart": pygame.image.load("assets/images/keys/restart.png").convert_alpha(),
+            "P_pause": self.combine_pause_images(
+                "assets/images/keys/pause1.png",
+                "assets/images/keys/pause2.png"
+            )
+        }
+    }
+
+    # Función para combinar dos imágenes de pausa en un solo Surface
+    def combine_pause_images(self, path1, path2):
+     img1 = pygame.image.load(path1).convert_alpha()
+     img2 = pygame.image.load(path2).convert_alpha()
+
+    # Recortamos el rect que ocupa realmente la imagen (quita transparencia)
+     rect1 = img1.get_bounding_rect()
+     rect2 = img2.get_bounding_rect()
+     img1 = img1.subsurface(rect1)
+     img2 = img2.subsurface(rect2)
+
+    # Creamos surface con ancho sumado (sin espacio extra)
+     width = img1.get_width() + img2.get_width() + 2
+     height = max(img1.get_height(), img2.get_height())
+     combined = pygame.Surface((width, height), pygame.SRCALPHA)
+
+    # Dibujamos pegadas
+     combined.blit(img1, (0, 0))
+     combined.blit(img2, (img1.get_width() + 2, 0))
+
+     return combined
+
+
+
+
     def run(self):
 
         while self.running:
@@ -146,7 +221,56 @@ class Game:
             # ? Usamos delta Time
             dt = self.clock.tick(60) / 1000 # Segundos por Frame
 
-            # ? Obtener Eventos
+            # -------------------
+            # Reproducir música según el estado
+            # -------------------
+            if self.state == 'MENU':
+                if getattr(self, "entered_gameover", False):
+                    self.entered_gameover = False
+                if getattr(self, 'current_music', None) != "menu":
+                    self.play_music("assets/music/menu.ogg")
+                    self.current_music = "menu"
+
+            elif self.state == "LEVEL_SELECT":
+                if getattr(self, "entered_gameover", False):
+                    self.entered_gameover = False
+                if getattr(self, 'current_music', None) != "level_select":
+                    self.play_music("assets/music/levelselect.ogg")
+                    self.current_music = "level_select"
+
+            elif self.state == "TUTORIAL":
+                if getattr(self, 'current_music', None) != "tutorial":
+                    self.play_music("assets/music/tutorial.ogg")
+                    self.current_music = "tutorial"
+                    self.setup_tutorial()
+
+            elif self.state == "SETTINGS":
+                if getattr(self, 'current_music', None) != "settings":
+                    self.play_music("assets/music/settings.ogg")
+                    self.current_music = "settings"
+                    self.setup_settings()
+
+            elif self.state == "PLAYING" or self.state == "LEVEL_1":
+                if getattr(self, 'current_music', None) != "level1":
+                    self.play_music("assets/music/level1.ogg")
+                    self.current_music = "level1"
+                if not hasattr(self, 'all_sprites'):
+                    self.new()
+
+            elif self.state == "GAMEOVER":
+                # reproducir música de Game Over solo una vez al entrar
+                if not getattr(self, "entered_gameover", False):
+                    pygame.mixer.music.stop()
+                    try:
+                        pygame.mixer.music.load("assets/sound/gameover.ogg")
+                        pygame.mixer.music.play(loops=0)  # una sola vez
+                    except Exception as e:
+                        print("Error al reproducir música Game Over:", e)
+                    self.entered_gameover = True
+
+            # -------------------
+            # Obtener Eventos
+            # -------------------
             events = pygame.event.get()
 
             if self.state == 'MENU':
@@ -161,7 +285,7 @@ class Game:
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
                     self.new()
-                self.state = draw_game(self.SCREEN, events, self, dt)
+                self.state = draw_game(self.SCREEN, events, translations, self.player_TimeBar, self.player_healthbar, self, dt)
 
             # Nivel 1
             elif self.state == "LEVEL_1":
@@ -177,7 +301,8 @@ class Game:
 
             # Tutorial del juego
             elif self.state == "TUTORIAL":
-                self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang)
+                self.setup_tutorial()
+                self.state = draw_tutorial(self.SCREEN, events, translations, self.current_lang, self.tutorial_assets)
 
             # Ajustes
             elif self.state == "SETTINGS":
@@ -188,6 +313,25 @@ class Game:
             # Salir del juego
             elif self.state == "SALIR":
                 self.running = False
+
+            elif self.state == "GAMEOVER":
+               new_state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
+
+               # Solo revisamos new_state dentro del mismo bloque
+               if new_state == "MENU":
+                   self.state = "MENU"
+                   self.entered_gameover = False
+
+               elif new_state == "RESTART_LEVEL":
+                self.state = "PLAYING"
+                self.entered_gameover = False
+
+                if hasattr(self, 'all_sprites'):
+                   del self.all_sprites  # Fuerza a recrear el nivel
+
+                # Forzar que la música del nivel 1 vuelva a sonar
+                self.play_music("assets/music/level1.ogg")
+                self.current_music = "level1"
 
             # Checar eventos del menú
             self.check_events(events)
@@ -200,8 +344,10 @@ class Game:
         self.playing = True
 
         # Grupos de sprites
-        self.all_sprites = AllSprites()
-        self.collision_sprites = pygame.sprite.Group()
+        self.all_sprites = AllSprites() # -> Todos los sprites
+        self.collision_sprites = pygame.sprite.Group() # -> Sprites limitadores o de colisión
+        self.damage_sprites = pygame.sprite.Group() # -> Sprites que hacen daño
+        self.plant_spots = pygame.sprite.Group() # -> Lugares de plantación
 
         self.setup_map()
 
@@ -213,7 +359,7 @@ class Game:
         map = load_pygame(os.path.join(working_directory, "assets", "maps", "tmx", "bosque.tmx"))
         
         # ? Layers o capas
-        for layer_name in ["Ground", "Decoration", "Collision", "Damage"]:
+        for layer_name in ["Ground", "Decoration", "Collision"]:
             layer = map.get_layer_by_name(layer_name)
 
             for x, y, image in layer.tiles():
@@ -224,15 +370,34 @@ class Game:
 
         # ? Objectos
         for obj in map.objects:
+            # Creamos árboles
             if obj.name == "Tree":
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
+            # Creamos ramas
+            elif obj.name == "Branch":
+                if hasattr(obj, "gid") and obj.gid:
+                    image = map.get_tile_image_by_gid(obj.gid)
+
+                    DamageSprite((self.all_sprites, self.damage_sprites), (obj.x, obj.y), image)
+            # Creamos lugares de cultivo
+            elif obj.name == "Plant Position":
+                PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
+
+        self.map_width = map.width * TILE
+        self.map_height = map.height * TILE
 
         # ? Creamos el jugador en la posición indicada
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites)
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.damage_sprites, self.plant_spots)
+
+        self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
+        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)
+
+        # Item de los brotes de árbol en pantalla
+        self.item = TreeSprout(os.path.join(working_directory, "assets", "images", "items", "brote.png"))
 
     # ? Checar eventos del menú
     def check_events(self, events):
@@ -241,9 +406,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     sys.exit()
-
+    
                 # ? Teclas presionadas
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
                         sys.exit()
+        
+        self.player_TimeBar.update()

@@ -10,16 +10,21 @@
         "settings-to-spanish": "Spanish",
 
         "tutorial-title": "HOW TO MOVE",
-        "tutorial-control-up": "Press W to move up",
-        "tutorial-control-down": "Press S to move down",
-        "tutorial-control-left": "Press A to move left",
-        "tutorial-control-right": "Press D to move right",
         "tutorial-control-menu": "Press M to return to menu",
 
         "level-select-title": "Select a Level",
         "level-select-level-1": "Level 1",
         "level-select-level-2": "Level 2",
         "level-select-level-3": "Level 3"
+
+        "paused-title": "Game Paused",
+        "paused-description": "Press P to play",
+
+        "tree-sprout": "Tree Sprout",
+
+        "gameover-title": "GAME OVER",
+        "press-m-to-menu": "Press M to go to Menu",
+        "press-r-to-restart": "Press R to Restart Level"
     },
     "es": {
         "play": "Jugar",
@@ -32,15 +37,20 @@
         "settings-to-spanish": "Español",
 
         "tutorial-title": "CÓMO MOVERSE",
-        "tutorial-control-up": "Presiona W para subir",
-        "tutorial-control-down": "Presiona S para bajar",
-        "tutorial-control-left": "Presiona A para ir a la izquierda",
-        "tutorial-control-right": "Presiona D para ir a la derecha",
         "tutorial-control-menu": "Presiona M para volver al menú",
 
         "level-select-title": "Selecciona un Nivel",
         "level-select-level-1": "Nivel 1",
         "level-select-level-2": "Nivel 2",
         "level-select-level-3": "Nivel 3"
+
+        "paused-title": "Juego Pausado",
+        "paused-description": "Presiona P para jugar",
+
+        "tree-sprout": "Brote de Árbol",
+
+        "gameover-title": "FIN DEL JUEGO",
+        "press-m-to-menu": "Presiona M para ir al Menú",
+        "press-r-to-restart": "Presiona R para reiniciar el nivel"
     }
 }
