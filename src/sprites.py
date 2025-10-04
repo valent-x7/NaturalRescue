@@ -46,7 +46,7 @@ class Monkey(pygame.sprite.Sprite):
 
         self.direction = "down"
         self.frame = 1
-        self.animation_speed = 0.1
+        self.animation_speed = 6
 
         # Cooldown de disparo
         self.cooldown_shot = 300
@@ -99,7 +99,7 @@ class Monkey(pygame.sprite.Sprite):
         self.input(events)
         self.check_water_interaction(current_time)
         self.move(delta_time)
-        self.animate(self.moving)
+        self.animate(self.moving, delta_time)
 
     # ? Checar interacción con el agua
     def check_water_interaction(self, current_time):
@@ -172,9 +172,9 @@ class Monkey(pygame.sprite.Sprite):
             self.direction = "left"
             self.moving = True
 
-    def animate(self, moving):
+    def animate(self, moving, delta_time):
         if moving: 
-            self.frame += self.animation_speed
+            self.frame += self.animation_speed * delta_time
             if self.direction == "down":
                 self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
             elif self.direction == "up":
