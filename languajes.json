@@ -15,7 +15,7 @@
         "level-select-title": "Select a Level",
         "level-select-level-1": "Level 1",
         "level-select-level-2": "Level 2",
-        "level-select-level-3": "Level 3"
+        "level-select-level-3": "Level 3",
 
         "paused-title": "Game Paused",
         "paused-description": "Press P to play",
@@ -42,7 +42,7 @@
         "level-select-title": "Selecciona un Nivel",
         "level-select-level-1": "Nivel 1",
         "level-select-level-2": "Nivel 2",
-        "level-select-level-3": "Nivel 3"
+        "level-select-level-3": "Nivel 3",
 
         "paused-title": "Juego Pausado",
         "paused-description": "Presiona P para jugar",
