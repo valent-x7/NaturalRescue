@@ -67,6 +67,11 @@ class Monkey(pygame.sprite.Sprite):
 
         self.moving = False # -> Por defecto el mono no se mueve
 
+        # ? Inmunidad
+        self.invincible = False
+        self.invincibily_duration = 2000 # -> # 2 segundos
+        self.hit_time = 0
+
     def plant(self):
         if self.seeds > 0:
             self.seeds -= 1
@@ -77,6 +82,7 @@ class Monkey(pygame.sprite.Sprite):
     def update(self, delta_time, events): 
         self.moving = False
 
+        self.update_invincibility()
         self.input(events)
         self.move(delta_time)
         self.animate(self.moving)
@@ -153,6 +159,14 @@ class Monkey(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
+    # Checar si estamos inmunes
+    def update_invincibility(self):
+        if self.invincible:
+            current_time = pygame.time.get_ticks()
+
+            if current_time - self.hit_time >= self.invincibily_duration:
+                self.invincible = False
+
     # ? Función para ver colisiones
     def collision(self, direction):
 
@@ -179,10 +193,18 @@ class Monkey(pygame.sprite.Sprite):
                     if self.vec.y < 0:
                         self.hitbox_rect.top = sprite.rect.bottom + push_offset
                 
-                # Si es de daño bajamos vida y activamos sonido
-                if is_SpriteDamage:
+                # Si es de daño y no estamos inmunes
+                if is_SpriteDamage and not self.invincible:
                     self.hit_sound.play()
                     self.health -= 10
+
+                    # ? Activamos inmunidad
+                    self.invincible = True
+                    self.hit_time = pygame.time.get_ticks()
+                
+                # Si estamos inmunes
+                # elif is_SpriteDamage and self.invincible:
+                #     pass
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
