@@ -47,7 +47,7 @@ class Button:
 # ? Dibujamos la pantalla de selección de niveles
 def draw_level_select(screen, events, translations, current_lang):
 
-    bg = pygame.image.load("./img/bg.png")
+    bg = pygame.image.load("assets/images/fondo2.png")
     bg = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
     screen.blit(bg, (0,0))
 
