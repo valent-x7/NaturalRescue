@@ -48,6 +48,10 @@ class Monkey(pygame.sprite.Sprite):
         self.frame = 1
         self.animation_speed = 0.1
 
+        # Cooldown de disparo
+        self.cooldown_shot = 500
+        self.last_shot = 0
+
         self.collision_sprites = collision_sprites
         self.damage_sprites = damage_sprites
         self.plant_spots = plant_spots
@@ -76,6 +80,14 @@ class Monkey(pygame.sprite.Sprite):
         self.input(events)
         self.move(delta_time)
         self.animate(self.moving)
+
+    # Disparar bellotas
+    def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot >= self.cooldown_shot:
+            # ? Creamos bellota
+            Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
+            self.last_shot = current_time
 
     def input(self, events):
         for event in events:
@@ -289,3 +301,62 @@ class AllSprites(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
+
+# ? Clase Bellota
+class Acorn(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, direction, collision_sprites):
+        super().__init__(groups)
+
+        # ? Imagen y gráficos
+        working_directory = os.getcwd()
+        image_path = os.path.join(working_directory, "assets", "images", "items", "bellota.png")
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (16, 16)).convert_alpha()
+
+        # Rectangulo
+        self.rect = self.image.get_frect(center = pos)
+
+        # ? Dirección de la bellota
+        if direction.length_squared() > 0:
+            self.direction = direction.normalize()
+        else:
+            self.direction = pygame.Vector2(0, 0)
+
+        # ? Tiempo de vida y colisión
+        self.time_to_live = 1000
+        self.collision_sprites = collision_sprites
+
+    def update(self, dt, events = None):
+        # Descontamos tiempo de vida
+        self.time_to_live -= (dt * 1000)
+
+        # Eliminamos sprite si su tiempo de vida pasó o colisiona
+        if self.time_to_live <= 0 or self.check_collisions():
+            self.kill()
+            print("Bellota eliminada!!!")
+        else:
+            # Movemos sprite
+            self.rect.center += self.direction * ACORN_SPEED * dt
+    
+    # ? Si choca con un sprite de collision
+    def check_collisions(self):
+        return pygame.sprite.spritecollideany(self, self.collision_sprites)
+
+    # ? Este metodo creará una clase Acorn
+    @classmethod 
+    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites):
+        # Definimos la posición del jugador
+        player_pos = pygame.Vector2(player.rect.center)
+
+        # ? La posición real del mouse cuidando el zoom!!
+        mouse_x = (mouse_pos[0] / zoom) + camera_offset.x
+        mouse_y = (mouse_pos[1] / zoom) + camera_offset.y
+
+        # Directión objetivo
+        target_pos = pygame.Vector2(mouse_x, mouse_y)
+
+        # Dirección
+        direction = target_pos - player_pos
+
+        # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
+        return cls(groups, player_pos, direction, collision_sprites)

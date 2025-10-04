@@ -8,6 +8,8 @@ MONKEY_HEALTH = 100
 MONKEY_SEEDS = 10
 TILE = 32
 
+ACORN_SPEED = 300
+
 WINDOW_WIDTH = info.current_w
 WINDOW_HEIGHT = info.current_h
 
