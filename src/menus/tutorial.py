@@ -37,6 +37,11 @@ def draw_tutorial(screen, events, translations, lang, tutorial_assets):
         monkey_rect = monkey_img.get_rect(center=(x, start_y + 150))
         screen.blit(monkey_img, monkey_rect)
 
+
+    # Título
+    extra_title = get_text(translations, lang, "tutorial-extra-actions")
+    draw_text(screen, TITLE_FONT_PATH, 36, extra_title, "#FFFFFF", WINDOW_WIDTH // 2, start_y + 280)
+
     # -----------------------------
     # Fila 2 (H, R, P + extras)
     # -----------------------------
@@ -60,7 +65,12 @@ def draw_tutorial(screen, events, translations, lang, tutorial_assets):
         elif key == "P":
             extra_img = tutorial_assets["extras"]["P_pause"]
 
-        extra_img = pygame.transform.scale(extra_img, IMG_SIZE)
+        # Si es H o P, más anchas
+        if key in ["H", "P"]:
+            extra_img = pygame.transform.scale(extra_img, (250, 120))
+        else:
+            extra_img = pygame.transform.scale(extra_img, IMG_SIZE)
+
         extra_rect = extra_img.get_rect(center=(x, start_y_extras + 150))
         screen.blit(extra_img, extra_rect)
 
