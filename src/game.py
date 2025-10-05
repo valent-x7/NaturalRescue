@@ -396,6 +396,13 @@ class Game:
         player_obj = map.get_object_by_name("Player")
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.water_collision_sprites, self.damage_sprites, self.plant_spots)
 
+        # ? Coords de enemigos
+        self.spawn_enemies_cords = []
+
+        for obj in map.objects:
+            if obj.name == "Enemy":
+                self.spawn_enemies_cords.append((obj.x, obj.y))
+
         # ? UI
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
         self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)
