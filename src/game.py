@@ -180,37 +180,11 @@ class Game:
             "D": pygame.image.load("assets/images/chango/chango_right.png").convert_alpha()
         },
         "extras": {
-            "H_brote": pygame.image.load("assets/images/items/brote.png").convert_alpha(),
+            "H_brote": pygame.image.load("assets/images/keys/items.png").convert_alpha(),
             "R_restart": pygame.image.load("assets/images/keys/restart.png").convert_alpha(),
-            "P_pause": self.combine_pause_images(
-                "assets/images/keys/pause1.png",
-                "assets/images/keys/pause2.png"
-            )
+            "P_pause": pygame.image.load("assets/images/keys/pause.png").convert_alpha()
         }
     }
-
-    # Función para combinar dos imágenes de pausa en un solo Surface
-    def combine_pause_images(self, path1, path2):
-     img1 = pygame.image.load(path1).convert_alpha()
-     img2 = pygame.image.load(path2).convert_alpha()
-
-    # Recortamos el rect que ocupa realmente la imagen (quita transparencia)
-     rect1 = img1.get_bounding_rect()
-     rect2 = img2.get_bounding_rect()
-     img1 = img1.subsurface(rect1)
-     img2 = img2.subsurface(rect2)
-
-    # Creamos surface con ancho sumado (sin espacio extra)
-     width = img1.get_width() + img2.get_width() + 2
-     height = max(img1.get_height(), img2.get_height())
-     combined = pygame.Surface((width, height), pygame.SRCALPHA)
-
-    # Dibujamos pegadas
-     combined.blit(img1, (0, 0))
-     combined.blit(img2, (img1.get_width() + 2, 0))
-
-     return combined
-
 
 
 
