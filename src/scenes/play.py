@@ -25,6 +25,9 @@ def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=No
 
         game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds)
 
+        if player.seeds == 0:
+            return "WINSCREEN"
+
         if healthbar.hp <= 0 or TimeBar.t <= 0:
             return "GAMEOVER"
 

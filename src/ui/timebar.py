@@ -14,7 +14,7 @@ class TimeBar():
     
     def update(self):
         now = pygame.time.get_ticks()
-        if now - self.last_update >= 500:
+        if now - self.last_update >= 5000:
             self.t -= 1
             self.last_update = now
 

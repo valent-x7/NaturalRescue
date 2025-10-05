@@ -87,6 +87,9 @@ class Monkey(pygame.sprite.Sprite):
         if self.seeds > 0:
             self.seeds -= 1
             print("Arbol plantado, te quedan", self.seeds)
+        elif self.seeds == 0:
+            pass
+
         else:
             print("No tienes mas semillas")
 
