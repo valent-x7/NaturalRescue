@@ -507,3 +507,150 @@ class Acorn(pygame.sprite.Sprite):
 
         # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
         return cls(groups, player_pos, direction, collision_sprites)
+    
+# ? Sprite de enemigos
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group):
+        super().__init__(groups)
+        self.player = player # -> Jugador
+
+        # ? Lógica de evasión
+        self.is_evading = False
+        self.evade_timer = 0
+        self.evade_duration = 500
+
+        # ? Lógica de daño
+        self.can_damage = True
+        self.damage_cooldown = 2000 # -> 2 segundos
+        self.damage_timer = 0
+
+        # ? Creamos un grupo de sprites de colisión
+        self.collision_sprites = collision_sprites
+        self.water_sprites = water_sprites
+        self.plant_spots = plant_spots
+        self.all_solid_sprites = list(self.collision_sprites) + list(self.water_sprites) + list(self.plant_spots) # -> El Solid
+
+        self.acorn_group = acorn_group # -> Grupo de las bellotas
+
+        # ? Imagenes y rect inicial
+        wd = os.getcwd() # -> Directorio
+
+        self.state_images = { # -> Imagenes de estado inicial
+            "high": os.path.join(wd, "assets", "images", "enemies", "smog", "1.png"),
+            "mid": os.path.join(wd, "assets", "images", "enemies", "smog", "2.png"),
+            "low": os.path.join(wd, "assets", "images", "enemies", "smog", "3.png")
+        }
+
+        self.loaded_images = { # -> Imagenes cargados
+            key: pygame.image.load(path).convert_alpha()
+            for key, path in self.state_images.items()
+        }
+
+        # ? Sonidos de enemigo (smog / tornado)
+        self.sizzle_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "sizzle.mp3"))
+        self.swoosh_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "swoosh.mp3"))
+
+        # Vida
+        self.health = 3
+
+        self.image = self.loaded_images["high"]
+        self.rect = self.image.get_frect(center = pos) # -> Posición inicial
+        self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
+
+        self.speed = 100 # -> Velocidad del enemigo
+        self.direction_vec = pygame.Vector2() # -> Vector de movimiento
+
+    # ? Actualizar sprite
+    def update(self, delta_time, events = None,):
+        # ? Restamos el tiempo para evadir
+        if self.evade_timer > 0:
+            self.evade_timer -= delta_time * 1000
+            if self.evade_timer <= 0:
+                self.is_evading = False
+
+        self.check_acorn_collisions() # -> Colisiones con bellotas
+        self.check_player_collision(delta_time) # -> Colisiones con jugador
+        self.change_image() # -> Cambiar imagen
+        self.move(delta_time) # -> Movemos enemigo
+
+    # ? Movimiento del enemigo
+    def move(self, delta_time):
+        player_position = pygame.Vector2(self.player.rect.center)
+        enemy_position = pygame.Vector2(self.rect.center)
+        direction_vector = (player_position - enemy_position) # -> Definimos dirección del enemigo
+
+        self.direction_vec = direction_vector.normalize() if direction_vector.length() > 0 else direction_vector
+
+        # -> Si esta evadiendo colisión
+        if self.is_evading:
+            self.direction_vec = self.direction_vec.rotate(random.choice([90, -90])) # -> Cambiamos dirección del vector
+            self.is_evading = False
+
+        # ? Mover hitbox rect del enemigo
+        self.hitbox_rect.centerx += self.direction_vec.x * self.speed * delta_time
+        self.check_collisions("horizontal")
+        self.hitbox_rect.centery += self.direction_vec.y * self.speed * delta_time
+        self.check_collisions("vertical")
+
+        self.rect.center = self.hitbox_rect.center # -> Definir el rectangulo final
+
+    def change_image(self):
+        if self.health == 3:
+            key = "high"
+        elif self.health == 2:
+            key = "mid"
+        elif self.health == 1:
+            key = "low"
+        else:
+            key = "low"
+
+        self.image = self.loaded_images[key]
+
+    def check_collisions(self, direction):
+        for sprite in self.all_solid_sprites:
+            if sprite.rect.colliderect(self.hitbox_rect):
+
+                # ? Activamos evasión
+                self.is_evading = True
+                self.evade_timer = self.evade_duration
+                
+                # ? Colisión horizontal
+                if direction == "horizontal":
+                    if self.direction_vec.x > 0:
+                        self.hitbox_rect.right = sprite.rect.left
+                    if self.direction_vec.x < 0:
+                        self.hitbox_rect.left = sprite.rect.right
+                # ? Colisión vertical
+                else:
+                    if self.direction_vec.y > 0:
+                        self.hitbox_rect.bottom = sprite.rect.top
+                    if self.direction_vec.y < 0:
+                        self.hitbox_rect.top = sprite.rect.bottom
+
+    def check_acorn_collisions(self):
+        hit_acorn = pygame.sprite.spritecollide(self, self.acorn_group, True)
+
+        if hit_acorn: # -> Si una bellota golpea
+            for acorn in hit_acorn:
+                self.sizzle_sound.play()
+                self.health -= 1 # -> Bajamos vida
+
+                if self.health <= 0:
+                    self.swoosh_sound.play()
+                    self.kill() # -> Matamos al sprite
+                    return
+                
+    def check_player_collision(self, delta_time):
+
+        # ? Actualizar el cooldown de daño
+        if not self.can_damage:
+            self.damage_timer -= delta_time * 1000
+            if self.damage_timer <= 0:
+                self.can_damage = True # -> Puede hacer daño
+                self.damage_timer = 0
+
+        if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage:
+            self.player.health -= 5
+            self.player.hit_sound.play()
+            self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
+            self.damage_timer = self.damage_cooldown

@@ -360,6 +360,8 @@ class Game:
         self.collision_sprites = pygame.sprite.Group() # -> Sprites limitadores o de colisión
         self.water_collision_sprites = pygame.sprite.Group() # -> Sprites de colisión de agua
         self.damage_sprites = pygame.sprite.Group() # -> Sprites que hacen daño
+        self.acorn_sprites = pygame.sprite.Group() # -> Bellotas
+        self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
         self.plant_spots = pygame.sprite.Group() # -> Lugares de plantación
 
         self.setup_map()
@@ -408,11 +410,15 @@ class Game:
         player_obj = map.get_object_by_name("Player")
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.water_collision_sprites, self.damage_sprites, self.plant_spots)
 
-        # ? Coords de enemigos
+        # ? Coords de enemigos y evento de respawn
+        self.enemy_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.enemy_event, 5000)
         self.spawn_enemies_cords = []
 
         for obj in map.objects:
             if obj.name == "Enemy":
+                # Enemy((self.all_sprites, self.enemy_sprites), (obj.x, obj.y), self.player, 
+                #       self.collision_sprites, self.water_collision_sprites, self.plant_spots, self.acorn_sprites)
                 self.spawn_enemies_cords.append((obj.x, obj.y))
 
         # ? UI
