@@ -257,6 +257,18 @@ class Game:
                 if not hasattr(self, 'all_sprites'):
                     self.new()
 
+            elif self.state == "WINSCREEN":
+                from scenes.winscreen import draw_winscreen
+                self.state = draw_winscreen(self.SCREEN, events, translations, self.current_lang)
+
+                if self.state == "MENU":
+                    self.entered_gameover = False
+                elif self.state == "RESTART_LEVEL":
+                    self.entered_gameover = False
+                    if hasattr(self, 'all_sprites'):
+                        del self.all_sprites
+                    self.state = "PLAYING"
+
             elif self.state == "GAMEOVER":
                 # reproducir música de Game Over solo una vez al entrar
                 if not getattr(self, "entered_gameover", False):
@@ -405,7 +417,8 @@ class Game:
 
         # ? UI
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
-        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)
+        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH, 32, 150)
+
         # Item de los brotes de árbol en pantalla
         self.item = TreeSprout(os.path.join(working_directory, "assets", "images", "items", "brote.png"))
         self.water_item = PlayerWaterBar()

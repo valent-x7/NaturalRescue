@@ -30,6 +30,9 @@ def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=No
         game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds) # -> Item de brotes
         game_instance.water_item.draw(screen, get_text(translations, game_instance.current_lang, "water-tank"), get_text(translations, game_instance.current_lang, water_item_key))
 
+        if player.trees == 4:
+            return "WINSCREEN"
+
         if healthbar.hp <= 0 or TimeBar.t <= 0:
             return "GAMEOVER"
 

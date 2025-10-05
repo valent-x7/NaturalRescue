@@ -29,6 +29,7 @@
         "gameover-title": "GAME OVER",
         "press-m-to-menu": "Press M to go to Menu",
         "press-r-to-restart": "Press R to Restart Level",
+        "wingame_title": "Congratulations, you passed the level 1",
 
         "mission-text": "Go to the lake to collect water and water the tree sprouts"
     },
@@ -62,6 +63,7 @@
         "gameover-title": "FIN DEL JUEGO",
         "press-m-to-menu": "Presiona M para ir al Menú",
         "press-r-to-restart": "Presiona R para reiniciar el nivel",
+        "wingame_title": "Felicidades, pasaste el nivel 1",
 
         "mission-text": "Dirígete al lago para colectar agua y poder regar los brotes de árbol"
     }

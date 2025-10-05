@@ -21,6 +21,7 @@ class Monkey(pygame.sprite.Sprite):
         self.height = TILE
         self.health = MONKEY_HEALTH
         self.seeds = MONKEY_SEEDS
+        self.trees = 0
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
                                self.spritesheet.get_sprite(32, 0, self.width, self.height),
@@ -76,7 +77,7 @@ class Monkey(pygame.sprite.Sprite):
 
         # ? Inmunidad
         self.invincible = False
-        self.invincibily_duration = 2000 # -> # 2 segundos
+        self.invincibily_duration = 1000 # -> # 2 segundos
         self.hit_time = 0
 
         # ? Recursos de agua del jugador
@@ -87,6 +88,9 @@ class Monkey(pygame.sprite.Sprite):
         if self.seeds > 0:
             self.seeds -= 1
             print("Arbol plantado, te quedan", self.seeds)
+        elif self.seeds == 0:
+            pass
+
         else:
             print("No tienes mas semillas")
 
@@ -279,6 +283,7 @@ class PlantSpot(pygame.sprite.Sprite):
         super().__init__(groups)
 
         self.sprite_type = "Collision"
+        self.state = 0
 
         # Working Directory
         working_directory = os.getcwd()
@@ -327,6 +332,7 @@ class PlantSpot(pygame.sprite.Sprite):
 
         if percent > 75:
             key = "full" # -> Devuelve brote.full
+            self.state = 1
         elif percent > 50:
             key = "high" # -> Devuelve brote.high
         elif percent > 25:
@@ -379,6 +385,10 @@ class PlantSpot(pygame.sprite.Sprite):
             # Sonido de error al plantar
             else:
                 self.error_sound.play()
+
+            if self.state == 1:
+                player.trees += 1
+                print(player.trees)
 
 
 # ? Clase de los sprites!!
