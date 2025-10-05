@@ -379,6 +379,11 @@ class PlantSpot(pygame.sprite.Sprite):
                 self.image = self.get_image_by_water()
 
 
+            if self.state == 1:
+                player.trees += 1
+                print(player.trees)
+            
+
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
