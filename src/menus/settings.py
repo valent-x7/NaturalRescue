@@ -3,6 +3,8 @@ from settings import *
 from ui.utils import draw_text, set_language, get_text, load_language
 from ui.button import Button
 from math import ceil
+from math import sin
+
 
 # Cargamos el diccionario de traducciones
 translations = load_language("languajes.json")
@@ -10,7 +12,7 @@ translations = load_language("languajes.json")
 # ? Scroll capa 2
 scroll_capa2 = 0
 
-def draw_settings(screen, game, events, bg_width, capa1, capa2, arrow_img, english_button: Button, spanish_button : Button):
+def draw_settings(screen, game, events, lang, bg_width, capa1, capa2, arrow_img, english_button: Button, spanish_button : Button):
     
     global scroll_capa2
 
@@ -51,6 +53,16 @@ def draw_settings(screen, game, events, bg_width, capa1, capa2, arrow_img, engli
     # Dibujamos botones
     english_button.draw()
     spanish_button.draw()
+
+    # Mensaje para regresar al menú
+    exit_hint = get_text(translations, lang, "tutorial-control-menu")
+    t = pygame.time.get_ticks() / 500
+    alpha = sin(t) * 0.5 + 0.5
+    color_blink = [int(100 + alpha * 155)] * 3  
+
+    draw_text(screen, TITLE_FONT_PATH, 24, exit_hint,
+              color_blink, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 40)
+
 
     # ? Recorremos los eventos
     for event in events:

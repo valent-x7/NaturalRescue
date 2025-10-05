@@ -307,7 +307,7 @@ class Game:
             # Ajustes
             elif self.state == "SETTINGS":
                 self.setup_settings()
-                self.state = draw_settings(self.SCREEN, self, events, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
+                self.state = draw_settings(self.SCREEN, self, events, self.current_lang, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
                                            self.arrow_image, self.english_button, self.spanish_button)
 
             # Salir del juego
