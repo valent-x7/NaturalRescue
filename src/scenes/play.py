@@ -16,16 +16,21 @@ def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=No
             player.input(events)
             game_instance.all_sprites.update(delta_time, events, player)
             TimeBar.update()
+            game_instance.water_item.update(player.water_amount)
 
         game_instance.all_sprites.center_on_target(player, game_instance.map_width, game_instance.map_height)
         game_instance.all_sprites.draw_sprites()
 
-        healthbar.draw(screen)
-        TimeBar.draw(screen)
+        # ? Dibujamos elementos de UI
+        # Definir clave de water item
+        water_item_key = game_instance.water_item.get_status()
 
-        game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds)
+        healthbar.draw(screen) # -> Barra de vida
+        TimeBar.draw(screen) # -> Tiempo
+        game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds) # -> Item de brotes
+        game_instance.water_item.draw(screen, get_text(translations, game_instance.current_lang, "water-tank"), get_text(translations, game_instance.current_lang, water_item_key))
 
-        if player.seeds == 0:
+        if player.trees == 4:
             return "WINSCREEN"
 
         if healthbar.hp <= 0 or TimeBar.t <= 0:
