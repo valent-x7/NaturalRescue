@@ -533,8 +533,8 @@ class Enemy(pygame.sprite.Sprite):
         self.collision_sprites = collision_sprites
         self.water_sprites = water_sprites
         self.plant_spots = plant_spots
-        self.all_solid_sprites = list(self.collision_sprites) + list(self.water_sprites) + list(self.plant_spots) # -> El Solid
-
+        self.all_solid_sprites = list(self.collision_sprites) + list(self.plant_spots) # -> El Solid
+        # + list(self.water_sprites)
         self.acorn_group = acorn_group # -> Grupo de las bellotas
 
         # ? Imagenes y rect inicial
