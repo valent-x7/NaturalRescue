@@ -31,7 +31,7 @@
         "press-r-to-restart": "Press R to Restart Level",
         "wingame_title": "Congratulations, you passed the level 1",
 
-        "mission-text": "Go to the lake to collect water and water the tree sprouts"
+        "mission-text": "Head to the lake to collect water to water the tree shoots"
     },
     "es": {
         "play": "Jugar",
@@ -65,6 +65,6 @@
         "press-r-to-restart": "Presiona R para reiniciar el nivel",
         "wingame_title": "Felicidades, pasaste el nivel 1",
 
-        "mission-text": "Dirígete al lago para colectar agua y poder regar los brotes de árbol"
+        "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol"
     }
 }
