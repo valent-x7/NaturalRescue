@@ -21,6 +21,10 @@
         "paused-description": "Press P to play",
 
         "tree-sprout": "Tree Sprout",
+        "water-tank": "Water Tank",
+        "water-tank-full": "Full",
+        "water-tank-mid": "Mid",
+        "water-tank-empty": "Empty",
 
         "gameover-title": "GAME OVER",
         "press-m-to-menu": "Press M to go to Menu",
@@ -48,6 +52,10 @@
         "paused-description": "Presiona P para jugar",
 
         "tree-sprout": "Brote de Árbol",
+        "water-tank": "Tanque de agua",
+        "water-tank-full": "Lleno",
+        "water-tank-mid": "Mitad",
+        "water-tank-empty": "Vacío",
 
         "gameover-title": "FIN DEL JUEGO",
         "press-m-to-menu": "Presiona M para ir al Menú",

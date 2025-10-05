@@ -23,6 +23,7 @@ def draw_game(screen, events, translations, TimeBar: TimeBar, healthbar : Health
             player.input(events)
             game_instance.all_sprites.update(delta_time, events, player)
             TimeBar.update()
+            game_instance.water_item.update(player.water_amount)
 
         # Dibujamos juego
         # ? Centramos en el jugador
@@ -31,12 +32,14 @@ def draw_game(screen, events, translations, TimeBar: TimeBar, healthbar : Health
         # ? Dibujamos los sprites
         game_instance.all_sprites.draw_sprites()
 
-        # ? Dibujamos barra de vida
-        healthbar.draw(screen)
+        # ? Dibujamos elementos de UI
+        # Definir clave de water item
+        water_item_key = game_instance.water_item.get_status()
 
-        TimeBar.draw(screen)
-
-        game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds)
+        healthbar.draw(screen) # -> Barra de vida
+        TimeBar.draw(screen) # -> Tiempo
+        game_instance.item.draw(screen, get_text(translations, game_instance.current_lang, "tree-sprout"), player.seeds) # -> Item de brotes
+        game_instance.water_item.draw(screen, get_text(translations, game_instance.current_lang, "water-tank"), get_text(translations, game_instance.current_lang, water_item_key))
 
         if healthbar.hp <= 0 or TimeBar.t <= 0:
             return "GAMEOVER"

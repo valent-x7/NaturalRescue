@@ -8,7 +8,7 @@ from ui.button import Button
 from ui.utils import *
 from ui.healthbar import HealthBar
 from ui.timebar import TimeBar
-from ui.item import TreeSprout
+from ui.item import TreeSprout, PlayerWaterBar
 from menus.level_select import draw_level_select
 import settings as main_settings
 import os
@@ -396,11 +396,12 @@ class Game:
         player_obj = map.get_object_by_name("Player")
         self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.water_collision_sprites, self.damage_sprites, self.plant_spots)
 
+        # ? UI
         self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
         self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH + 100, 32, 150)
-
         # Item de los brotes de árbol en pantalla
         self.item = TreeSprout(os.path.join(working_directory, "assets", "images", "items", "brote.png"))
+        self.water_item = PlayerWaterBar()
 
     # ? Checar eventos del menú
     def check_events(self, events):
