@@ -2,6 +2,8 @@ from settings import *
 from ui.utils import draw_text, get_text
 import pygame
 import textwrap
+from sprites import Enemy
+from random import choice
 
 def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=None, delta_time=0):
     screen.fill("black")
@@ -86,8 +88,14 @@ def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=No
                 return "LEVEL_SELECT"
             if event.key == pygame.K_p:
                 game_instance.paused = not game_instance.paused
+
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game_instance.paused:
-            player.shoot((game_instance.all_sprites), player, event.pos,
+            player.shoot((game_instance.all_sprites, game_instance.acorn_sprites), player, event.pos,
                          game_instance.all_sprites.camera_offset, game_instance.all_sprites.zoom)
+            
+        elif event.type == game_instance.enemy_event and len(game_instance.enemy_sprites) < 8:
+            Enemy((game_instance.all_sprites, game_instance.enemy_sprites), choice(game_instance.spawn_enemies_cords), 
+                  game_instance.player, game_instance.collision_sprites, game_instance.water_collision_sprites, 
+                  game_instance.plant_spots, game_instance.acorn_sprites)
 
     return "PLAYING"
