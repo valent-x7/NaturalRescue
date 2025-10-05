@@ -77,7 +77,7 @@ class Monkey(pygame.sprite.Sprite):
 
         # ? Inmunidad
         self.invincible = False
-        self.invincibily_duration = 1000 # -> # 2 segundos
+        self.invincibily_duration = 1000 # -> # 1 segundo
         self.hit_time = 0
 
         # ? Recursos de agua del jugador
@@ -355,40 +355,28 @@ class PlantSpot(pygame.sprite.Sprite):
 
         if self.check_collision(player) and keystate[pygame.K_h] and player.can_water:
 
-            # Si la cantidad de agua es mayor a 0
+        # Si la cantidad de agua es mayor a 0
             if player.water_amount > 0:
-            
+
                 # Cooldown de riego
                 player.can_water = False
                 player.last_water_time = current_time # Guardamos el tiempo actual
 
-                player.water_amount -= 25 # Restamos agua del player
-
-                # ----------------------------
-                #   Logica de plantar o regar
-                # ----------------------------
                 if not self.is_used:
+                    # Primera vez: solo plantar, no consumir agua
                     self.is_used = True
-                    self.shine_sound.play() # Sonido
-                    player.plant() # Plantamos
+                    self.shine_sound.play()  
+                    player.plant()           
                     self.current_water = 25
-
-                # ? Riego de planta
                 else:
+                    # Riego: sí consumimos agua
+                    player.water_amount -= 25  # Aquí sí gastamos agua
                     self.upgrade_sound.play()
                     self.current_water += 25
-                    self.current_water = min(self.current_water, self.max_water) # Que no exceda el máximo
+                    self.current_water = min(self.current_water, self.max_water)  # Que no exceda el máximo
 
                 # ? Cambiamos imagen si o si
                 self.image = self.get_image_by_water()
-            
-            # Sonido de error al plantar
-            else:
-                self.error_sound.play()
-
-            if self.state == 1:
-                player.trees += 1
-                print(player.trees)
 
 
 # ? Clase de los sprites!!
