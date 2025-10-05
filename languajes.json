@@ -28,7 +28,9 @@
 
         "gameover-title": "GAME OVER",
         "press-m-to-menu": "Press M to go to Menu",
-        "press-r-to-restart": "Press R to Restart Level"
+        "press-r-to-restart": "Press R to Restart Level",
+
+        "mission-text": "Head to the lake to collect the tree sprouts and then plant them in the holes with little stones"
     },
     "es": {
         "play": "Jugar",
@@ -59,6 +61,8 @@
 
         "gameover-title": "FIN DEL JUEGO",
         "press-m-to-menu": "Presiona M para ir al Menú",
-        "press-r-to-restart": "Presiona R para reiniciar el nivel"
+        "press-r-to-restart": "Presiona R para reiniciar el nivel",
+
+        "mission-text": "Dirígete al lago para recoger los brotes de árboles y después plántalos en los hoyos con piedritas"
     }
 }
