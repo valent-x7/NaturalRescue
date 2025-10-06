@@ -283,7 +283,6 @@ class PlantSpot(pygame.sprite.Sprite):
         super().__init__(groups)
 
         self.sprite_type = "Collision"
-        self.state = 0
 
         # Working Directory
         working_directory = os.getcwd()
@@ -294,6 +293,7 @@ class PlantSpot(pygame.sprite.Sprite):
             "high": os.path.join(working_directory, "assets", "images", "brote_high.png"),
             "mid": os.path.join(working_directory, "assets", "images", "brote_mid.png"),
             "low": os.path.join(working_directory, "assets", "images", "brote_low.png"),
+            "born": os.path.join(working_directory, "assets", "images", "brote_born.png"),
             "dead": os.path.join(working_directory, "assets", "images", "DeadSpot.png"),
         }
 
@@ -305,11 +305,13 @@ class PlantSpot(pygame.sprite.Sprite):
 
         # ? Sonidos
         self.shine_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "shine.mp3")) # Plantar
-        self.error_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "error.mp3")) # Erorr al plantar
+        self.error_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "error.mp3")) # Error al plantar
         self.upgrade_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "upgrade.mp3")) # Mejora de planta
+        self.success_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "success.mp3")) # Planta completa
 
         # Atributos
         self.is_used = False # -> El spot esta usado ?
+        self.is_complete = False # -> El spot esta completado ? 
         self.max_water = 100
         self.current_water = 0
 
@@ -328,19 +330,21 @@ class PlantSpot(pygame.sprite.Sprite):
         if self.max_water <= 0:
             return self.image_states["dead"]
         
-        percent = (self.current_water / self.max_water) * 100
+        if self.is_complete: # -> Si ya está completo
+            return self.loaded_images["full"]
 
-        if percent > 75:
+        if self.current_water > 75 and self.is_used:
             key = "full" # -> Devuelve brote.full
-            self.state = 1
-        elif percent > 50:
+        elif self.current_water > 50 and self.is_used:
             key = "high" # -> Devuelve brote.high
-        elif percent > 25:
+        elif self.current_water > 25 and self.is_used:
             key = "mid" # -> Devuelve brote.mid
-        elif percent > 0:
+        elif self.current_water > 0 and self.is_used:
             key = "low" # -> Devuelve brote.low
+        elif self.current_water == 0 and self.is_used:
+            key = "born" # -> Devuelve brote born
         else:
-            key = "dead"
+            key = "dead" # -> Spot vacío
 
         return self.loaded_images[key] # Devuelve la imagen ya cargada con convert_alpha
 
@@ -353,36 +357,41 @@ class PlantSpot(pygame.sprite.Sprite):
         if not player.can_water and current_time - player.last_water_time >= player.water_cooldown:
             player.can_water = True # El jugador ahora puede plantar
 
+        if self.is_complete:
+            return # -> Si esta completo, no hacemos nada
+
         if self.check_collision(player) and keystate[pygame.K_h] and player.can_water:
 
-        # Si la cantidad de agua es mayor a 0
-            if player.water_amount > 0:
+            # Cooldown de riego
+            player.can_water = False
+            player.last_water_time = current_time # Guardamos el tiempo actual
 
-                # Cooldown de riego
-                player.can_water = False
-                player.last_water_time = current_time # Guardamos el tiempo actual
+            if not self.is_used: # -> Si el espacio no esta usado
+                self.is_used = True # -> Plantar
+                self.shine_sound.play()
+                player.plant()
+                self.current_water = 0
 
-                if not self.is_used:
-                    # Primera vez: solo plantar, no consumir agua
-                    self.is_used = True
-                    self.shine_sound.play()  
-                    player.plant()           
-                    self.current_water = 25
-                else:
-                    # Riego: sí consumimos agua
-                    player.water_amount -= 25  # Aquí sí gastamos agua
+            else: # -> Si ya esta usado
+                # ? Spot a llenar
+                if player.water_amount > 0 and self.current_water < self.max_water:
+                    player.water_amount -= 25 # Restamos agua al jugador
                     self.upgrade_sound.play()
-                    self.current_water += 25
+                    self.current_water += 25 # Añadimos el agua al spot
                     self.current_water = min(self.current_water, self.max_water)  # Que no exceda el máximo
 
-                # ? Cambiamos imagen si o si
-                self.image = self.get_image_by_water()
+                    # ? Si ya se llenó al regar
+                    if self.current_water == self.max_water:
+                        self.success_sound.play() # -> Sonido de éxito
+                        player.trees += 1 # -> Le sumamos al jugador
+                        print(f"Árbol(es) completado(s): {player.trees}")
+                        self.is_complete = True # -> Completado
+                
+                else: # -> Si no hay agua para regar
+                    self.error_sound.play()
 
-
-            if self.state == 1:
-                player.trees += 1
-                print(player.trees)
-            
+            # ? Cambiamos imagen si o si
+            self.image = self.get_image_by_water()
 
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
