@@ -535,7 +535,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # ? Lógica de daño
         self.can_damage = True
-        self.damage_cooldown = 2000 # -> 2 segundos
+        self.damage_cooldown = 2000 # -> 1500 segundos
         self.damage_timer = 0
 
         # ? Creamos un grupo de sprites de colisión
@@ -571,7 +571,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(center = pos) # -> Posición inicial
         self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
 
-        self.speed = 100 # -> Velocidad del enemigo
+        self.speed = 80 # -> Velocidad del enemigo
         self.direction_vec = pygame.Vector2() # -> Vector de movimiento
 
     # ? Actualizar sprite

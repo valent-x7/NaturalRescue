@@ -192,12 +192,10 @@ class Game:
 
         while self.running:
 
-            # ? Usamos delta Time
+            # Usamos delta Time
             dt = self.clock.tick(60) / 1000 # Segundos por Frame
 
-            # -------------------
             # Reproducir música según el estado
-            # -------------------
             if self.state == 'MENU':
                 if getattr(self, "entered_gameover", False):
                     self.entered_gameover = False
@@ -254,9 +252,7 @@ class Game:
                         print("Error al reproducir música Game Over:", e)
                     self.entered_gameover = True
 
-            # -------------------
             # Obtener Eventos
-            # -------------------
             events = pygame.event.get()
 
             if self.state == 'MENU':

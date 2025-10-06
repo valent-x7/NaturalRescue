@@ -17,8 +17,7 @@ scroll_capa4 = 0
 scroll_capa5 = 0
 
 # ? Dibujamos el menu principal
-def draw_menu(screen, events, bg_width, capa1, capa2, capa3, capa4, capa5, chango, pinguino, pos_y, chango_x, pinguino_x,
-            font_title, play_btn : Button, tut_btn : Button, set_btn : Button, salir_btn : Button):
+def draw_menu(screen, events, bg_width, capa1, capa2, capa3, capa4, capa5, chango, pinguino, pos_y, chango_x, pinguino_x, font_title, play_btn : Button, tut_btn : Button, set_btn : Button, salir_btn : Button):
     global scroll_capa2, scroll_capa3, scroll_capa4, scroll_capa5
 
     # ? Scroll del background
