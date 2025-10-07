@@ -43,58 +43,66 @@ class Button:
                 return True
         return False
 
+class LevelSelectMenu:
+    def __init__(self, game, screen: pygame.Surface):
+        self.game_screen = screen # -> Definir pantalla del juego
+        self.translations = game.translations # -> Cargar traducciones
 
-# ? Dibujamos la pantalla de selección de niveles
-def draw_level_select(screen, events, translations, current_lang):
+        self.setup_images() # -> Imagenes
+        self.setup_fonts() # -> Fuentes
+        self.setup_buttons(game.current_lang) # -> Configurar botones en base al idioma
 
-    bg = pygame.image.load("assets/images/fondo2.png")
-    bg = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-    screen.blit(bg, (0,0))
+    def run(self, game, events):
+        # ? Background
+        self.game_screen.blit(self.background, [0, 0])
+        
+        # ? Título de la pantalla
+        title_text = self.fuente_pixel.render(get_text(game.translations, game.current_lang, "level-select-title"), True, (255, 255, 255))
+        text_rect = title_text.get_rect(center=(main_settings.WINDOW_WIDTH / 2, 100))
+        self.game_screen.blit(title_text, text_rect)
 
-    # ? Fuentes de texto estilo 8 bit
-    fuente_pixel = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 40)
+        # ? Dibujar botones
+        self.level1_btn.draw()
+        self.level2_btn.draw()
+        self.level3_btn.draw()
 
-    # ? Título de la pantalla
-    title_text = fuente_pixel.render(get_text(translations, current_lang, "level-select-title"), True, (255, 255, 255))
-    text_rect = title_text.get_rect(center=(main_settings.WINDOW_WIDTH / 2, 100))
-    screen.blit(title_text, text_rect)
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_m:
+                    return "MENU"
+                
+            # ? Manejar niveles
+            elif self.level1_btn.is_clicked(event):
+                return "LEVEL_1" # -> Nivel 1
+                
+        return "LEVEL_SELECT"
 
-    # ? Ancho y espacio entre los botones
-    button_width = 500
-    button_height = 150
-    spacing = 50
+    def setup_images(self):
+        bg = pygame.image.load("assets/images/fondo2.png")
+        self.background = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert()
 
-    # ? Calculamos la posición inicial para centrarlos horizontalmente
-    total_width = (button_width * 3) + (spacing * 2)
-    start_x = (main_settings.WINDOW_WIDTH / 2) - (total_width / 2)
-    center_y = 380
+    def setup_fonts(self):
+        self.fuente_pixel = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 40)
 
-    # ? Botones para los niveles
-    level1_btn = Button(screen, start_x, center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-1"), fuente_pixel, '#3b82f6',  '#1d4ed8')
-    level2_btn = Button(screen, start_x + button_width + spacing, center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-2"), fuente_pixel, '#ef4444', '#dc2626')
-    level3_btn = Button(screen, start_x + 2*(button_width + spacing), center_y, button_width, button_height, get_text(translations, current_lang, "level-select-level-3"), fuente_pixel, '#22c55e','#16a34a')
+    def setup_buttons(self, lang):
+        # ? Ancho y espacio entre los botones
+        button_width = 500
+        button_height = 150
+        spacing = 50
 
-    # ? Dibujamos los botones en la pantalla
-    level1_btn.draw()
-    level2_btn.draw()
-    level3_btn.draw()
+        # ? Calculamos la posición inicial para centrarlos horizontalmente
+        total_width = (button_width * 3) + (spacing * 2)
+        start_x = (main_settings.WINDOW_WIDTH / 2) - (total_width / 2)
+        center_y = 380
 
-    # ? Recorremos los eventos
-    for event in events:
-
-        # ? Devolver al menu
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_m:
-                return "MENU"
-
-        # ? Manejar niveles
-        elif level1_btn.is_clicked(event):
-            return "LEVEL_1"
-        elif level2_btn.is_clicked(event):
-            pass
-            # return "LEVEL_2"
-        elif level3_btn.is_clicked(event):
-            pass
-            # return "LEVEL_3"
-
-    return "LEVEL_SELECT"
+        self.level1_btn = Button(self.game_screen, start_x, center_y, button_width, button_height,
+                                 get_text(self.translations, lang, "level-select-level-1"),
+                                 self.fuente_pixel, '#3b82f6',  '#1d4ed8')
+        
+        self.level2_btn = Button(self.game_screen, start_x + button_width + spacing, center_y, button_width, button_height,
+                                 get_text(self.translations, lang, "level-select-level-2"),
+                                 self.fuente_pixel, '#ef4444', '#dc2626')
+        
+        self.level3_btn = Button(self.game_screen, start_x + 2 * (button_width + spacing), center_y, button_width, button_height,
+                                 get_text(self.translations, lang, "level-select-level-3"),
+                                 self.fuente_pixel, '#22c55e','#16a34a')

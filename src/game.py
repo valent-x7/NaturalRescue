@@ -1,6 +1,6 @@
 from settings import *
 from menus.menu import draw_menu
-from menus.settings import draw_settings
+from menus.settings import SettingsMenu
 from menus.tutorial import draw_tutorial
 from scenes.play import draw_game
 from sprites import *
@@ -9,7 +9,7 @@ from ui.utils import *
 from ui.healthbar import HealthBar
 from ui.timebar import TimeBar
 from ui.item import TreeSprout, PlayerWaterBar
-from menus.level_select import draw_level_select
+from menus.level_select import LevelSelectMenu
 import settings as main_settings
 import os
 import json
@@ -57,12 +57,20 @@ class Game:
 
         # Config del lenguaje del juego
         self.current_lang = load_config("config.json")
+        self.translations = translations
 
         # Estado de pausa
         self.paused = False
 
-        # Creamos instancias del menú
+        # Creamos instancias de los menus (Settings, Tutorial, Level Select)
         self.setup_menu()
+        self.Settings_Menu = SettingsMenu(self, self.SCREEN)
+        self.Level_Select_Menu = LevelSelectMenu(self, self.SCREEN)
+
+    # ? Cargar el lenguaje y crear botones
+    def reload_language(self, lang):
+        self.Settings_Menu.setup_buttons(lang)
+        self.Level_Select_Menu.setup_buttons(lang)
 
     # ? Este método creará las instancias del menu (botones y fuentes)
     def setup_menu(self):
@@ -255,14 +263,15 @@ class Game:
             # Obtener Eventos
             events = pygame.event.get()
 
+            # ? Manejar estados del juego
             if self.state == 'MENU':
                 self.state = draw_menu(self.SCREEN, events, self.bg_menu_width, self.capa1, self.capa2, self.capa3, 
                                        self.capa4, self.capa5, self.mono, self.pinguino, self.position_y, self.chango_x, 
                                        self.pinguino_x, self.fuente_titulo, self.play_btn, 
                                        self.tutorial_btn, self.settings_btn, self.exit_btn)
 
-            elif self.state == "LEVEL_SELECT":
-                 self.state = draw_level_select(self.SCREEN, events, translations, self.current_lang)  
+            elif self.state == "LEVEL_SELECT": # -> Selector de nivel
+                 self.state = self.Level_Select_Menu.run(self, events)  
 
             elif self.state == "PLAYING":
                 if not hasattr(self, 'all_sprites'):
@@ -288,15 +297,16 @@ class Game:
 
             # Ajustes
             elif self.state == "SETTINGS":
-                self.setup_settings()
-                self.state = draw_settings(self.SCREEN, self, events, self.current_lang, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
-                                           self.arrow_image, self.english_button, self.spanish_button)
+                self.state = self.Settings_Menu.run(self, events)
+                # self.setup_settings()
+                # self.state = draw_settings(self.SCREEN, self, events, self.current_lang, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
+                #                            self.arrow_image, self.english_button, self.spanish_button)
 
             # Salir del juego
             elif self.state == "SALIR":
                 self.running = False
 
-            elif self.state == "GAMEOVER":
+            elif self.state == "GAMEOVER": # -> Pantalla de Game Over
                new_state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
 
                # Solo revisamos new_state dentro del mismo bloque
