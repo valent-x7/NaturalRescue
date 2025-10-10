@@ -1,4 +1,7 @@
 import pygame
+from ui.utils import draw_text
+from settings import TITLE_FONT_PATH
+from math import ceil
 
 class TimeBar():
     def __init__(self, x, y, w, h, maxt):
@@ -35,6 +38,8 @@ class TimeBar():
         pygame.draw.rect(surface, "#000000FF", (self.x, self.y, self.w, self.h))
         pygame.draw.rect(surface, color, (self.x, self.y, self.w * ratio, self.h))
 
+        # ? Draw Time Left
+        draw_text(surface, TITLE_FONT_PATH, 16, f"{ceil(self.t)}", "white", self.w / 2, self.h / 2)
     
     def isEnd(self):
         if self.t <= 0:  

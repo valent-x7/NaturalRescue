@@ -50,7 +50,7 @@ class Monkey(pygame.sprite.Sprite):
         self.animation_speed = 8
 
         # Cooldown de disparo
-        self.cooldown_shot = 300
+        self.cooldown_shot = 500
         self.last_shot = 0
 
         # Cooldown de riego
@@ -269,6 +269,7 @@ class CollisionSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
+# ? Sprite de colisión por rect (Mejor colisión)
 class CollisionSpriteRect(pygame.sprite.Sprite):
     def __init__(self, groups, x, y, width, height):
         super().__init__(groups)

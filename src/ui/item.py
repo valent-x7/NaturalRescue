@@ -9,7 +9,7 @@ class TreeSprout:
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (100, 100)).convert_alpha()
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width / 2, self.display_surface.height - self.rect.height - 20)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 60, 64)
 
     def draw(self, screen, name_item, amount_item):
         # ? Borde del circulo
@@ -52,7 +52,7 @@ class PlayerWaterBar:
         self.current_status = "water-tank-empty"
 
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width / 2 + self.rect.width + 75, self.display_surface.height - self.rect.height - 20)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 262, 64)
 
     def get_status(self): # -> Devuelve la clave de traducción
         return self.current_status

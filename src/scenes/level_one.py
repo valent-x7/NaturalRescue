@@ -39,7 +39,6 @@ class LevelOne:
         if game:
             # -> Definimos la vida en base a la del jugador
             self.healthbar.hp = self.player.health
-            self.timebar.maxt = 150
 
             # ? Si el juego NO esta pausado
             if not game.paused:
@@ -89,11 +88,15 @@ class LevelOne:
                                   self.all_sprites.camera_offset, self.all_sprites.zoom)
             
             # ? Crear enemigos
-            elif event.type == self.enemy_event and len(self.enemy_sprites) < 6:
+            elif event.type == self.enemy_event and len(self.enemy_sprites) < 5:
                 Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
                       self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites)
                 
         return new_state
+
+    def setup_image_for_ui(self):
+        monkey_img = pygame.image.load(join(self.wd, "img", "chango.png"))
+        self.monkey_image = pygame.transform.scale(monkey_img, (42, 42)).convert_alpha()
 
     def setup_map(self):
         # -> Get map direction
@@ -105,15 +108,11 @@ class LevelOne:
 
             # -> Create Sprites taking layer name
             for x, y, image in layer.tiles():
-                if layer.name == "Ground" or layer.name == "Decoration":
+                if layer.name == "Ground" or layer.name == "Decoration" or layer.name == "Collision":
                     Sprite(self.all_sprites, (x * TILE, y * TILE), image)
                 elif layer_name == "WaterCollision":
                     WaterCollisionSprite((self.all_sprites, self.water_sprites), "Limit",
                                          (x * TILE, y * TILE), image)
-                else:
-                    # Sprite(self.all_sprites, (x * TILE, y * TILE), image)
-                    CollisionSprite((self.all_sprites, self.collision_sprites), "Limit",
-                                    (x * TILE, y * TILE), image)
 
         # -> Enemies Coords
         self.spawn_enemies_cords = []
@@ -121,11 +120,11 @@ class LevelOne:
         # ? Objects
         for obj in map.objects:
             # -> Trees
-            if obj.name == "Tree":
+            if obj.name in ["Tree", "Sign", "Bush"]:
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
-                    CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
+                    CollisionSprite((self.all_sprites, self.collision_sprites), "Collision", (obj.x, obj.y), image)
 
             # -> Branches
             elif obj.name == "Branch":
@@ -138,7 +137,7 @@ class LevelOne:
             elif obj.name == "Plant Position":
                 PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
             
-            elif obj.name == "CollisionObject":
+            elif obj.name == "ObjectCollision":
                 CollisionSpriteRect((self.all_sprites, self.collision_sprites), obj.x, obj.y, obj.width, obj.height)
             
             # -> Enemies Coords
@@ -158,14 +157,16 @@ class LevelOne:
         pygame.time.set_timer(self.enemy_event, 3000) # -> Evento de enemigos cada 3 sg
 
     def setup_ui(self):
-        self.healthbar = HealthBar(64, 64, 64 * 6, 32, 100) # -> Barra de vida
-        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 150) # -> Tiempo
+        self.setup_image_for_ui() # -> Imagenes para la UI
+
+        self.healthbar = HealthBar(64, 78, 64 * 6, 32, MONKEY_HEALTH, self.monkey_image) # -> Barra de vida
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225) # -> Tiempo
 
         self.treesprout_item = TreeSprout(join(self.wd, "assets", "images", "items", "brote.png")) # -> Brote de arbol
         self.waterbar_item = PlayerWaterBar() # -> Tanque de agua
 
     def check_new_state(self):
-        if self.player.trees >= 4:
+        if self.player.trees >= 6:
             return "WINSCREEN" # -> Return winscreen state
         elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
             return "GAMEOVER" # -> Return gameover state
