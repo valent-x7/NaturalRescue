@@ -1,20 +1,13 @@
 from settings import *
-from menus.menu import draw_menu
+from menus.menu import MainMenu
 from menus.settings import SettingsMenu
 from menus.tutorial import draw_tutorial
-from scenes.play import draw_game
 from sprites import *
-from ui.button import Button
 from ui.utils import *
-from ui.healthbar import HealthBar
-from ui.timebar import TimeBar
-from ui.item import TreeSprout, PlayerWaterBar
 from menus.level_select import LevelSelectMenu
 import settings as main_settings
-import os
-import json
-from pytmx import load_pygame
 from scenes.gameover import draw_gameover
+from scenes.level_one import LevelOne
 
 # Cargamos traducciones
 translations = load_language("languajes.json")
@@ -62,112 +55,25 @@ class Game:
         # Estado de pausa
         self.paused = False
 
-        # Creamos instancias de los menus (Settings, Tutorial, Level Select)
-        self.setup_menu()
+        # ? Creamos instancias de los estados (Menu, Settings, Tutorial, Level Select)
+        self.Main_Menu = None
+        # -> El estado de Settings siempre inicializado
         self.Settings_Menu = SettingsMenu(self, self.SCREEN)
-        self.Level_Select_Menu = LevelSelectMenu(self, self.SCREEN)
+        self.Level_Select_Menu = None
+        self.Level_One = None
+        self.Level_Two = None
+        self.Level_Three = None
 
     # ? Cargar el lenguaje y crear botones
     def reload_language(self, lang):
+        # ? Actualizar (crear) los botones en base al lenguaje
+        if self.Main_Menu:
+            self.Main_Menu.setup_buttons(lang)
+
         self.Settings_Menu.setup_buttons(lang)
-        self.Level_Select_Menu.setup_buttons(lang)
-
-    # ? Este método creará las instancias del menu (botones y fuentes)
-    def setup_menu(self):
-        # Letra del titulo
-        self.fuente_titulo = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 64)
-        # Letra de los botones
-        self.fuente_botones = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 24)
-
-        # ? Definimos el directorio para las imagenes
-        working_directory = os.getcwd()
-
-        # ? Capas del fondo
-        # Capa 1
-        capa1 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
-                                                    "background_menu1.png")).convert()
-        capa1 = pygame.transform.scale(capa1, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-        self.capa1 = capa1.convert()
-        self.bg_menu_width = capa1.get_width() # Ancho del fondo
-
-        # Capa 2
-        capa2 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
-                                                    "background_menu2.png")).convert_alpha()
-        capa2 = pygame.transform.scale(capa2, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-        self.capa2 = capa2.convert_alpha()
-
-        # Capa 3
-        capa3 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
-                                                    "background_menu3.png")).convert_alpha()
-        capa3 = pygame.transform.scale(capa3, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-        self.capa3 = capa3.convert_alpha()
-
-        # Capa 4
-        capa4 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
-                                                    "background_menu4.png")).convert_alpha()
-        capa4 = pygame.transform.scale(capa4, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-        self.capa4 = capa4.convert_alpha()
-
-        # Capa 5
-        capa5 = pygame.image.load(os.path.join(working_directory, "assets", "images", "menu",
-                                                    "background_menu5.png")).convert_alpha()
-        capa5 = pygame.transform.scale(capa5, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT))
-        self.capa5 = capa5.convert_alpha()
-
-        # ? Imagenes del mono y pinguino
-        self.mono = pygame.image.load(os.path.join(working_directory, "img", "chango.png")).convert_alpha()
-        self.pinguino = pygame.image.load(os.path.join(working_directory, "img", "pinguino.png")).convert_alpha()
-
-        # Tamaño del pinguino
-        self.pinguino_rect = self.pinguino.get_frect()
-
-        # Calculamos una posición para el pingüino y asignamos una posición fija para el chango.
-        self.position_y = 400
-        self.pinguino_x = main_settings.WINDOW_WIDTH - self.pinguino_rect.width - 80
-        self.chango_x = 900
-
-        # ? Instancias de los botones
-        # Usamos el directorio de trabajo y con join lo unimos para crear la ruta
-        self.play_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 400), 
-                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "play"), 4, 
-                               os.path.join(working_directory, "assets", "images", "play_icon.png"), 20, '#34D399', '#10B981')
-        self.tutorial_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 520), 
-                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "tutorial"), 4, 
-                               os.path.join(working_directory, "assets", "images", "tutorial_icon.png"), 0, '#FACC15', '#EAB308')
-        self.settings_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 640), 
-                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "settings"), 4, 
-                               os.path.join(working_directory, "assets", "images", "settings_icon.png"), 0, '#38BDF8', '#0EA5E9')
-        self.exit_btn = Button(self.SCREEN, (main_settings.WINDOW_WIDTH // 4, 760), 
-                               self.fuente_botones, 300, 90, get_text(translations, self.current_lang, "exit"), 4, 
-                               os.path.join(working_directory, "assets", "images", "salir_icon.png"), 20, '#FB923C', '#F97316')
-
-    # ? Este metodo creará las instancias de ajustes
-    def setup_settings(self):
-
-        # Definimos el directorio
-        working_directory = os.getcwd()
-
-        # ? Cargamos capa 1
-        capa1 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings1.png")).convert()
-        self.settings_capa1 = pygame.transform.scale(capa1, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert()
-        self.settings_bg_width = self.settings_capa1.get_width()
-
-        # ? Cargamos capa 2
-        capa2 = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "background_settings2.png")).convert_alpha()
-        self.settings_capa2 = pygame.transform.scale(capa2, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert_alpha()
-
-        # ? Cargamos imagen de flecha
-        arrow_image = pygame.image.load(os.path.join(working_directory, "assets", "images", "ajustes", "flecha.png")).convert_alpha()
-        self.arrow_image = pygame.transform.scale(arrow_image, (96, 96)).convert_alpha()
-
-        # ? Creamos botones
-
-        self.english_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 400), 
-                                    self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-english"), 4,
-                                    os.path.join(working_directory, "assets", 'images', "ajustes", "ukFlag.png"), 10, "#4D96FF", "#6DAFFF")
-        self.spanish_button = Button(self.SCREEN, (main_settings.WINDOW_WIDTH / 2, 520), 
-                                    self.fuente_botones, 320, 90, get_text(translations, self.current_lang, "settings-to-spanish"), 4,
-                                    os.path.join(working_directory, "assets", 'images', "ajustes", "spainFlag.png"), 10, "#38B000", "#70E000")
+        
+        if self.Level_Select_Menu:
+            self.Level_Select_Menu.setup_buttons(lang)
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
@@ -194,14 +100,12 @@ class Game:
         }
     }
 
-
-
     def run(self):
 
         while self.running:
 
             # Usamos delta Time
-            dt = self.clock.tick(60) / 1000 # Segundos por Frame
+            self.dt = self.clock.tick(60) / 1000 # Segundos por Frame
 
             # Reproducir música según el estado
             if self.state == 'MENU':
@@ -228,14 +132,11 @@ class Game:
                 if getattr(self, 'current_music', None) != "settings":
                     self.play_music("assets/music/settings.ogg")
                     self.current_music = "settings"
-                    self.setup_settings()
 
-            elif self.state == "PLAYING" or self.state == "LEVEL_1":
+            elif self.state == "LEVEL_1":
                 if getattr(self, 'current_music', None) != "level1":
                     self.play_music("assets/music/level1.ogg")
                     self.current_music = "level1"
-                if not hasattr(self, 'all_sprites'):
-                    self.new()
 
             elif self.state == "WINSCREEN":
                 from scenes.winscreen import draw_winscreen
@@ -265,22 +166,20 @@ class Game:
 
             # ? Manejar estados del juego
             if self.state == 'MENU':
-                self.state = draw_menu(self.SCREEN, events, self.bg_menu_width, self.capa1, self.capa2, self.capa3, 
-                                       self.capa4, self.capa5, self.mono, self.pinguino, self.position_y, self.chango_x, 
-                                       self.pinguino_x, self.fuente_titulo, self.play_btn, 
-                                       self.tutorial_btn, self.settings_btn, self.exit_btn)
+                if not self.Main_Menu:
+                    self.Main_Menu = MainMenu(self, self.SCREEN)
+                self.state = self.Main_Menu.run(self, events)
 
             elif self.state == "LEVEL_SELECT": # -> Selector de nivel
-                 self.state = self.Level_Select_Menu.run(self, events)  
-
-            elif self.state == "PLAYING":
-                if not hasattr(self, 'all_sprites'):
-                    self.new()
-                self.state = draw_game(self.SCREEN, events, translations, self.player_TimeBar, self.player_healthbar, self, dt)
+                 if not self.Level_Select_Menu:
+                     self.Level_Select_Menu = LevelSelectMenu(self, self.SCREEN)
+                 self.state = self.Level_Select_Menu.run(self, events)
 
             # Nivel 1
             elif self.state == "LEVEL_1":
-                self.state = "PLAYING"
+                if not self.Level_One:
+                    self.Level_One = LevelOne(self, self.SCREEN)
+                self.state = self.Level_One.run(self, events)
 
             # Nivel 2
             elif self.state == "LEVEL_2":
@@ -298,9 +197,6 @@ class Game:
             # Ajustes
             elif self.state == "SETTINGS":
                 self.state = self.Settings_Menu.run(self, events)
-                # self.setup_settings()
-                # self.state = draw_settings(self.SCREEN, self, events, self.current_lang, self.settings_bg_width, self.settings_capa1, self.settings_capa2, 
-                #                            self.arrow_image, self.english_button, self.spanish_button)
 
             # Salir del juego
             elif self.state == "SALIR":
@@ -331,83 +227,6 @@ class Game:
             pygame.display.flip()
         
         pygame.quit()
-    
-    def new(self):
-        self.playing = True
-
-        # Grupos de sprites
-        self.all_sprites = AllSprites() # -> Todos los sprites
-        self.collision_sprites = pygame.sprite.Group() # -> Sprites limitadores o de colisión
-        self.water_collision_sprites = pygame.sprite.Group() # -> Sprites de colisión de agua
-        self.damage_sprites = pygame.sprite.Group() # -> Sprites que hacen daño
-        self.acorn_sprites = pygame.sprite.Group() # -> Bellotas
-        self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
-        self.plant_spots = pygame.sprite.Group() # -> Lugares de plantación
-
-        self.setup_map()
-
-    def setup_map(self):
-
-        # Directorio
-        working_directory = os.getcwd()
-
-        map = load_pygame(os.path.join(working_directory, "assets", "maps", "tmx", "bosque.tmx"))
-        
-        # ? Layers o capas
-        for layer_name in ["Ground", "Decoration", "WaterCollision", "Collision"]:
-            layer = map.get_layer_by_name(layer_name)
-
-            for x, y, image in layer.tiles():
-                if layer.name == "Ground" or layer.name == "Decoration":
-                    Sprite(self.all_sprites, (x * TILE, y * TILE), image)
-                elif layer.name == "WaterCollision":
-                    WaterCollisionSprite((self.all_sprites, self.water_collision_sprites), "Limit", (x * TILE, y * TILE), image)
-                else:
-                    CollisionSprite((self.all_sprites, self.collision_sprites), "Limit", (x * TILE, y * TILE), image)
-
-        # ? Objectos
-        for obj in map.objects:
-            # Creamos árboles
-            if obj.name == "Tree":
-                if hasattr(obj, "gid") and obj.gid:
-                    image = map.get_tile_image_by_gid(obj.gid)
-
-                    CollisionSprite((self.all_sprites, self.collision_sprites), "Tree", (obj.x, obj.y), image)
-            # Creamos ramas
-            elif obj.name == "Branch":
-                if hasattr(obj, "gid") and obj.gid:
-                    image = map.get_tile_image_by_gid(obj.gid)
-
-                    DamageSprite((self.all_sprites, self.damage_sprites), (obj.x, obj.y), image)
-            # Creamos lugares de cultivo
-            elif obj.name == "Plant Position":
-                PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
-
-        self.map_width = map.width * TILE
-        self.map_height = map.height * TILE
-
-        # ? Creamos el jugador en la posición indicada
-        player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, self.water_collision_sprites, self.damage_sprites, self.plant_spots)
-
-        # ? Coords de enemigos y evento de respawn
-        self.enemy_event = pygame.event.custom_type()
-        pygame.time.set_timer(self.enemy_event, 5000)
-        self.spawn_enemies_cords = []
-
-        for obj in map.objects:
-            if obj.name == "Enemy":
-                # Enemy((self.all_sprites, self.enemy_sprites), (obj.x, obj.y), self.player, 
-                #       self.collision_sprites, self.water_collision_sprites, self.plant_spots, self.acorn_sprites)
-                self.spawn_enemies_cords.append((obj.x, obj.y))
-
-        # ? UI
-        self.player_healthbar = HealthBar(64, 64, 64*6, 32, 100)
-        self.player_TimeBar = TimeBar(0, 0, WINDOW_WIDTH, 32, 150)
-
-        # Item de los brotes de árbol en pantalla
-        self.item = TreeSprout(os.path.join(working_directory, "assets", "images", "items", "brote.png"))
-        self.water_item = PlayerWaterBar()
 
     # ? Checar eventos del menú
     def check_events(self, events):

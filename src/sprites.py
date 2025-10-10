@@ -47,7 +47,7 @@ class Monkey(pygame.sprite.Sprite):
 
         self.direction = "down"
         self.frame = 1
-        self.animation_speed = 0.1
+        self.animation_speed = 8
 
         # Cooldown de disparo
         self.cooldown_shot = 300
@@ -103,7 +103,7 @@ class Monkey(pygame.sprite.Sprite):
         self.input(events)
         self.check_water_interaction(current_time)
         self.move(delta_time)
-        self.animate(self.moving)
+        self.animate(self.moving, delta_time)
 
     # ? Checar interacción con el agua
     def check_water_interaction(self, current_time):
@@ -176,9 +176,9 @@ class Monkey(pygame.sprite.Sprite):
             self.direction = "left"
             self.moving = True
 
-    def animate(self, moving):
+    def animate(self, moving, delta_time):
         if moving: 
-            self.frame += self.animation_speed
+            self.frame += self.animation_speed * delta_time
             if self.direction == "down":
                 self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
             elif self.direction == "up":
@@ -268,6 +268,14 @@ class CollisionSprite(pygame.sprite.Sprite):
         self.mask = None
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
+
+class CollisionSpriteRect(pygame.sprite.Sprite):
+    def __init__(self, groups, x, y, width, height):
+        super().__init__(groups)
+        self.sprite_type = "Collision"
+        self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.Surface((width, height), pygame.SRCALPHA)
+        # self.image.fill('red')
 
 # ? Sprites de daño
 class DamageSprite(pygame.sprite.Sprite):

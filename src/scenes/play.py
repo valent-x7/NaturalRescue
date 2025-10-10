@@ -96,9 +96,9 @@ def draw_game(screen, events, translations, TimeBar, healthbar, game_instance=No
             player.shoot((game_instance.all_sprites, game_instance.acorn_sprites), player, event.pos,
                          game_instance.all_sprites.camera_offset, game_instance.all_sprites.zoom)
             
-        # elif event.type == game_instance.enemy_event and len(game_instance.enemy_sprites) < 4:
-        #     Enemy((game_instance.all_sprites, game_instance.enemy_sprites), choice(game_instance.spawn_enemies_cords), 
-        #           game_instance.player, game_instance.collision_sprites, game_instance.water_collision_sprites, 
-        #           game_instance.plant_spots, game_instance.acorn_sprites)
+        elif event.type == game_instance.enemy_event and len(game_instance.enemy_sprites) < 6:
+            Enemy((game_instance.all_sprites, game_instance.enemy_sprites), choice(game_instance.spawn_enemies_cords), 
+                  game_instance.player, game_instance.collision_sprites, game_instance.water_collision_sprites, 
+                  game_instance.plant_spots, game_instance.acorn_sprites)
 
     return "PLAYING"
