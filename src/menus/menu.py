@@ -59,10 +59,11 @@ class MainMenu:
         self.scroll_layer_4 -= 1.5
         self.scroll_layer_5 -= 2.5
 
+        
         # ? Título del videojuego
-        title_surf = self.fuente_titulo.render("Natural rescue", True, (255, 255, 255))
-        title_rect = title_surf.get_frect(center = (main_settings.WINDOW_WIDTH / 2, 100))
-        self.game_screen.blit(title_surf, title_rect)
+        title_rect = self.title_image.get_frect(center=(main_settings.WINDOW_WIDTH / 2, 400))
+        # Dibujamos la imagen del título en pantalla
+        self.game_screen.blit(self.title_image, title_rect)
 
         # ? Dibujamos botones del menu
         self.play_btn.draw()
@@ -126,6 +127,8 @@ class MainMenu:
         # ? Imagenes del mono y pinguino
         self.mono_image = pygame.image.load(os.path.join(self.wd, "img", "chango.png")).convert_alpha()
         self.pinguino_image = pygame.image.load(os.path.join(self.wd, "img", "pinguino.png")).convert_alpha()
+
+        self.title_image = pygame.image.load(os.path.join(self.wd, "img", "AnimalRescue.png")).convert_alpha()
 
     # ? Fuentes de texto
     def setup_fonts(self):

@@ -242,6 +242,43 @@ class Monkey(pygame.sprite.Sprite):
                 # elif is_SpriteDamage and self.invincible:
                 #     pass
 
+class Penguin(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((32, 32))
+        self.image.fill((0, 150, 255))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+
+        self.y_vel = 0
+        self.on_ground = False
+
+    def update(self, platforms):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_a]:
+            self.rect.x -= 3
+        if keys[pygame.K_d]:
+            self.rect.x += 3
+        if keys[pygame.K_w] and self.on_ground:
+            self.y_vel = -10
+            self.on_ground = False
+
+        self.y_vel += 0.5
+        self.rect. y += self.y_vel
+
+        self.on_ground = False
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect) and self.y_vel >= 0:
+                if self.y_vel > 0:
+                    self.rect.bottom = platform.rect.top
+                    self.y_vel = 0
+                    self.on_ground = True
+                elif self.y_vel < 0:
+                    self.rect.top = platform.rect.bottom
+                    self.y_vel = 0
+
+
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, groups, position, image):
