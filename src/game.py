@@ -46,7 +46,7 @@ class Game:
         main_settings.WINDOW_HEIGHT = height
         self.clock = pygame.time.Clock()
         self.running = True
-        self.monkey_spritesheet = Spritesheet('./img/monkey_spritesheet.png')
+        self.monkey_spritesheet = Spritesheet('./img/penguin_spritesheet.png')
 
         self.state = state # -> Estado del juego
 

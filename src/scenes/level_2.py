@@ -27,10 +27,12 @@ def draw_level2(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                return "MENU"
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_m:
                     running = False
+                    return "LEVEL_SELECT"
                     
         penguin.update(platforms)
         screen.fill((30,30,60))
