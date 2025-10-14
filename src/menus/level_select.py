@@ -74,6 +74,9 @@ class LevelSelectMenu:
             # ? Manejar niveles
             elif self.level1_btn.is_clicked(event):
                 return "LEVEL_1" # -> Nivel 1
+            
+            elif self.level2_btn.is_clicked(event):
+                return "LEVEL_2"
                 
         return "LEVEL_SELECT"
 
