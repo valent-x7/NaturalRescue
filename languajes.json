@@ -1,7 +1,6 @@
 {
     "en": {
         "play": "Play",
-        "tutorial": "Tutorial",
         "settings": "Settings",
         "exit": "Exit",
         "settings-title": "Settings",
@@ -9,8 +8,9 @@
         "settings-to-english": "English",
         "settings-to-spanish": "Spanish",
 
-        "tutorial-title": "HOW TO MOVE",
-        "tutorial-control-menu": "Press M to return to menu",
+        "tutorial-title": "Game Controls",
+        "tutorial-extra-actions": "Special Actions",
+        "press-enter": "Press ENTER to continue",
 
         "level-select-title": "Select a Level",
         "level-select-level-1": "Level 1",
@@ -32,13 +32,10 @@
         "wingame_title": "Congratulations",
         "wingame_subtitle": "You passed the level 1",
 
-        "mission-text": "Head to the lake to collect water to water the tree shoots",
-
-        "tutorial-extra-actions": "EXTRA ACTIONS"
+        "mission-text": "Head to the lake to collect water to water the tree shoots"
     },
     "es": {
         "play": "Jugar",
-        "tutorial": "Tutorial",
         "settings": "Ajustes",
         "exit": "Salir",
         "settings-title": "Ajustes",
@@ -46,8 +43,9 @@
         "settings-to-english": "Inglés",
         "settings-to-spanish": "Español",
 
-        "tutorial-title": "CÓMO MOVERSE",
-        "tutorial-control-menu": "Presiona M para volver al menú",
+        "tutorial-title": "Controles del juego",
+        "tutorial-extra-actions": "Acciones especiales",
+        "press-enter": "Presiona ENTER para continuar",
 
         "level-select-title": "Selecciona un Nivel",
         "level-select-level-1": "Nivel 1",
@@ -69,8 +67,6 @@
         "wingame_title": "Felicidades",
         "wingame_subtitle": "Pasaste el nivel 1",
 
-        "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol",
-
-        "tutorial-extra-actions": "ACCIONES EXTRAS"
+        "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol"
     }
 }
