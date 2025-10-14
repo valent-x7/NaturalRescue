@@ -67,7 +67,6 @@ class MainMenu:
 
         # ? Dibujamos botones del menu
         self.play_btn.draw()
-        self.tutorial_btn.draw()
         self.settings_btn.draw()
         self.exit_btn.draw()
 
@@ -92,8 +91,7 @@ class MainMenu:
         for event in events:
             if self.play_btn.is_clicked(event):
                 return "LEVEL_SELECT"
-            elif self.tutorial_btn.is_clicked(event):
-                return "TUTORIAL"
+
             elif self.settings_btn.is_clicked(event):
                 return "SETTINGS"
             elif self.exit_btn.is_clicked(event):
@@ -152,18 +150,13 @@ class MainMenu:
         self.play_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 400), self.fuente_botones, 300, 90, 
                                 get_text(self.traslations, lang, "play"), 4, join(self.wd, "assets", "images", "play_icon.png"),
                                 20, '#34D399', '#10B981')
-        
-        # -> Tutorial Button
-        self.tutorial_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 520), self.fuente_botones, 300, 90, 
-                                get_text(self.traslations, lang, "tutorial"), 4, join(self.wd, "assets", "images", "tutorial_icon.png"),
-                                0, '#FACC15', '#EAB308')
-        
+      
         # -> Settings Button
-        self.settings_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 640), self.fuente_botones, 300, 90, 
+        self.settings_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 520), self.fuente_botones, 300, 90, 
                                 get_text(self.traslations, lang, "settings"), 4, join(self.wd, "assets", "images", "settings_icon.png"),
                                 0, '#38BDF8', '#0EA5E9')
         
         # -> Exit Button
-        self.exit_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 760), self.fuente_botones, 300, 90, 
+        self.exit_btn = Button(self.game_screen, (main_settings.WINDOW_WIDTH // 4, 640), self.fuente_botones, 300, 90, 
                                 get_text(self.traslations, lang, "exit"), 4, join(self.wd, "assets", "images", "salir_icon.png"),
                                 20, '#FB923C', '#F97316')

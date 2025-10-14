@@ -1,91 +1,111 @@
+# scenes/tutorial.py
 import pygame
 from settings import *
 from ui.utils import draw_text, get_text
 from math import sin
 
-def draw_tutorial(screen, events, translations, lang, tutorial_assets):
-    # Fondo con imagen
-    bg = pygame.image.load("assets/images/tutorial/tutorial_background.png").convert()
-    bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
-    screen.blit(bg, (0, 0))
 
-    # Título
-    title = get_text(translations, lang, "tutorial-title")
-    draw_text(screen, TITLE_FONT_PATH, 52, title, "#FFFFFF", WINDOW_WIDTH // 2, 80)
+class Tutorial:
+    def __init__(self, translations, lang, tutorial_assets):
+        self.translations = translations
+        self.lang = lang
+        self.tutorial_assets = tutorial_assets
+        self.finished = False
+        self.start_time = pygame.time.get_ticks()
 
-    # Tamaño uniforme para todas las imágenes
-    IMG_SIZE = (120, 120)
+    def draw(self, screen, events, current_lang):
+        # Fondo
+        bg = pygame.image.load(
+            "assets/images/tutorial/tutorial_background.png"
+        ).convert()
+        bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        screen.blit(bg, (0, 0))
 
-    # -----------------------------
-    # Fila 1 (WASD + chango)
-    # -----------------------------
-    actions = ["W", "A", "S", "D"]
-    start_y = 220
-    gap_x = 200
-    base_x = WINDOW_WIDTH // 2 - (len(actions) - 1) * gap_x // 2
+        # Título
+        title = get_text(self.translations, current_lang, "tutorial-title")
+        draw_text(screen, TITLE_FONT_PATH, 52, title, "#FFFFFF", WINDOW_WIDTH // 2, 80)
 
-    for i, key in enumerate(actions):
-        x = base_x + i * gap_x
+        # Tamaño de imágenes
+        IMG_SIZE = (120, 120)
 
-        # Tecla
-        key_img = pygame.transform.scale(tutorial_assets["keys"][key], IMG_SIZE)
-        key_rect = key_img.get_rect(center=(x, start_y))
-        screen.blit(key_img, key_rect)
+        # Fila WASD
+        actions = ["W", "A", "S", "D"]
+        start_y = 220
+        gap_x = 200
+        base_x = WINDOW_WIDTH // 2 - (len(actions) - 1) * gap_x // 2
 
-        # Acción del chango
-        monkey_img = pygame.transform.scale(tutorial_assets["monkey"][key], IMG_SIZE)
-        monkey_rect = monkey_img.get_rect(center=(x, start_y + 150))
-        screen.blit(monkey_img, monkey_rect)
+        for i, key in enumerate(actions):
+            x = base_x + i * gap_x
+            key_img = pygame.transform.scale(
+                self.tutorial_assets["keys"][key], IMG_SIZE
+            )
+            screen.blit(key_img, key_img.get_rect(center=(x, start_y)))
 
+            monkey_img = pygame.transform.scale(
+                self.tutorial_assets["monkey"][key], IMG_SIZE
+            )
+            screen.blit(monkey_img, monkey_img.get_rect(center=(x, start_y + 150)))
 
-    # Título
-    extra_title = get_text(translations, lang, "tutorial-extra-actions")
-    draw_text(screen, TITLE_FONT_PATH, 36, extra_title, "#FFFFFF", WINDOW_WIDTH // 2, start_y + 280)
+        # --- ✅ Texto: "Acciones extras" ---
+        extra_title = get_text(
+            self.translations, current_lang, "tutorial-extra-actions"
+        )
+        draw_text(
+            screen,
+            TITLE_FONT_PATH,
+            36,
+            extra_title,
+            "#FFFFFF",
+            WINDOW_WIDTH // 2,
+            start_y + 280,  # Justo debajo de los changos
+        )
 
-    # -----------------------------
-    # Fila 2 (H, R, P + extras)
-    # -----------------------------
-    extra_actions = ["H", "R", "P"]
-    start_y_extras = start_y + 350  # debajo de WASD
-    base_x_extras = WINDOW_WIDTH // 2 - (len(extra_actions) - 1) * gap_x // 2
+        # Fila H, R, P
+        extra_actions = ["H", "R", "P"]
+        start_y_extras = start_y + 350
+        base_x_extras = WINDOW_WIDTH // 2 - (len(extra_actions) - 1) * gap_x // 2
 
-    for i, key in enumerate(extra_actions):
-        x = base_x_extras + i * gap_x
+        for i, key in enumerate(extra_actions):
+            x = base_x_extras + i * gap_x
+            key_img = pygame.transform.scale(
+                self.tutorial_assets["keys"][key], IMG_SIZE
+            )
+            screen.blit(key_img, key_img.get_rect(center=(x, start_y_extras)))
 
-        # Tecla
-        key_img = pygame.transform.scale(tutorial_assets["keys"][key], IMG_SIZE)
-        key_rect = key_img.get_rect(center=(x, start_y_extras))
-        screen.blit(key_img, key_rect)
+            # Imagen extra
+            if key == "H":
+                extra_img = self.tutorial_assets["extras"]["H_brote"]
+                extra_img = pygame.transform.scale(extra_img, (250, 120))
+            elif key == "R":
+                extra_img = self.tutorial_assets["extras"]["R_restart"]
+                extra_img = pygame.transform.scale(extra_img, IMG_SIZE)
+            elif key == "P":
+                extra_img = self.tutorial_assets["extras"]["P_pause"]
+                extra_img = pygame.transform.scale(extra_img, (250, 120))
 
-        # Imagen extra al lado
-        if key == "H":
-            extra_img = tutorial_assets["extras"]["H_brote"]
-        elif key == "R":
-            extra_img = tutorial_assets["extras"]["R_restart"]
-        elif key == "P":
-            extra_img = tutorial_assets["extras"]["P_pause"]
+            screen.blit(extra_img, extra_img.get_rect(center=(x, start_y_extras + 150)))
 
-        # Si es H o P, más anchas
-        if key in ["H", "P"]:
-            extra_img = pygame.transform.scale(extra_img, (250, 120))
-        else:
-            extra_img = pygame.transform.scale(extra_img, IMG_SIZE)
+        # Mensaje parpadeante
+        hint = get_text(self.translations, current_lang, "press-enter")
+        t = pygame.time.get_ticks() / 500
+        alpha = sin(t) * 0.5 + 0.5
+        color_blink = [int(150 + alpha * 100)] * 3
+        draw_text(
+            screen,
+            TITLE_FONT_PATH,
+            30,
+            hint,
+            color_blink,
+            WINDOW_WIDTH / 2,
+            WINDOW_HEIGHT - 60,
+        )
 
-        extra_rect = extra_img.get_rect(center=(x, start_y_extras + 150))
-        screen.blit(extra_img, extra_rect)
+        # Eventos
+        for e in events:
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_RETURN or e.key == pygame.K_SPACE:
+                    return "LEVEL"
+                elif e.key == pygame.K_m:
+                    return "MENU"
 
-    # Mensaje para regresar al menú
-    exit_hint = get_text(translations, lang, "tutorial-control-menu")
-    t = pygame.time.get_ticks() / 500
-    alpha = sin(t) * 0.5 + 0.5
-    color_blink = [int(100 + alpha * 155)] * 3  
-
-    draw_text(screen, TITLE_FONT_PATH, 24, exit_hint,
-              color_blink, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 40)
-
-    # Eventos
-    for event in events:
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-            return "MENU"
-
-    return "TUTORIAL"
+        return None
