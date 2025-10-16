@@ -61,9 +61,9 @@ class MainMenu:
 
         
         # ? Título del videojuego
-        title_rect = self.title_image.get_frect(center=(main_settings.WINDOW_WIDTH / 2, 400))
+        title_rect = self.title_image_scl.get_frect(center=(main_settings.WINDOW_WIDTH / 4, 280))
         # Dibujamos la imagen del título en pantalla
-        self.game_screen.blit(self.title_image, title_rect)
+        self.game_screen.blit(self.title_image_scl, title_rect)
 
         # ? Dibujamos botones del menu
         self.play_btn.draw()
@@ -129,6 +129,7 @@ class MainMenu:
         self.pinguino_image = pygame.image.load(os.path.join(self.wd, "img", "pinguino.png")).convert_alpha()
 
         self.title_image = pygame.image.load(os.path.join(self.wd, "img", "AnimalRescue.png")).convert_alpha()
+        self.title_image_scl = pygame.transform.scale(self.title_image, (600, 600))
 
     # ? Fuentes de texto
     def setup_fonts(self):

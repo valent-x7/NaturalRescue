@@ -243,15 +243,36 @@ class Monkey(pygame.sprite.Sprite):
                 #     pass
 
 class Penguin(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, spritesheet):
         super().__init__()
-        self.image = pygame.Surface((32, 32))
-        self.image.fill((0, 150, 255))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
+        self.spritesheet = spritesheet
+        self.w = TILE
+        self.h = TILE
 
         self.y_vel = 0
         self.on_ground = False
+
+        self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
+                               self.spritesheet.get_sprite(32, 0, self.w, self.h),
+                               self.spritesheet.get_sprite(64, 0, self.w, self.h)]
+        
+        self.left_animation = [self.spritesheet.get_sprite(0, 32, self.w, self.h), 
+                               self.spritesheet.get_sprite(32, 32, self.w, self.h),
+                               self.spritesheet.get_sprite(64, 32, self.w, self.h)]
+        
+        self.right_animation = [self.spritesheet.get_sprite(0, 64, self.w, self.h), 
+                               self.spritesheet.get_sprite(32, 64, self.w, self.h),
+                               self.spritesheet.get_sprite(64, 64, self.w, self.h)]
+        
+        self.up_animation = [self.spritesheet.get_sprite(0, 96, self.w, self.h), 
+                               self.spritesheet.get_sprite(32, 96, self.w, self.h),
+                               self.spritesheet.get_sprite(64, 96, self.w, self.h)]
+        
+        self.image = self.down_animation[1]
+        
+        self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
+        self.hitbox_rect = self.rect.inflate(-14, -10)
+
 
     def update(self, platforms):
         keys = pygame.key.get_pressed()
