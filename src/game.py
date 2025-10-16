@@ -8,7 +8,7 @@ from menus.level_select import LevelSelectMenu
 import settings as main_settings
 from scenes.gameover import draw_gameover
 from scenes.level_one import LevelOne
-from scenes.level_2 import draw_level2
+from scenes.level_2 import Level_two
 from scenes.winscreen import draw_winscreen
 
 # Cargamos traducciones
@@ -48,6 +48,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.monkey_spritesheet = Spritesheet("./img/monkey_spritesheet.png")
+        self.penguin_spritesheet = Spritesheet('./img/penguin_spritesheet.png')
 
         self.state = state  # -> Estado del juego
 
@@ -260,7 +261,10 @@ class Game:
 
             # Nivel 2
             elif self.state == "LEVEL_2":
-                self.state = draw_level2(self.SCREEN)
+
+                if not self.Level_Two:
+                    self.Level_Two = Level_two(self, self.SCREEN)
+                self.state = self.Level_Two.draw_level2()
 
             # Nivel 3
             elif self.state == "LEVEL_3":
