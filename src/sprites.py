@@ -248,6 +248,10 @@ class Penguin(pygame.sprite.Sprite):
         self.spritesheet = spritesheet
         self.w = TILE
         self.h = TILE
+        self.moving = False
+        self.direction = 'down'
+        self.frame = 1
+        self.animation_speed = 8
 
         self.y_vel = 0
         self.on_ground = False
@@ -272,16 +276,44 @@ class Penguin(pygame.sprite.Sprite):
         
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
+    
+    def animate(self, moving, delta_time):
+        if moving: 
+            self.frame += self.animation_speed * delta_time
+            if self.direction == "down":
+                self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
+            elif self.direction == "up":
+                self.image = self.up_animation[int(self.frame) % len(self.up_animation)]
+            elif self.direction == "left":
+                self.image = self.left_animation[int(self.frame) % len(self.left_animation)]
+            elif self.direction == "right":
+                self.image = self.right_animation[int(self.frame) % len(self.right_animation)]
+        else:
+            if self.direction == "down":
+                self.image = self.down_animation[1]
+            elif self.direction == "up":
+                self.image = self.up_animation[1]
+            elif self.direction == "right":
+                self.image = self.right_animation[1]
+            elif self.direction == "left":
+                self.image = self.left_animation[1]
 
 
-    def update(self, platforms):
+    def update(self, platforms, delta_time):
         keys = pygame.key.get_pressed()
+        self.animate(self.moving, delta_time)
 
         if keys[pygame.K_a]:
+            self.direction = 'left'
+            self.moving = True
             self.rect.x -= 3
         if keys[pygame.K_d]:
+            self.direction = 'right'
+            self.moving = True
             self.rect.x += 3
         if keys[pygame.K_w] and self.on_ground:
+            self.direction = 'up'
+            self.moving = True
             self.y_vel = -10
             self.on_ground = False
 

@@ -7,6 +7,7 @@ from sprites import *
 class Level_two:
     def __init__(self, game, screen):
         self.game_screen = screen
+        self.game = game
         
         self.wd = getcwd() # -> Working Directory
 
@@ -50,7 +51,7 @@ class Level_two:
                    if event.key == pygame.K_ESCAPE:
                        return "SALIR"  
                      
-            penguin.update(platforms)
+            penguin.update(platforms, self.game.dt)
 
             self.game_screen.blit(self.bg, (0,0))
             all_sprites.draw(self.game_screen)
