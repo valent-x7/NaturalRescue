@@ -148,11 +148,25 @@ class Game:
             self.state = "MENU"  # Si falla, vuelve al menú
 
     def run(self):
-
+        # ✅ VARIABLES NUEVAS PARA CONTROLAR DT
+        last_time = pygame.time.get_ticks()
+        previous_state = None
+        
         while self.running:
-
-            # Usamos delta Time
-            self.dt = self.clock.tick(60) / 1000  # Segundos por Frame
+            # ✅ CALCULAR DT CORRECTAMENTE
+            current_time = pygame.time.get_ticks()
+            self.dt = (current_time - last_time) / 1000.0
+            last_time = current_time
+            
+            # ✅ LIMITAR DT MÁXIMO PARA EVITAR SALTOS GRANDES
+            if self.dt > 0.05:  # Máximo 50ms (20 FPS mínimo)
+                self.dt = 0.05
+            
+            # ✅ RESETEAR DT AL CAMBIAR DE ESTADO
+            if self.state != previous_state:
+                self.dt = 0.016  # Valor seguro para 60 FPS
+                last_time = pygame.time.get_ticks()
+                previous_state = self.state
 
             # Reproducir música según el estado
             if self.state == "MENU":
@@ -210,6 +224,7 @@ class Game:
 
             # Nivel 1
             elif self.state == "LEVEL_1":
+                print(self.state)
                 # Si el tutorial aún no se ha mostrado, pasamos a esa pantalla
                 if not self.tutorial_done:
                     self.state = "TUTORIAL_LEVEL_1"
@@ -227,6 +242,8 @@ class Game:
                         self.tutorial_assets,  # Imágenes o textos del tutorial
                     )
                     pygame.mixer.music.stop()  # Detenemos música del menú, si había
+                    # ✅ RESETEAR TIEMPO AL CREAR TUTORIAL
+                    last_time = pygame.time.get_ticks()
 
                 # Dibujamos el tutorial y obtenemos su resultado
                 result = self.tutorial_instance.draw(
@@ -239,7 +256,11 @@ class Game:
                     self.state = "LEVEL_1_RUNNING"  # Cambiamos al estado del nivel 1
                     self.play_music("assets/music/level_one_music.ogg")
                     self.current_music = "level1"
-                    del self.tutorial_instance  # Eliminamos el tutorial de memoria
+                    # ✅ RESET CRÍTICO: Forzar dt pequeño al salir del tutorial
+                    self.dt = 0.016
+                    last_time = pygame.time.get_ticks()
+                    if hasattr(self, "tutorial_instance"):
+                        del self.tutorial_instance  # Eliminamos el tutorial de memoria
 
                 # Si el jugador decide regresar al menú (por ejemplo, presionando ESC)
                 elif result == "MENU":
@@ -261,10 +282,13 @@ class Game:
 
             # Nivel 2
             elif self.state == "LEVEL_2":
-
                 if not self.Level_Two:
                     self.Level_Two = Level_two(self, self.SCREEN)
-                self.state = self.Level_Two.draw_level2()
+
+                new_state = self.Level_Two.run(self, events)
+
+                if new_state and new_state != "LEVEL_2":
+                    self.state = new_state
 
             # Nivel 3
             elif self.state == "LEVEL_3":

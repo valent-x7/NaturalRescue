@@ -256,6 +256,11 @@ class Penguin(pygame.sprite.Sprite):
         self.y_vel = 0
         self.on_ground = False
 
+
+        self.speed = 120  # píxeles por segundo
+        self.jump_strength = -300  # píxeles por segundo
+        self.gravity = 800  # píxeles por segundo²
+
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
                                self.spritesheet.get_sprite(64, 0, self.w, self.h)]
@@ -306,19 +311,19 @@ class Penguin(pygame.sprite.Sprite):
         if keys[pygame.K_a]:
             self.direction = 'left'
             self.moving = True
-            self.rect.x -= 3
+            self.rect.x -= self.speed * delta_time
         if keys[pygame.K_d]:
             self.direction = 'right'
             self.moving = True
-            self.rect.x += 3
+            self.rect.x += self.speed * delta_time
         if keys[pygame.K_w] and self.on_ground:
             self.direction = 'up'
             self.moving = True
-            self.y_vel = -10
+            self.y_vel = self.jump_strength
             self.on_ground = False
 
-        self.y_vel += 0.5
-        self.rect. y += self.y_vel
+        self.y_vel += self.gravity * delta_time
+        self.rect. y += self.y_vel * delta_time
 
         self.on_ground = False
         for platform in platforms:
@@ -330,7 +335,6 @@ class Penguin(pygame.sprite.Sprite):
                 elif self.y_vel < 0:
                     self.rect.top = platform.rect.bottom
                     self.y_vel = 0
-
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
