@@ -72,7 +72,7 @@ class Game:
         self.Level_Three = None
 
         # ? Mostrar tutorial al inicio de cada nivel
-        self.show_tutorial = True
+        self.tutorial_1_done = False
 
     # ? Cargar el lenguaje y crear botones
     def reload_language(self, lang):
@@ -153,179 +153,129 @@ class Game:
 
             # Usamos delta Time
             self.dt = self.clock.tick(60) / 1000  # Segundos por Frame
+            
+            # Obtener Eventos
+            events = pygame.event.get()
 
-            # Reproducir música según el estado
             if self.state == "MENU":
-                if getattr(self, "entered_gameover", False):
-                    self.entered_gameover = False
                 if getattr(self, "current_music", None) != "menu":
                     self.play_music("assets/music/menu.ogg")
                     self.current_music = "menu"
-
-            elif self.state == "LEVEL_SELECT":
-                if getattr(self, "entered_gameover", False):
-                    self.entered_gameover = False
-                if getattr(self, "current_music", None) != "level_select":
-                    self.play_music("assets/music/levelselect.ogg")
-                    self.current_music = "level_select"
-
+                
+                if not self.Main_Menu:
+                    self.Main_Menu = MainMenu(self, self.SCREEN)
+                
+                self.state = self.Main_Menu.run(self, events)
+            
             elif self.state == "SETTINGS":
                 if getattr(self, "current_music", None) != "settings":
                     self.play_music("assets/music/settings.ogg")
                     self.current_music = "settings"
+                
+                self.state = self.Settings_Menu.run(self, events)
 
-            elif self.state == "GAMEOVER":
-                # reproducir música de Game Over solo una vez al entrar
-                if not getattr(self, "entered_gameover", False):
-                    pygame.mixer.music.stop()
-                    try:
-                        pygame.mixer.music.load("assets/sound/gameover.ogg")
-                        pygame.mixer.music.play(loops=0)  # una sola vez
-                    except Exception as e:
-                        print("Error al reproducir música Game Over:", e)
-                    self.entered_gameover = True
+            elif self.state == "SALIR":
+                self.running = False
 
-            # Obtener Eventos
-            events = pygame.event.get()
-
-            # ? Manejar estados del juego
-            if self.state == "MENU":
-                # ? Musica
-                if getattr(self, "current_music", None) != "menu":
-                    self.play_music("assets/music/menu.ogg")
-                    self.current_music = "menu"
-
-                if not self.Main_Menu:
-                    self.Main_Menu = MainMenu(self, self.SCREEN)
-                self.state = self.Main_Menu.run(self, events)
-
-            elif self.state == "LEVEL_SELECT":  # -> Selector de nivel
+            elif self.state == "LEVEL_SELECT":
+                if getattr(self, "current_music", None) != "level_select":
+                    self.play_music("assets/music/levelselect.ogg")
+                    self.current_music = "level_select"
+                
                 if not self.Level_Select_Menu:
                     self.Level_Select_Menu = LevelSelectMenu(self, self.SCREEN)
+
                 self.state = self.Level_Select_Menu.run(self, events)
 
-            # Bandera para saber si ya mostramos el tutorial
-            if not hasattr(self, "tutorial_done"):
-                self.tutorial_done = False
+            elif self.state == "START_LEVEL_1":
+                # -> Si existe nivel 1 y tiene gameover en true mandarlo a gameover directo
+                if hasattr(self, "Level_One") and getattr(self.Level_One, "game_over", False):
+                    self.state = "GAMEOVER"
 
-            # Nivel 1
-            elif self.state == "LEVEL_1":
-                # Si el tutorial aún no se ha mostrado, pasamos a esa pantalla
-                if not self.tutorial_done:
-                    self.state = "TUTORIAL_LEVEL_1"
+                elif hasattr(self, "Level_One") and getattr(self.Level_One, "finished_level", False):
+                    self.state = "WINSCREEN"
+
+                elif not self.tutorial_1_done:
+                    self.state = "TUTORIAL_1"
+
                 else:
-                    self.state = "LEVEL_1_RUNNING"
+                    self.state = "LEVEL_1"
 
-            # Estado del tutorial antes del Nivel 1
-            elif self.state == "TUTORIAL_LEVEL_1":
-                # Si no existe aún la instancia del tutorial, la creamos
+            elif self.state == "TUTORIAL_1":
                 if not hasattr(self, "tutorial_instance"):
-                    self.setup_tutorial()  # Cargar recursos si es necesario
+                    self.setup_tutorial()
                     self.tutorial_instance = Tutorial(
                         self.translations,  # Diccionario de traducciones
                         self.current_lang,  # Idioma actual
                         self.tutorial_assets,  # Imágenes o textos del tutorial
                     )
-                    pygame.mixer.music.stop()  # Detenemos música del menú, si había
 
-                # Dibujamos el tutorial y obtenemos su resultado
-                result = self.tutorial_instance.draw(
-                    self.SCREEN, events, self.current_lang
-                )
+                if getattr(self, "current_music", None) != "tutorial":
+                    self.play_music("assets/music/tutorial.ogg")
+                    self.current_music = "tutorial"
 
-                # Si el jugador presiona Enter, el tutorial devuelve "LEVEL"
-                if result == "LEVEL":
-                    self.tutorial_done = True  # Marcamos que ya se mostró el tutorial
-                    self.state = "LEVEL_1_RUNNING"  # Cambiamos al estado del nivel 1
+                self.state = self.tutorial_instance.draw(self, self.SCREEN, events, self.current_lang)
+            
+            # ? Niveles
+            elif self.state == "LEVEL_1":
+                if getattr(self, "current_music", None) != "level_1":
                     self.play_music("assets/music/level_one_music.ogg")
-                    self.current_music = "level1"
-                    del self.tutorial_instance  # Eliminamos el tutorial de memoria
+                    self.current_music = "level_1"
 
-                # Si el jugador decide regresar al menú (por ejemplo, presionando ESC)
-                elif result == "MENU":
-                    self.state = "MENU"
-                    if hasattr(self, "tutorial_instance"):
-                        del self.tutorial_instance
-
-            # Estado del nivel 1 en ejecución
-            elif self.state == "LEVEL_1_RUNNING":
-                if not hasattr(self, "Level_One") or self.Level_One is None:
+                if not self.Level_One:
                     self.Level_One = LevelOne(self, self.SCREEN)
 
-                # Ejecutar run() y capturar el nuevo estado (asegurando que existe)
-                new_state = self.Level_One.run(self, events) if self.Level_One else None
+                self.state = self.Level_One.run(self, events)
 
-                # Solo cambiar de estado si hay uno nuevo válido
-                if new_state and new_state != "LEVEL_1_RUNNING":
-                    self.state = new_state
-
-            # Nivel 2
             elif self.state == "LEVEL_2":
-
                 if not self.Level_Two:
                     self.Level_Two = Level_two(self, self.SCREEN)
                 self.state = self.Level_Two.draw_level2()
 
-            # Nivel 3
             elif self.state == "LEVEL_3":
                 pass
 
-            # Ajustes
-            elif self.state == "SETTINGS":
-                self.state = self.Settings_Menu.run(self, events)
+            elif self.state == "GAMEOVER":
+                if not getattr(self, "entered_gameover", False):
+                    self.play_music_once("assets/sound/gameover.ogg", "gameover")
+                    self.entered_gameover = True
 
-            # Salir del juego
-            elif self.state == "SALIR":
-                self.running = False
+                new_state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
 
+                if new_state == "MENU":
+                    self.entered_gameover = False
+                    self.state = "MENU"
+
+                elif new_state == "RESTART_LEVEL":
+                    self.entered_gameover = False
+
+                    if hasattr(self, "Level_One"):
+                        del self.Level_One # -> Borrar nivel uno
+
+                    self.Level_One = None
+
+                    self.state = "START_LEVEL_1"
+            
             elif self.state == "WINSCREEN":
-                new_state = draw_winscreen(
-                    self.SCREEN, events, translations, self.current_lang
-                )
+                if not getattr(self, "entered_winscreen", False):
+                    self.play_music_once("assets/sound/win.ogg", "winscreen")
+                    self.entered_winscreen = True
+
+                new_state = draw_winscreen(self.SCREEN, events, translations, self.current_lang)
 
                 if new_state == "MENU":
                     self.state = "MENU"
-                    self.entered_gameover = False
+                    self.entered_winscreen = False
 
                 elif new_state == "RESTART_LEVEL":
-                    self.state = "LEVEL_1"
-                    self.entered_gameover = False
+                    self.entered_winscreen = False
 
                     if hasattr(self, "Level_One"):
-                        del self.Level_One
+                        del self.Level_One # -> Borrar nivel uno
+                    
+                    self.Level_One = None
 
-                    self.Level_One = LevelOne(
-                        self, self.SCREEN
-                    )  # -> Nivel limpio y nuevo
-
-                    # Forzar que la música del nivel 1 vuelva a sonar
-                    self.play_music("assets/music/level_one_music.ogg")
-                    self.current_music = "level1"
-
-            elif self.state == "GAMEOVER":  # -> Pantalla de Game Over
-                new_state = draw_gameover(
-                    self.SCREEN, events, translations, self.current_lang
-                )
-
-                # Solo revisamos new_state dentro del mismo bloque
-                if new_state == "MENU":
-                    self.state = "MENU"
-                    self.entered_gameover = False
-
-                elif new_state == "RESTART_LEVEL":
-                    self.state = "LEVEL_1"
-                    self.entered_gameover = False
-
-                    if hasattr(self, "Level_One"):
-                        del self.Level_One  # Fuerza a recrear el nivel
-
-                    self.Level_One = LevelOne(
-                        self, self.SCREEN
-                    )  # -> Nivel limpio y nuevo
-
-                    # Forzar que la música del nivel 1 vuelva a sonar
-                    self.play_music("assets/music/level_one_music.ogg")
-                    self.current_music = "level1"
+                    self.state = "START_LEVEL_1"
 
             # Checar eventos del menú
             self.check_events(events)

@@ -13,7 +13,7 @@ class Tutorial:
         self.finished = False
         self.start_time = pygame.time.get_ticks()
 
-    def draw(self, screen, events, current_lang):
+    def draw(self, game, screen, events, current_lang):
         # Fondo
         bg = pygame.image.load(
             "assets/images/tutorial/tutorial_background.png"
@@ -104,8 +104,12 @@ class Tutorial:
         for e in events:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_RETURN or e.key == pygame.K_SPACE:
-                    return "LEVEL"
+                    game.tutorial_1_done = True
+                    return "LEVEL_1"
                 elif e.key == pygame.K_m:
-                    return "MENU"
+                    return "LEVEL_SELECT"
 
-        return None
+        return "TUTORIAL_1"
+
+    def setup_assets(self):
+        pass

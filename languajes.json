@@ -21,6 +21,7 @@
         "paused-description": "Press P to play",
 
         "tree-sprout": "Tree Sprout",
+        "acorn" : "Acorn",
         "water-tank": "Water Tank",
         "water-tank-full": "Full",
         "water-tank-mid": "Mid",
@@ -56,6 +57,7 @@
         "paused-description": "Presiona P para jugar",
 
         "tree-sprout": "Brote de Árbol",
+        "acorn": "Bellota",
         "water-tank": "Tanque de agua",
         "water-tank-full": "Lleno",
         "water-tank-mid": "Mitad",

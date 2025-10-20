@@ -21,6 +21,7 @@ class Monkey(pygame.sprite.Sprite):
         self.height = TILE
         self.health = MONKEY_HEALTH
         self.seeds = MONKEY_SEEDS
+        self.acorns = MONKEY_ACORNS
         self.trees = 0
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
@@ -128,10 +129,11 @@ class Monkey(pygame.sprite.Sprite):
     # Disparar bellotas
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot >= self.cooldown_shot:
+        if current_time - self.last_shot >= self.cooldown_shot and self.acorns > 0:
             # ? Creamos bellota
             Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
             self.last_shot = current_time
+            self.acorns -= 1
 
     def input(self, events):
         for event in events:

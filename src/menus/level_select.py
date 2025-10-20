@@ -2,7 +2,9 @@ import sys
 import os 
 from ui.button import Button
 import pygame 
-from ui.utils import get_text
+from ui.utils import get_text, draw_text
+from math import sin
+from settings import *
 
 sys.path.append(os.path.abspath(".."))
 import settings as main_settings
@@ -66,6 +68,15 @@ class LevelSelectMenu:
         self.level2_btn.draw()
         self.level3_btn.draw()
 
+        # Mensaje para regresar al menú
+        exit_hint = get_text(game.translations, game.current_lang, "press-m-to-menu")
+        t = pygame.time.get_ticks() / 500
+        alpha = sin(t) * 0.5 + 0.5
+        color_blink = [int(100 + alpha * 155)] * 3  
+
+        draw_text(self.game_screen, TITLE_FONT_PATH, 24, exit_hint,
+                color_blink, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 40)
+
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_m:
@@ -73,10 +84,13 @@ class LevelSelectMenu:
                 
             # ? Manejar niveles
             elif self.level1_btn.is_clicked(event):
-                return "LEVEL_1" # -> Nivel 1
+                return "START_LEVEL_1" # -> Nivel 1
             
             elif self.level2_btn.is_clicked(event):
-                return "LEVEL_2"
+                return "LEVEL_2" # -> Nivel 2
+            
+            elif self.level3_btn.is_clicked(event):
+                return "LEVEL_3" # -> Nivel 3
                 
         return "LEVEL_SELECT"
 
