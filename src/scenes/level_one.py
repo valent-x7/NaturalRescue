@@ -2,7 +2,7 @@ from settings import *
 from sprites import *
 from ui.healthbar import HealthBar
 from ui.timebar import TimeBar
-from ui.item import TreeSprout, PlayerWaterBar
+from ui.item import TreeSprout, PlayerWaterBar, AcornItem
 from pytmx import load_pygame
 from os import getcwd
 from os.path import join
@@ -32,6 +32,9 @@ class LevelOne:
         
         self.translations = game.translations # -> Traducciones
 
+        self.game_over = False
+        self.finished_level = False
+
     def run(self, game, events):
         self.game_screen.fill("black")
 
@@ -59,6 +62,7 @@ class LevelOne:
                                       self.player.seeds) # -> Brotes de árbol
             self.waterbar_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "water-tank"), 
                                     get_text(self.translations, game.current_lang, water_item_key)) # -> Tanque de agua
+            self.acorn_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "acorn"), self.player.acorns)
             
             # -> Check new state
             new_state = self.check_new_state()
@@ -164,11 +168,14 @@ class LevelOne:
 
         self.treesprout_item = TreeSprout(join(self.wd, "assets", "images", "items", "brote.png")) # -> Brote de arbol
         self.waterbar_item = PlayerWaterBar() # -> Tanque de agua
+        self.acorn_item = AcornItem(join(self.wd, "assets", "images", "items", "acorn.png")) # -> Bellota
 
     def check_new_state(self):
         if self.player.trees >= 6:
+            self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
         elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
+            self.game_over = True
             return "GAMEOVER" # -> Return gameover state
         return "LEVEL_1" # -> Return same state
     

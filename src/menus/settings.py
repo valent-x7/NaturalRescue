@@ -58,7 +58,7 @@ class SettingsMenu:
         self.spanish_button.draw()
 
         # Mensaje para regresar al menú
-        exit_hint = get_text(game.translations, game.current_lang, "tutorial-control-menu")
+        exit_hint = get_text(game.translations, game.current_lang, "press-m-to-menu")
         t = pygame.time.get_ticks() / 500
         alpha = sin(t) * 0.5 + 0.5
         color_blink = [int(100 + alpha * 155)] * 3  

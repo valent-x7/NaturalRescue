@@ -3,9 +3,10 @@ from os.path import join
 
 info = pygame.display.Info()
 
-MONKEY_SPEED = 288
+MONKEY_SPEED = 176
 MONKEY_HEALTH = 120
 MONKEY_SEEDS = 6
+MONKEY_ACORNS = 100
 TILE = 32
 
 ACORN_SPEED = 300
