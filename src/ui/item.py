@@ -89,7 +89,7 @@ class AcornItem:
         self.display_surface = pygame.display.get_surface()
 
         image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(image, (82, 82)).convert_alpha()
+        self.image = pygame.transform.scale(image, (100, 100)).convert_alpha()
 
         self.rect = self.image.get_frect()
         self.rect.topleft = (self.display_surface.width - self.rect.width - 464, 64)

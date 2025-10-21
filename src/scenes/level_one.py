@@ -168,10 +168,10 @@ class LevelOne:
 
         self.treesprout_item = TreeSprout(join(self.wd, "assets", "images", "items", "brote.png")) # -> Brote de arbol
         self.waterbar_item = PlayerWaterBar() # -> Tanque de agua
-        self.acorn_item = AcornItem(join(self.wd, "assets", "images", "items", "acorn.png")) # -> Bellota
+        self.acorn_item = AcornItem(join(self.wd, "assets", "images", "items", "platano.png")) # -> Platano
 
     def check_new_state(self):
-        if self.player.trees >= 6:
+        if self.player.trees >= 1:
             self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
         elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
