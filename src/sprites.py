@@ -554,18 +554,19 @@ class AllSprites(pygame.sprite.Group):
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
 
-# ? Clase Bellota
+# ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
     def __init__(self, groups, pos, direction, collision_sprites):
         super().__init__(groups)
 
         # ? Imagen y gráficos
         working_directory = os.getcwd()
-        image_path = os.path.join(working_directory, "assets", "images", "items", "bellota.png")
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (16, 16)).convert_alpha()
+        image_path = os.path.join(working_directory, "assets", "images", "items", "platano.png")
+        original_image = pygame.image.load(image_path).convert_alpha()
+        self.original_image = pygame.transform.scale(original_image, (28, 28)).convert_alpha()
+        self.image = self.original_image
 
-        # ? Audio de la bellota
+        # ? Audio del platano
         self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
         self.throw_sound.set_volume(0.4)
         self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "impact.ogg"))
@@ -584,12 +585,18 @@ class Acorn(pygame.sprite.Sprite):
         self.time_to_live = 1000
         self.collision_sprites = collision_sprites
 
+        # ? Rotación
+        self.angle = 0
+        self.rotation_speed = 360
+
         # ? Sonido de throw
         self.throw_sound.play()
 
     def update(self, dt, events = None):
         # Descontamos tiempo de vida
         self.time_to_live -= (dt * 1000)
+
+        self.rotate_image(dt) # -> Rotamos imagen
 
         # Eliminamos sprite si su tiempo de vida pasó o colisiona
         if self.time_to_live <= 0 or self.check_collisions():
@@ -599,6 +606,11 @@ class Acorn(pygame.sprite.Sprite):
         else:
             # Movemos sprite
             self.rect.center += self.direction * ACORN_SPEED * dt
+
+    def rotate_image(self, delta_time): # -> Rotar imagen del projectil
+        self.angle += self.rotation_speed * delta_time
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_frect(center = self.rect.center)
     
     # ? Si choca con un sprite de collision
     def check_collisions(self):

@@ -6,14 +6,13 @@ from sprites import *
 from ui.utils import *
 from menus.level_select import LevelSelectMenu
 import settings as main_settings
-from scenes.gameover import draw_gameover
 from scenes.level_one import LevelOne
 from scenes.level_2 import Level_two
-from scenes.winscreen import draw_winscreen
+from scenes.gameover import GameOver
+from scenes.winscreen import WinScreen
 
 # Cargamos traducciones
 translations = load_language("languajes.json")
-
 
 class Game:
 
@@ -70,6 +69,8 @@ class Game:
         self.Level_One = None
         self.Level_Two = None
         self.Level_Three = None
+        self.WinScreen = None
+        self.GameOverScreen = None
 
         # ? Mostrar tutorial al inicio de cada nivel
         self.tutorial_1_done = False
@@ -239,8 +240,11 @@ class Game:
                 if not getattr(self, "entered_gameover", False):
                     self.play_music_once("assets/sound/gameover.ogg", "gameover")
                     self.entered_gameover = True
+                
+                if not self.GameOverScreen: # -> Si no hay GameOverScreen lo creamos
+                    self.GameOverScreen = GameOver(self, self.SCREEN)
 
-                new_state = draw_gameover(self.SCREEN, events, translations, self.current_lang)
+                new_state = self.GameOverScreen.run(self, events) # -> Metodo run del GameOverScreen
 
                 if new_state == "MENU":
                     self.entered_gameover = False
@@ -261,7 +265,10 @@ class Game:
                     self.play_music_once("assets/sound/win.ogg", "winscreen")
                     self.entered_winscreen = True
 
-                new_state = draw_winscreen(self.SCREEN, events, translations, self.current_lang)
+                if not self.WinScreen: # -> Si no hay WinScreen definido lo creamos
+                    self.WinScreen = WinScreen(self, self.SCREEN)
+
+                new_state = self.WinScreen.run(self, events) # -> Metodo Run del WinScreen
 
                 if new_state == "MENU":
                     self.state = "MENU"
