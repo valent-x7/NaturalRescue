@@ -94,7 +94,8 @@ class LevelOne:
             # ? Crear enemigos
             elif event.type == self.enemy_event and len(self.enemy_sprites) < 5:
                 Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
-                      self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites)
+                      self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites,
+                      game.current_difficulty)
                 
         return new_state
 

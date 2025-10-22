@@ -637,7 +637,7 @@ class Acorn(pygame.sprite.Sprite):
     
 # ? Sprite de enemigos
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group):
+    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, difficulty = "normal"):
         super().__init__(groups)
         self.player = player # -> Jugador
 
@@ -650,6 +650,7 @@ class Enemy(pygame.sprite.Sprite):
         self.can_damage = True
         self.damage_cooldown = 2000 # -> 1500 segundos
         self.damage_timer = 0
+        self.base_damage = 5 if difficulty == "normal" else 10
 
         # ? Creamos un grupo de sprites de colisión
         self.collision_sprites = collision_sprites
@@ -686,7 +687,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
 
         self.animation_speed = random.randint(14, 16) # -> Velocidad de animación
-        self.speed = random.randint(80, 96) # -> Velocidad del enemigo
+        self.speed = random.randint(80, 96) if difficulty == "normal" else random.randint(86, 102) # -> Velocidad del enemigo
         self.direction_vec = pygame.Vector2() # -> Vector de movimiento
 
     # ? Actualizar sprite
@@ -771,7 +772,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.damage_timer = 0
 
         if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage:
-            self.player.health -= 5
+            self.player.health -= self.base_damage
             self.player.hit_sound.play()
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown

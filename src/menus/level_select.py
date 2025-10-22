@@ -1,8 +1,8 @@
 import sys 
 import os 
-from ui.button import Button
+from ui.button import Button as ImageButton
 import pygame 
-from ui.utils import get_text, draw_text
+from ui.utils import get_text, draw_text, set_difficulty
 from math import sin
 from settings import *
 
@@ -50,6 +50,8 @@ class LevelSelectMenu:
         self.game_screen = screen # -> Definir pantalla del juego
         self.translations = game.translations # -> Cargar traducciones
 
+        self.wd = os.getcwd() # -> Working Directory
+
         self.setup_images() # -> Imagenes
         self.setup_fonts() # -> Fuentes
         self.setup_buttons(game.current_lang) # -> Configurar botones en base al idioma
@@ -63,10 +65,26 @@ class LevelSelectMenu:
         text_rect = title_text.get_rect(center=(main_settings.WINDOW_WIDTH / 2, 100))
         self.game_screen.blit(title_text, text_rect)
 
+        # ? Titulo de dificultad
+        difficulty_title = self.difficulty_title_font.render(get_text(game.translations, game.current_lang, "select-difficulty-title"), True, "white")
+        difficulty_title_rect = difficulty_title.get_frect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 420))
+        self.game_screen.blit(difficulty_title, difficulty_title_rect)
+
+        # ? Definir la posición de la flechita de dificultad
+        if game.current_difficulty == "normal":
+            self.arrow_rect.centery = WINDOW_HEIGHT - 300
+        else:
+            self.arrow_rect.centery = WINDOW_HEIGHT - 180
+
+        # ? Dibujar flechita
+        self.game_screen.blit(self.arrow_image, self.arrow_rect)
+
         # ? Dibujar botones
         self.level1_btn.draw()
         self.level2_btn.draw()
         self.level3_btn.draw()
+        self.normal_difficulty_btn.draw()
+        self.advanced_difficulty_btn.draw()
 
         # Mensaje para regresar al menú
         exit_hint = get_text(game.translations, game.current_lang, "press-m-to-menu")
@@ -91,6 +109,14 @@ class LevelSelectMenu:
             
             elif self.level3_btn.is_clicked(event):
                 return "LEVEL_3" # -> Nivel 3
+            
+            elif self.normal_difficulty_btn.is_clicked(event):
+                set_difficulty("config.json", "normal")
+                game.current_difficulty = "normal"
+
+            elif self.advanced_difficulty_btn.is_clicked(event):
+                set_difficulty("config.json", "advanced")
+                game.current_difficulty = "advanced"
                 
         return "LEVEL_SELECT"
 
@@ -98,8 +124,16 @@ class LevelSelectMenu:
         bg = pygame.image.load("assets/images/fondo2.png")
         self.background = pygame.transform.scale(bg, (main_settings.WINDOW_WIDTH, main_settings.WINDOW_HEIGHT)).convert()
 
+        # Arrow Image
+        arrow_img = pygame.image.load(join(self.wd, "assets", "images", "ajustes", "flecha.png"))
+        self.arrow_image = pygame.transform.scale(arrow_img, (96, 96)).convert_alpha()
+        self.arrow_rect = self.arrow_image.get_frect() # -> Get Rect from image
+        self.arrow_rect.centerx = WINDOW_WIDTH / 2 - self.arrow_rect.width - 140 # -> Define x position
+
     def setup_fonts(self):
         self.fuente_pixel = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 40)
+        self.difficulty_title_font = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 30)
+        self.change_difficulty_font = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 24)
 
     def setup_buttons(self, lang):
         # ? Ancho y espacio entre los botones
@@ -123,3 +157,11 @@ class LevelSelectMenu:
         self.level3_btn = Button(self.game_screen, start_x + 2 * (button_width + spacing), center_y, button_width, button_height,
                                  get_text(self.translations, lang, "level-select-level-3"),
                                  self.fuente_pixel, '#22c55e','#16a34a')
+        
+        self.normal_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 300), self.change_difficulty_font, 340, 90,
+                                                 get_text(self.translations, lang, "normal-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "normal.png"),
+                                                 15, "#FFA726", "#EF6C00")
+        
+        self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 180), self.change_difficulty_font, 340, 90,
+                                                 get_text(self.translations, lang, "advanced-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "advanced.png"),
+                                                 5, "#EF5350", "#C62828")
