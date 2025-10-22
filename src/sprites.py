@@ -662,16 +662,14 @@ class Enemy(pygame.sprite.Sprite):
         # ? Imagenes y rect inicial
         wd = os.getcwd() # -> Directorio
 
-        self.state_images = { # -> Imagenes de estado inicial
-            "high": os.path.join(wd, "assets", "images", "enemies", "smog", "1.png"),
-            "mid": os.path.join(wd, "assets", "images", "enemies", "smog", "2.png"),
-            "low": os.path.join(wd, "assets", "images", "enemies", "smog", "3.png")
-        }
+        images_path = [
+            os.path.join(wd, "assets", "images", "enemies", "tornado", "1.png"),
+            os.path.join(wd, "assets", "images", "enemies", "tornado", "2.png"),
+            os.path.join(wd, "assets", "images", "enemies", "tornado", "3.png"),
+            os.path.join(wd, "assets", "images", "enemies", "tornado", "4.png")
+        ]
 
-        self.loaded_images = { # -> Imagenes cargados
-            key: pygame.image.load(path).convert_alpha()
-            for key, path in self.state_images.items()
-        }
+        self.tornado_frames = [pygame.image.load(image).convert_alpha() for image in images_path]
 
         # ? Sonidos de enemigo (smog / tornado)
         self.sizzle_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "sizzle.mp3"))
@@ -680,11 +678,15 @@ class Enemy(pygame.sprite.Sprite):
         # Vida
         self.health = 3
 
-        self.image = self.loaded_images["high"]
+        # ? Imagen y frame
+        self.frame = 1
+        self.image = self.tornado_frames[self.frame]
+
         self.rect = self.image.get_frect(center = pos) # -> Posición inicial
         self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
 
-        self.speed = 80 # -> Velocidad del enemigo
+        self.animation_speed = random.randint(14, 16) # -> Velocidad de animación
+        self.speed = random.randint(80, 96) # -> Velocidad del enemigo
         self.direction_vec = pygame.Vector2() # -> Vector de movimiento
 
     # ? Actualizar sprite
@@ -697,7 +699,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.check_acorn_collisions() # -> Colisiones con bellotas
         self.check_player_collision(delta_time) # -> Colisiones con jugador
-        self.change_image() # -> Cambiar imagen
+        self.animate(delta_time) # -> Animar tornado
         self.move(delta_time) # -> Movemos enemigo
 
     # ? Movimiento del enemigo
@@ -721,17 +723,9 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect.center = self.hitbox_rect.center # -> Definir el rectangulo final
 
-    def change_image(self):
-        if self.health == 3:
-            key = "high"
-        elif self.health == 2:
-            key = "mid"
-        elif self.health == 1:
-            key = "low"
-        else:
-            key = "low"
-
-        self.image = self.loaded_images[key]
+    def animate(self, delta_time): # -> Animación del tornado
+        self.frame += self.animation_speed * delta_time
+        self.image = self.tornado_frames[int(self.frame) % len(self.tornado_frames)]
 
     def check_collisions(self, direction):
         for sprite in self.all_solid_sprites:
