@@ -67,14 +67,14 @@ class LevelSelectMenu:
 
         # ? Titulo de dificultad
         difficulty_title = self.difficulty_title_font.render(get_text(game.translations, game.current_lang, "select-difficulty-title"), True, "white")
-        difficulty_title_rect = difficulty_title.get_frect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 420))
+        difficulty_title_rect = difficulty_title.get_frect(center = (WINDOW_WIDTH / 2, 615))
         self.game_screen.blit(difficulty_title, difficulty_title_rect)
 
         # ? Definir la posición de la flechita de dificultad
         if game.current_difficulty == "normal":
-            self.arrow_rect.centery = WINDOW_HEIGHT - 300
+            self.arrow_rect.centery = 705
         else:
-            self.arrow_rect.centery = WINDOW_HEIGHT - 180
+            self.arrow_rect.centery = 825
 
         # ? Dibujar flechita
         self.game_screen.blit(self.arrow_image, self.arrow_rect)
@@ -158,10 +158,10 @@ class LevelSelectMenu:
                                  get_text(self.translations, lang, "level-select-level-3"),
                                  self.fuente_pixel, '#22c55e','#16a34a')
         
-        self.normal_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 300), self.change_difficulty_font, 340, 90,
+        self.normal_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, 705), self.change_difficulty_font, 340, 90,
                                                  get_text(self.translations, lang, "normal-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "normal.png"),
                                                  15, "#FFA726", "#EF6C00")
         
-        self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 180), self.change_difficulty_font, 340, 90,
+        self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, 825), self.change_difficulty_font, 340, 90,
                                                  get_text(self.translations, lang, "advanced-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "advanced.png"),
                                                  5, "#EF5350", "#C62828")
