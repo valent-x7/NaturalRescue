@@ -663,12 +663,14 @@ class Enemy(pygame.sprite.Sprite):
         # ? Imagenes y rect inicial
         wd = os.getcwd() # -> Directorio
 
-        images_path = [
-            os.path.join(wd, "assets", "images", "enemies", "tornado", "1.png"),
-            os.path.join(wd, "assets", "images", "enemies", "tornado", "2.png"),
-            os.path.join(wd, "assets", "images", "enemies", "tornado", "3.png"),
-            os.path.join(wd, "assets", "images", "enemies", "tornado", "4.png")
-        ]
+        tornado_frames = [x for x in range(1, 5)]
+        img_path_1 = [os.path.join(wd, "assets", "images", "enemies", "tornado", f"{tornado}.png") for tornado in tornado_frames]
+
+        smog_frames = [x for x in range(1, 4)]
+        img_path_2 = [os.path.join(wd, "assets", "images", "enemies", "smog", f"{smog}.png") for smog in smog_frames]
+
+        num = random.randint(1, 2)
+        images_path = img_path_1 if num == 1 else img_path_2
 
         self.tornado_frames = [pygame.image.load(image).convert_alpha() for image in images_path]
 

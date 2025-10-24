@@ -172,7 +172,7 @@ class LevelOne:
         self.acorn_item = AcornItem(join(self.wd, "assets", "images", "items", "platano.png")) # -> Platano
 
     def check_new_state(self):
-        if self.player.trees >= 1:
+        if self.player.trees >= 6:
             self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
         elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
