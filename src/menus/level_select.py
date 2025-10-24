@@ -72,9 +72,9 @@ class LevelSelectMenu:
 
         # ? Definir la posición de la flechita de dificultad
         if game.current_difficulty == "normal":
-            self.arrow_rect.centery = 705
+            self.arrow_rect.centerx = WINDOW_WIDTH / 2 - 485 
         else:
-            self.arrow_rect.centery = 825
+            self.arrow_rect.centerx = WINDOW_WIDTH / 2 
 
         # ? Dibujar flechita
         self.game_screen.blit(self.arrow_image, self.arrow_rect)
@@ -128,7 +128,7 @@ class LevelSelectMenu:
         arrow_img = pygame.image.load(join(self.wd, "assets", "images", "ajustes", "flecha.png"))
         self.arrow_image = pygame.transform.scale(arrow_img, (96, 96)).convert_alpha()
         self.arrow_rect = self.arrow_image.get_frect() # -> Get Rect from image
-        self.arrow_rect.centerx = WINDOW_WIDTH / 2 - self.arrow_rect.width - 140 # -> Define x position
+        self.arrow_rect.centery = 705 # -> Define y position
 
     def setup_fonts(self):
         self.fuente_pixel = pygame.font.Font("src/menus/fuentestexto/prstartk.ttf", 40)
@@ -158,10 +158,10 @@ class LevelSelectMenu:
                                  get_text(self.translations, lang, "level-select-level-3"),
                                  self.fuente_pixel, '#22c55e','#16a34a')
         
-        self.normal_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, 705), self.change_difficulty_font, 340, 90,
+        self.normal_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2 - 250, 705), self.change_difficulty_font, 340, 90,
                                                  get_text(self.translations, lang, "normal-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "normal.png"),
                                                  15, "#FFA726", "#EF6C00")
         
-        self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2, 825), self.change_difficulty_font, 340, 90,
+        self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2 + 250, 705), self.change_difficulty_font, 340, 90,
                                                  get_text(self.translations, lang, "advanced-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "advanced.png"),
                                                  5, "#EF5350", "#C62828")
