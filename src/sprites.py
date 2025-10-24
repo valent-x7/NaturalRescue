@@ -275,6 +275,7 @@ class Penguin(pygame.sprite.Sprite):
                                self.spritesheet.get_sprite(64, 96, self.w, self.h)]
         
         self.image = self.down_animation[1]
+        self.frame = 1
         
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
@@ -305,6 +306,8 @@ class Penguin(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         self.animate(self.moving, delta_time)
 
+        self.moving = False
+
         if keys[pygame.K_a]:
             self.direction = 'left'
             self.moving = True
@@ -319,7 +322,7 @@ class Penguin(pygame.sprite.Sprite):
             self.y_vel = -10
             self.on_ground = False
 
-        self.y_vel += 0.5
+        self.y_vel += 0.55
         self.rect. y += self.y_vel
 
         self.on_ground = False
