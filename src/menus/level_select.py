@@ -164,4 +164,4 @@ class LevelSelectMenu:
         
         self.advanced_difficulty_btn = ImageButton(self.game_screen, (WINDOW_WIDTH / 2 + 250, 705), self.change_difficulty_font, 340, 90,
                                                  get_text(self.translations, lang, "advanced-difficulty"), 4, join(self.wd, "assets", 'images', "level_select", "advanced.png"),
-                                                 5, "#EF5350", "#C62828")
+                                                 25, "#EF5350", "#C62828")
