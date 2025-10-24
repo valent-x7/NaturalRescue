@@ -23,6 +23,21 @@ def load_config(path):
     with open(path, "r", encoding="utf-8") as f:
         settings = json.load(f)
         return settings["lenguaje"]
+    
+# Cargar dificultad
+def load_difficulty(path):
+    with open(path, "r", encoding="utf-8") as f:
+        settings = json.load(f)
+        return settings["difficulty"] # -> Normal o avanzado
+    
+def set_difficulty(path, new_difficulty):
+    with open(path, "r", encoding="utf-8") as f: # -> Leer la dificultad
+        settings = json.load(f)
+
+    settings["difficulty"] = new_difficulty # -> Asignamos nueva dificultad
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=4, ensure_ascii=False)
 
 # Cargar idioma
 def load_language(path):

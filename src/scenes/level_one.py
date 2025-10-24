@@ -94,7 +94,8 @@ class LevelOne:
             # ? Crear enemigos
             elif event.type == self.enemy_event and len(self.enemy_sprites) < 5:
                 Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
-                      self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites)
+                      self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites,
+                      game.current_difficulty)
                 
         return new_state
 
@@ -171,7 +172,7 @@ class LevelOne:
         self.acorn_item = AcornItem(join(self.wd, "assets", "images", "items", "platano.png")) # -> Platano
 
     def check_new_state(self):
-        if self.player.trees >= 1:
+        if self.player.trees >= 6:
             self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
         elif self.healthbar.hp <= 0 or self.timebar.t <= 0:

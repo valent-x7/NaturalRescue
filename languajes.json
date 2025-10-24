@@ -16,12 +16,15 @@
         "level-select-level-1": "Level 1",
         "level-select-level-2": "Level 2",
         "level-select-level-3": "Level 3",
+        "select-difficulty-title": "Choose your difficulty",
+        "normal-difficulty": "Classic",
+        "advanced-difficulty": "Elite",
 
         "paused-title": "Game Paused",
         "paused-description": "Press P to play",
 
         "tree-sprout": "Tree Sprout",
-        "acorn" : "Acorn",
+        "acorn" : "Banana",
         "water-tank": "Water Tank",
         "water-tank-full": "Full",
         "water-tank-mid": "Mid",
@@ -52,12 +55,15 @@
         "level-select-level-1": "Nivel 1",
         "level-select-level-2": "Nivel 2",
         "level-select-level-3": "Nivel 3",
+        "select-difficulty-title": "Elige la dificultad",
+        "normal-difficulty": "Clasica",
+        "advanced-difficulty": "Elite",
 
         "paused-title": "Juego Pausado",
         "paused-description": "Presiona P para jugar",
 
         "tree-sprout": "Brote de Árbol",
-        "acorn": "Bellota",
+        "acorn": "Platano",
         "water-tank": "Tanque de agua",
         "water-tank-full": "Lleno",
         "water-tank-mid": "Mitad",

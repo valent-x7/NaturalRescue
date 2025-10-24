@@ -637,7 +637,7 @@ class Acorn(pygame.sprite.Sprite):
     
 # ? Sprite de enemigos
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group):
+    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, difficulty = "normal"):
         super().__init__(groups)
         self.player = player # -> Jugador
 
@@ -650,6 +650,7 @@ class Enemy(pygame.sprite.Sprite):
         self.can_damage = True
         self.damage_cooldown = 2000 # -> 1500 segundos
         self.damage_timer = 0
+        self.base_damage = 5 if difficulty == "normal" else 10
 
         # ? Creamos un grupo de sprites de colisión
         self.collision_sprites = collision_sprites
@@ -662,16 +663,16 @@ class Enemy(pygame.sprite.Sprite):
         # ? Imagenes y rect inicial
         wd = os.getcwd() # -> Directorio
 
-        self.state_images = { # -> Imagenes de estado inicial
-            "high": os.path.join(wd, "assets", "images", "enemies", "smog", "1.png"),
-            "mid": os.path.join(wd, "assets", "images", "enemies", "smog", "2.png"),
-            "low": os.path.join(wd, "assets", "images", "enemies", "smog", "3.png")
-        }
+        tornado_frames = [x for x in range(1, 5)]
+        img_path_1 = [os.path.join(wd, "assets", "images", "enemies", "tornado", f"{tornado}.png") for tornado in tornado_frames]
 
-        self.loaded_images = { # -> Imagenes cargados
-            key: pygame.image.load(path).convert_alpha()
-            for key, path in self.state_images.items()
-        }
+        smog_frames = [x for x in range(1, 4)]
+        img_path_2 = [os.path.join(wd, "assets", "images", "enemies", "smog", f"{smog}.png") for smog in smog_frames]
+
+        num = random.randint(1, 2)
+        images_path = img_path_1 if num == 1 else img_path_2
+
+        self.tornado_frames = [pygame.image.load(image).convert_alpha() for image in images_path]
 
         # ? Sonidos de enemigo (smog / tornado)
         self.sizzle_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "sizzle.mp3"))
@@ -680,11 +681,15 @@ class Enemy(pygame.sprite.Sprite):
         # Vida
         self.health = 3
 
-        self.image = self.loaded_images["high"]
+        # ? Imagen y frame
+        self.frame = 1
+        self.image = self.tornado_frames[self.frame]
+
         self.rect = self.image.get_frect(center = pos) # -> Posición inicial
         self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
 
-        self.speed = 80 # -> Velocidad del enemigo
+        self.animation_speed = random.randint(14, 16) # -> Velocidad de animación
+        self.speed = random.randint(80, 96) if difficulty == "normal" else random.randint(86, 102) # -> Velocidad del enemigo
         self.direction_vec = pygame.Vector2() # -> Vector de movimiento
 
     # ? Actualizar sprite
@@ -697,7 +702,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.check_acorn_collisions() # -> Colisiones con bellotas
         self.check_player_collision(delta_time) # -> Colisiones con jugador
-        self.change_image() # -> Cambiar imagen
+        self.animate(delta_time) # -> Animar tornado
         self.move(delta_time) # -> Movemos enemigo
 
     # ? Movimiento del enemigo
@@ -721,17 +726,9 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect.center = self.hitbox_rect.center # -> Definir el rectangulo final
 
-    def change_image(self):
-        if self.health == 3:
-            key = "high"
-        elif self.health == 2:
-            key = "mid"
-        elif self.health == 1:
-            key = "low"
-        else:
-            key = "low"
-
-        self.image = self.loaded_images[key]
+    def animate(self, delta_time): # -> Animación del tornado
+        self.frame += self.animation_speed * delta_time
+        self.image = self.tornado_frames[int(self.frame) % len(self.tornado_frames)]
 
     def check_collisions(self, direction):
         for sprite in self.all_solid_sprites:
@@ -777,7 +774,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.damage_timer = 0
 
         if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage:
-            self.player.health -= 5
+            self.player.health -= self.base_damage
             self.player.hit_sound.play()
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown

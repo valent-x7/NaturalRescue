@@ -1,4 +1,5 @@
 import pygame
+from os import getcwd
 from settings import *
 from ui.utils import draw_text, get_text
 
@@ -6,12 +7,16 @@ class WinScreen:
     def __init__(self, game, screen: pygame.Surface):
         self.game_screen = screen
 
+        self.wd = getcwd() # -> Working directory
+
         self.translations = game.translations
 
-    def run(self, game, events):
-        self.game_screen.fill("white")
+        self.setup_images()
 
-        draw_text(self.game_screen, TITLE_FONT_PATH, 80, get_text(self.translations, game.current_lang, "wingame-title"), "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3 - 90)
+    def run(self, game, events):
+        self.game_screen.blit(self.background, [0, 0])
+
+        draw_text(self.game_screen, TITLE_FONT_PATH, 80, get_text(self.translations, game.current_lang, "wingame_title"), "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3 - 90)
         draw_text(self.game_screen, TITLE_FONT_PATH, 60, get_text(self.translations, game.current_lang, "wingame_subtitle"), "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
         draw_text(self.game_screen, TITLE_FONT_PATH, 36, get_text(self.translations, game.current_lang, "press-m-to-menu"), "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         draw_text(self.game_screen, TITLE_FONT_PATH, 36, get_text(self.translations, game.current_lang, "press-r-to-restart"), "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 50)
@@ -24,3 +29,7 @@ class WinScreen:
                     return "RESTART_LEVEL"
                 
         return "WINSCREEN"
+    
+    def setup_images(self):
+        background = pygame.image.load(join(self.wd, "assets", "images", "screens", "winscreen_bg.png"))
+        self.background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT)).convert_alpha()

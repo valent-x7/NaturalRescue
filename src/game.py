@@ -53,6 +53,7 @@ class Game:
 
         # Config del lenguaje del juego
         self.current_lang = load_config("config.json")
+        self.current_difficulty = load_difficulty("config.json")
         self.translations = translations
 
         # Estado de pausa
