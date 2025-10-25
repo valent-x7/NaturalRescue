@@ -30,7 +30,7 @@ class Level_two:
         
         self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
         self.penguin = Penguin(256, 256, self.penguin_spritesheet)
-        self.all_sprites.add(self.penguin, layer=5)
+        self.all_sprites.add(self.penguin, layer=4)
         self.setup_decor("Decoración")
 
     def run(self, game, events):
@@ -61,7 +61,7 @@ class Level_two:
         for x, y, image in layer.tiles():
             pos = (x * TILE, y * TILE)
             decor_sprite = Sprite(self.all_sprites, pos, image)
-            self.all_sprites.add(decor_sprite, layer=6)
+            self.all_sprites.add(decor_sprite, layer=10)
 
     def update_camera(self):
         # Centrar la cámara en el pingüino
