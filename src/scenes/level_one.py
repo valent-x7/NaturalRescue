@@ -143,7 +143,7 @@ class LevelOne:
                 PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
             
             elif obj.name == "ObjectCollision":
-                CollisionSpriteRect((self.all_sprites, self.collision_sprites), obj.x, obj.y, obj.width, obj.height)
+                CollisionSpriteRect((self.collision_sprites), obj.x, obj.y, obj.width, obj.height)
             
             # -> Enemies Coords
             elif obj.name == "Enemy":
