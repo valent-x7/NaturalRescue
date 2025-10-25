@@ -257,6 +257,7 @@ class Penguin(pygame.sprite.Sprite):
 
         self.y_vel = 0
         self.on_ground = False
+        self.x_vel = 0  
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
@@ -275,6 +276,7 @@ class Penguin(pygame.sprite.Sprite):
                                self.spritesheet.get_sprite(64, 96, self.w, self.h)]
         
         self.image = self.down_animation[1]
+        self.frame = 1
         
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
@@ -300,38 +302,61 @@ class Penguin(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
-
     def update(self, platforms, delta_time):
         keys = pygame.key.get_pressed()
         self.animate(self.moving, delta_time)
 
+        self.moving = False
+        self.x_vel = 0  # Resetear velocidad horizontal cada frame
+
+        # Movimiento horizontal
         if keys[pygame.K_a]:
             self.direction = 'left'
             self.moving = True
-            self.rect.x -= 3
+            self.x_vel = -3
         if keys[pygame.K_d]:
             self.direction = 'right'
             self.moving = True
-            self.rect.x += 3
+            self.x_vel = 3
+
+        # Salto
         if keys[pygame.K_w] and self.on_ground:
             self.direction = 'up'
             self.moving = True
             self.y_vel = -10
             self.on_ground = False
 
-        self.y_vel += 0.5
-        self.rect. y += self.y_vel
-
+        # Aplicar gravedad
+        self.y_vel += 0.55
+        
+        # MOVIMIENTO HORIZONTAL CON DETECCIÓN DE COLISIONES
+        self.rect.x += self.x_vel
+        
+        # Verificar colisiones horizontales
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                if self.x_vel > 0:  # Moviéndose a la derecha
+                    self.rect.right = platform.rect.left
+                elif self.x_vel < 0:  # Moviéndose a la izquierda
+                    self.rect.left = platform.rect.right
+        
+        # MOVIMIENTO VERTICAL CON DETECCIÓN DE COLISIONES
+        self.rect.y += self.y_vel
+        
+        # Verificar colisiones verticales
         self.on_ground = False
         for platform in platforms:
-            if self.rect.colliderect(platform.rect) and self.y_vel >= 0:
-                if self.y_vel > 0:
+            if self.rect.colliderect(platform.rect):
+                if self.y_vel > 0:  # Cayendo
                     self.rect.bottom = platform.rect.top
                     self.y_vel = 0
                     self.on_ground = True
-                elif self.y_vel < 0:
+                elif self.y_vel < 0:  # Saltando
                     self.rect.top = platform.rect.bottom
                     self.y_vel = 0
+        
+        # Actualizar hitbox (si la usas para algo)
+        self.hitbox_rect.center = self.rect.center
 
 
 # ? Clase Sprite Normal
