@@ -259,6 +259,8 @@ class Penguin(pygame.sprite.Sprite):
         self.on_ground = False
         self.x_vel = 0  
 
+        self.alive = True
+
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
                                self.spritesheet.get_sprite(64, 0, self.w, self.h)]
@@ -302,7 +304,15 @@ class Penguin(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
+    def damage(self):
+        self.alive = False
+        self.kill()
+
     def update(self, platforms, delta_time):
+
+        if not self.alive:
+            return
+
         keys = pygame.key.get_pressed()
         self.animate(self.moving, delta_time)
 
