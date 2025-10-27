@@ -8,6 +8,7 @@ from menus.level_select import LevelSelectMenu
 import settings as main_settings
 from scenes.level_one import LevelOne
 from scenes.level_2 import Level_two
+from scenes.level_three import LevelThree
 from scenes.gameover import GameOver
 from scenes.winscreen import WinScreen
 
@@ -235,7 +236,10 @@ class Game:
                 self.state = self.Level_Two.draw_level2()
 
             elif self.state == "LEVEL_3":
-                pass
+                if not self.Level_Three:
+                    self.Level_Three = LevelThree(self, self.SCREEN)
+                    
+                self.state = self.Level_Three.run(self, events)
 
             elif self.state == "GAMEOVER":
                 if not getattr(self, "entered_gameover", False):
