@@ -12,9 +12,10 @@ class Level_two:
         self.wd = getcwd()
         self.penguin_spritesheet = Spritesheet(join(self.wd, "img", "penguin_spritesheet.png"))
         
-        self.zoom = 1  # Un poco de zoom
+        self.zoom = 1.5 # Un poco de zoom
         self.all_sprites = pygame.sprite.Group()
         self.collision_sprites = pygame.sprite.Group()
+        self.damage_sprites = pygame.sprite.Group()
         self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 
         # Cargar fondo (más grande para permitir movimiento)
@@ -48,6 +49,12 @@ class Level_two:
                     CollisionSprite(
                         (self.all_sprites, self.collision_sprites),
                         "Estructura",
+                        pos,
+                        image
+                    )
+                if layer_name == "Agua":
+                    DamageSprite(
+                        (self.all_sprites, self.damage_sprites),
                         pos,
                         image
                     )
@@ -93,6 +100,12 @@ class Level_two:
                         return "SALIR"  
                      
             self.penguin.update(self.collision_sprites, self.game.dt)
+
+            if self.penguin.alive:
+                damage_collisions = pygame.sprite.spritecollide(self.penguin, self.damage_sprites, False)
+            if damage_collisions:
+                self.penguin.damage()
+
             self.update_camera()
 
             # Dibujar fondo con desplazamiento de cámara
@@ -119,9 +132,9 @@ class Level_two:
 
         return "LEVEL_2"
 
-class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h, color=(131,208,212)):
-        super().__init__()
-        self.image = pygame.Surface((w, h))
-        self.image.fill(color)
-        self.rect = self.image.get_rect(topleft=(x, y))
+# class Platform(pygame.sprite.Sprite):
+#     def __init__(self, x, y, w, h, color=(131,208,212)):
+#         super().__init__()
+#         self.image = pygame.Surface((w, h))
+#         self.image.fill(color)
+#         self.rect = self.image.get_rect(topleft=(x, y))

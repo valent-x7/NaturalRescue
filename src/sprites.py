@@ -254,6 +254,7 @@ class Penguin(pygame.sprite.Sprite):
         self.direction = 'down'
         self.frame = 1
         self.animation_speed = 8
+        self.alive = True
 
         self.y_vel = 0
         self.on_ground = False
@@ -302,7 +303,15 @@ class Penguin(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
+    def damage(self):
+        self.alive = False
+        self.kill()
+
     def update(self, platforms, delta_time):
+
+        if not self.alive:
+            return
+
         keys = pygame.key.get_pressed()
         self.animate(self.moving, delta_time)
 
@@ -327,7 +336,7 @@ class Penguin(pygame.sprite.Sprite):
             self.on_ground = False
 
         # Aplicar gravedad
-        self.y_vel += 0.55
+        self.y_vel += 0.50
         
         # MOVIMIENTO HORIZONTAL CON DETECCIÓN DE COLISIONES
         self.rect.x += self.x_vel
