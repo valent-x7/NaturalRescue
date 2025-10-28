@@ -12,33 +12,54 @@ class Level_two:
         self.wd = getcwd()
         self.penguin_spritesheet = Spritesheet(join(self.wd, "img", "penguin_spritesheet.png"))
         
-        self.zoom = 1  # Un poco de zoom
-        self.all_sprites = pygame.sprite.Group()
+        self.zoom = 1
+        self.all_sprites = pygame.sprite.LayeredUpdates()
         self.collision_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
-        self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-
-        # Cargar fondo (más grande para permitir movimiento)
-        bg_original = pygame.image.load(join(self.wd, 'img', 'bgiceberg.png'))
-        self.bg_width = bg_original.get_width() * 2  # Fondo más ancho
-        self.bg_height = bg_original.get_height() * 2  # Fondo más alto
         
-        # Posición de la cámara
-        self.camera_x = 0
-        self.camera_y = 0
-
-        self.all_sprites = pygame.sprite.LayeredUpdates()
-        
+        # Cargar el mapa y sprites PRIMERO
         self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
-        self.penguin = Penguin(256, 256, self.penguin_spritesheet)
-        self.all_sprites.add(self.penguin, layer=4)
+        self.penguin = Penguin(8*TILE, 28*TILE, self.penguin_spritesheet)
+        self.all_sprites.add(self.penguin, layer=6)
         self.setup_decor("Decoración")
-
-    def run(self, game, events):
-        self.game_screen.blit(self.bg, (0, 0))
+        
+        # Obtener tamaño del mapa desde el archivo TMX
+        map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
+        self.level_width = map.width * TILE
+        self.level_height = map.height * TILE
+        
+        print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
+        print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
+        
+        # Precalcular superficies - IMPORTANTE: usar nivel completo para el cache
+        self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.zoomed_surface = pygame.Surface((int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom)))
+        
+        # Cargar fondo
+        bg_original = pygame.image.load(join(self.wd, 'img', 'bgiceberg.png')).convert_alpha()
+        self.bg_width = bg_original.get_width() * 2
+        self.bg_height = bg_original.get_height() * 2
+        self.bg = pygame.transform.scale(bg_original, (self.bg_width, self.bg_height))
+        
+        # POSICIÓN INICIAL DE LA CÁMARA - MOSTRAR ESQUINA INFERIOR IZQUIERDA
+        self.camera_x = 0
+        self.camera_y = self.level_height - WINDOW_HEIGHT  # Comenzar desde abajo
+        
+        print(f"Cámara inicial: ({self.camera_x}, {self.camera_y})")
+        print(f"Pingüino en pantalla inicial: ({8*TILE - self.camera_x}, {28*TILE - self.camera_y})")
+        
+        # Cache para sprites estáticos
+        self.static_sprites_cache = pygame.Surface((self.level_width, self.level_height), pygame.SRCALPHA)
+        self.create_static_cache()
+        
+        # Precalcular offsets para el zoom
+        self.x_offset = (self.zoomed_surface.get_width() - WINDOW_WIDTH) // 2 
+        self.y_offset = (self.zoomed_surface.get_height() - WINDOW_HEIGHT) // 2 
+        
+        # Precalcular máscaras
+        self.precalculate_masks()
 
     def setup_map(self, layersList):
-        # layersList = ["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua", "Decoración"]
         map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
 
         for layer_name in layersList:
@@ -52,8 +73,8 @@ class Level_two:
                         pos,
                         image
                     )
-                if layer_name == "Agua":
-                    DamageSprite(
+                elif layer_name == "Agua":
+                    DamageSprite_2(
                         (self.all_sprites, self.damage_sprites),
                         pos,
                         image
@@ -68,26 +89,74 @@ class Level_two:
         for x, y, image in layer.tiles():
             pos = (x * TILE, y * TILE)
             decor_sprite = Sprite(self.all_sprites, pos, image)
-            self.all_sprites.add(decor_sprite, layer=10)
+            self.all_sprites.add(decor_sprite, layer=12)
+
+    def create_static_cache(self):
+        """Crear una superficie con TODOS los sprites estáticos"""
+        print("Creando cache estática...")
+        # Dibujar TODOS los sprites estáticos en la cache
+        for sprite in self.all_sprites:
+            if sprite != self.penguin:  # Excluir al jugador
+                self.static_sprites_cache.blit(sprite.image, sprite.rect.topleft)
+        print("Cache estática creada correctamente")
+
+    def precalculate_masks(self):
+        """Precalcular máscaras una sola vez al inicio"""
+        if hasattr(self.penguin, 'image'):
+            self.penguin.mask = pygame.mask.from_surface(self.penguin.image)
+        
+        for sprite in self.damage_sprites:
+            if hasattr(sprite, 'image'):
+                sprite.mask = pygame.mask.from_surface(sprite.image)
 
     def update_camera(self):
-        # Centrar la cámara en el pingüino
+        """Actualizar cámara - seguir al pingüino pero mantener límites"""
+        # Calcular posición objetivo para centrar al pingüino
         target_x = self.penguin.rect.centerx - WINDOW_WIDTH // 2
         target_y = self.penguin.rect.centery - WINDOW_HEIGHT // 2
         
-        # Suavizar el movimiento de la cámara (opcional)
-        self.camera_x += (target_x - self.camera_x) * 0.1
-        self.camera_y += (target_y - self.camera_y) * 0.1
+        # MOVIMIENTO INSTANTÁNEO (sin suavizado para debugging)
+        self.camera_x = target_x
+        self.camera_y = target_y
         
-        # Limitar la cámara a los bordes del fondo
-        self.camera_x = max(0, min(self.camera_x, self.bg_width - WINDOW_WIDTH))
-        self.camera_y = max(0, min(self.camera_y, self.bg_height - WINDOW_HEIGHT))
+        # Limitar la cámara para que no se salga del mapa
+        self.camera_x = max(0, min(self.camera_x, self.level_width - WINDOW_WIDTH))
+        self.camera_y = max(0, min(self.camera_y, self.level_height - WINDOW_HEIGHT))
+        
+        # Debug info
+        penguin_screen_x = self.penguin.rect.x - self.camera_x
+        penguin_screen_y = self.penguin.rect.y - self.camera_y
+        print(f"Cámara: ({self.camera_x:.1f}, {self.camera_y:.1f}) | Pingüino en pantalla: ({penguin_screen_x:.1f}, {penguin_screen_y:.1f})")
+
+    def collide_with_mask(self, sprite1, sprite2):
+        """Detección de colisiones con máscaras"""
+        if not sprite1.rect.colliderect(sprite2.rect):
+            return False
+        
+        offset_x = sprite2.rect.x - sprite1.rect.x
+        offset_y = sprite2.rect.y - sprite1.rect.y
+        
+        return sprite2.mask.overlap(sprite1.mask, (offset_x, offset_y)) is not None
+
+    def handle_water_collision(self):
+        """Manejar colisiones con agua"""
+        water_collisions = pygame.sprite.spritecollide(
+            self.penguin, 
+            self.damage_sprites, 
+            False,
+            collided=self.collide_with_mask
+        )
+        
+        if water_collisions:
+            self.penguin.damage()
 
     def draw_level2(self):
         clock = pygame.time.Clock()
         running = True
 
         while running:
+            dt = clock.tick(60) / 1000.0
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -98,38 +167,62 @@ class Level_two:
                         return "LEVEL_SELECT"
                     elif event.key == pygame.K_ESCAPE:
                         return "SALIR"  
+                    elif event.key == pygame.K_r:
+                        return "RESTART"
                      
-            self.penguin.update(self.collision_sprites, self.game.dt)
-
+            # Actualizar jugador si está vivo
             if self.penguin.alive:
-                damage_collisions = pygame.sprite.spritecollide(self.penguin, self.damage_sprites, False)
-            
-            if damage_collisions:
-                self.penguin.damage()
+                self.penguin.update(self.collision_sprites, dt)
+                self.handle_water_collision()
+            else:
+                return "RESTART"
 
             self.update_camera()
 
-            # Dibujar fondo con desplazamiento de cámara
-            # self.level_surface.blit(self.bg, (-self.camera_x, -self.camera_y))
+            # Limpiar superficie de nivel
+            self.level_surface.fill((0, 0, 0, 0))
             
-            # Dibujar sprites con desplazamiento de cámara
-            for sprite in self.all_sprites:
-                adjusted_pos = (sprite.rect.x - self.camera_x, sprite.rect.y - self.camera_y)
-                self.level_surface.blit(sprite.image, adjusted_pos)
+            # Dibujar el mapa visible desde el cache
+            if self.static_sprites_cache:
+                src_rect = pygame.Rect(
+                    self.camera_x, 
+                    self.camera_y, 
+                    WINDOW_WIDTH, 
+                    WINDOW_HEIGHT
+                )
+                
+                # Asegurar que no nos salimos de los límites
+                if src_rect.right > self.level_width:
+                    src_rect.width = self.level_width - src_rect.left
+                if src_rect.bottom > self.level_height:
+                    src_rect.height = self.level_height - src_rect.top
+                
+                self.level_surface.blit(
+                    self.static_sprites_cache,
+                    (0, 0),
+                    src_rect
+                )
+            
+            # Dibujar jugador en posición relativa a la cámara
+            if self.penguin.alive:
+                adjusted_pos = (
+                    self.penguin.rect.x - self.camera_x,
+                    self.penguin.rect.y - self.camera_y
+                )
+                self.level_surface.blit(self.penguin.image, adjusted_pos)
 
-            # Aplicar zoom
-            zoomed_surface = pygame.transform.smoothscale(
+            # Aplicar zoom a la superficie del nivel
+            pygame.transform.scale(
                 self.level_surface,
-                (int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom))
+                (int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom)),
+                self.zoomed_surface
             )
 
-            # Centrar en pantalla (teniendo en cuenta el zoom)
-            x_offset = (zoomed_surface.get_width() - WINDOW_WIDTH) // 2
-            y_offset = (zoomed_surface.get_height() - WINDOW_HEIGHT) // 2
-            self.game_screen.blit(zoomed_surface, (-x_offset, -y_offset))
+            # Dibujar la superficie con zoom centrada en la pantalla
+            self.game_screen.fill((0, 0, 0))  # Fondo negro para bordes
+            self.game_screen.blit(self.zoomed_surface, (-self.x_offset, -self.y_offset))
 
             pygame.display.flip()
-            clock.tick(60)
 
         return "LEVEL_2"
 

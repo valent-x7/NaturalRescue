@@ -306,6 +306,7 @@ class Penguin(pygame.sprite.Sprite):
 
     def damage(self):
         self.alive = False
+        print("Kill")
         self.kill()
 
     def update(self, platforms, delta_time):
@@ -323,11 +324,11 @@ class Penguin(pygame.sprite.Sprite):
         if keys[pygame.K_a]:
             self.direction = 'left'
             self.moving = True
-            self.x_vel = -3
+            self.x_vel = -5
         if keys[pygame.K_d]:
             self.direction = 'right'
             self.moving = True
-            self.x_vel = 3
+            self.x_vel = 5
 
         # Salto
         if keys[pygame.K_w] and self.on_ground:
@@ -412,6 +413,13 @@ class DamageSprite(pygame.sprite.Sprite):
         self.sprite_type = "Damage"
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
+
+class DamageSprite_2(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, image):
+        super().__init__(groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=pos)
+        self.mask = pygame.mask.from_surface(self.image)
 
 # ? Sprites de lugar de cultivo
 class PlantSpot(pygame.sprite.Sprite):
@@ -520,6 +528,10 @@ class PlantSpot(pygame.sprite.Sprite):
                     if self.current_water == self.max_water:
                         self.success_sound.play() # -> Sonido de éxito
                         player.trees += 1 # -> Le sumamos al jugador
+                        if player.health <= 110:
+                            player.health += 10
+                        else:
+                            player.health = 120
                         print(f"Árbol(es) completado(s): {player.trees}")
                         self.is_complete = True # -> Completado
                 
