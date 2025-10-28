@@ -412,6 +412,14 @@ class DamageSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
+class DamageSprite_2(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, image):
+        super().__init__(groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=pos)
+        # Crear máscara de colisión a partir de la imagen del agua
+        self.mask = pygame.mask.from_surface(self.image)
+
 # ? Sprites de lugar de cultivo
 class PlantSpot(pygame.sprite.Sprite):
     def __init__(self, groups, x, y):
