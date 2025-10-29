@@ -588,6 +588,75 @@ class AllSprites(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
+        
+# ? Clase de los sprites!!
+class AllSprites3(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        self.camera_offset = pygame.Vector2(0, 0)
+        self.half_w = self.display_surface.get_width() // 2
+        self.half_h = self.display_surface.get_height() // 2
+
+        self.background_sprites = pygame.sprite.Group()
+        self.depth_sprites = pygame.sprite.Group()
+
+        self.zoom = 2
+
+    def update(self, delta_time, events, player = None):
+        for sprite in self.sprites():
+            if isinstance(sprite, PlantSpot):
+                sprite.update(player, delta_time)
+            else:
+                sprite.update(delta_time, events)
+
+    # ? Metodo para centrar la camara en el jugador
+    def center_on_target(self, target, map_width, map_height):
+        # ? Obtenemos los valores reales, basados en el zoom!!
+        screen_w = self.display_surface.get_width() / self.zoom
+        screen_h = self.display_surface.get_height() / self.zoom
+
+        # Offset calculado para centrar al jugador
+        x = target.rect.centerx - (screen_w / 2)
+        y = target.rect.centery - (screen_h / 2)
+
+        # ? Limitar movimiento de la cámara
+        if map_width > screen_w:
+            x = max(0, min(x, map_width - screen_w))
+        else:
+            x = (map_width - screen_w) / 2
+
+        if map_height > screen_h:
+            y = max(0, min(y, map_height - screen_h))
+        else:
+            y = (map_height - screen_h) / 2
+
+        self.camera_offset.x = x
+        self.camera_offset.y = y
+
+    # ? Dibujar sprites
+    def draw_sprites(self):
+        # Superficie base del tamaño de la ventana
+        surface = pygame.Surface(self.display_surface.get_size(), pygame.SRCALPHA)
+
+        # ? Dibujar sprites con offset
+        for sprite in self.background_sprites:
+            offset_rect = sprite.rect.copy()
+            offset_rect.topleft -= self.camera_offset
+            surface.blit(sprite.image, offset_rect)
+
+        for sprite in sorted(self.depth_sprites, key = lambda sprite: sprite.rect.centery):
+            offset_rect = sprite.rect.copy()
+            offset_rect.topleft -= self.camera_offset
+            surface.blit(sprite.image, offset_rect)
+
+        # ? Escalar la superficie
+        scaled_surf = pygame.transform.scale_by(surface, self.zoom)
+
+        # Dibujar superficie
+        self.display_surface.blit(scaled_surf, (0, 0))
+
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):

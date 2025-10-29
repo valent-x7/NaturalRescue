@@ -12,7 +12,7 @@ class LevelThree:
         # ? Monkey Sprites
         self.monkey_spritesheet = Spritesheet(join(self.wd, "img", "monkey_spritesheet.png"))
 
-        self.all_sprites = AllSprites() # -> All sprites Group
+        self.all_sprites = AllSprites3() # -> All sprites Group
         self.water_sprites = pygame.sprite.Group() # -> Sprites de agua
         self.collision_sprites = pygame.sprite.Group() # -> Sprites de colisión
         self.damage_sprites = pygame.sprite.Group() # -> Sprites de daño
@@ -54,7 +54,7 @@ class LevelThree:
             # -> Create Sprites taking layer name
             for x, y, image in layer.tiles():
                 if layer.name == "Ground" or layer.name == "Decoration":
-                    Sprite(self.all_sprites, (x * TILE, y * TILE), image)
+                    Sprite(self.all_sprites.background_sprites, (x * TILE, y * TILE), image)
 
         # ? Objects
         for obj in map.objects:
@@ -66,9 +66,15 @@ class LevelThree:
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
-                    CollisionSprite((self.all_sprites), "Collision", (obj.x, obj.y), image)
+                    CollisionSprite((self.all_sprites.background_sprites), "Collision", (obj.x, obj.y), image)
+            
+            elif obj.name == "DepthObject":
+                if hasattr(obj, "gid") and obj.gid:
+                    image = map.get_tile_image_by_gid(obj.gid)
+
+                    CollisionSprite((self.all_sprites.depth_sprites), "Collision", (obj.x, obj.y), image)
 
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, 
+        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, (self.all_sprites, self.all_sprites.depth_sprites), self.collision_sprites, 
                             self.water_sprites, self.damage_sprites, self.plant_spots)
