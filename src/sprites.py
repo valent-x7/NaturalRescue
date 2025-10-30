@@ -258,14 +258,18 @@ class Penguin(pygame.sprite.Sprite):
         self.speed = 4
         self.conteo_saltos = 0
 
-        self.y_vel = 0
-        self.on_ground = False
-        self.x_vel = 0
-
+        # --- DASH ---
+        self.dashing = False
+        self.dash_timer = 0
+        self.dash_trail = []
         self.jump_pressed = False
-        self.dash_cooldown = 0  # evitar dashs infinitos
+        self.dash_cooldown = 0
 
-        # Animaciones
+        self.y_vel = 0
+        self.x_vel = 0
+        self.on_ground = False
+
+        # --- Animaciones ---
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h),
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
                                self.spritesheet.get_sprite(64, 0, self.w, self.h)]
@@ -288,6 +292,7 @@ class Penguin(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
 
+    # -------------------
     def animate(self, moving, delta_time):
         if moving:
             self.frame += self.animation_speed * delta_time
@@ -309,17 +314,17 @@ class Penguin(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
+    # -------------------
     def damage(self):
         self.alive = False
         self.kill()
 
+    # -------------------
     def update(self, platforms, delta_time):
         if not self.alive:
             return
 
         keys = pygame.key.get_pressed()
-
-        # Cooldown del dash (para que dure poquito)
         if self.dash_cooldown > 0:
             self.dash_cooldown -= 1
 
@@ -339,34 +344,46 @@ class Penguin(pygame.sprite.Sprite):
         # --- SALTO Y DASH ---
         if keys[pygame.K_w]:
             if not self.jump_pressed:
-                if self.conteo_saltos == 0:  # Primer salto normal
+                if self.conteo_saltos == 0:
+                    # Salto normal
                     self.direction = 'up'
-                    self.moving = True
                     self.y_vel = -10
-                    self.conteo_saltos += 1
                     self.on_ground = False
-                    # print("Salto normal")
-                elif self.conteo_saltos == 1 and self.dash_cooldown == 0:
-                    # DASH en el aire 💨
-                    dash_speed = 12
+                    self.conteo_saltos += 1
+
+                elif self.conteo_saltos == 1 and not self.dashing:
+                    # DASH EN EL AIRE 💨
+                    self.dashing = True
+                    self.dash_timer = 10
+                    self.conteo_saltos += 1
+
+                    dash_speed = 32
                     if self.direction == 'left':
                         self.x_vel = -dash_speed
                     elif self.direction == 'right':
                         self.x_vel = dash_speed
                     else:
-                        # Si no hay dirección, dasha hacia la última dirección horizontal
-                        self.x_vel = dash_speed if self.direction == 'right' else -dash_speed
-                    self.dash_cooldown = 20  # duración breve del dash
-                    self.conteo_saltos += 1
-                    # print("Dash")
-                self.jump_pressed = True
+                        self.x_vel = dash_speed
+
+            self.jump_pressed = True
         else:
             self.jump_pressed = False
 
         # --- GRAVEDAD ---
-        self.y_vel += 0.50
-        if self.y_vel > 10:
-            self.y_vel = 10
+        if not self.dashing:
+            self.y_vel += 0.50
+            if self.y_vel > 10:
+                self.y_vel = 10
+
+        # --- EFECTO DEL DASH ---
+        if self.dashing:
+            # Guardar copia para la estela
+            self.dash_trail.append((self.image.copy(), self.rect.topleft, 200))
+            # Reducir velocidad suavemente
+            self.x_vel *= 0.9
+            self.dash_timer -= 1
+            if self.dash_timer <= 0:
+                self.dashing = False
 
         # --- MOVIMIENTO HORIZONTAL CON COLISIÓN ---
         self.rect.x += self.x_vel
@@ -386,16 +403,31 @@ class Penguin(pygame.sprite.Sprite):
                     self.rect.bottom = platform.rect.top
                     self.y_vel = 0
                     self.on_ground = True
-                    self.conteo_saltos = 0  # reset saltos y dash
+                    self.conteo_saltos = 0
+                    self.dashing = False
                 elif self.y_vel < 0:
                     self.rect.top = platform.rect.bottom
                     self.y_vel = 0
 
-        # Animación
+        # Actualizar animación
         self.animate(self.moving, delta_time)
 
-        # Hitbox
+        # Actualizar hitbox
         self.hitbox_rect.center = self.rect.center
+
+        # Desvanecer estela
+        self.dash_trail = [(img, pos, alpha - 15) for img, pos, alpha in self.dash_trail if alpha > 15]
+
+    # -------------------
+    def draw(self, screen):
+        # Dibujar estela
+        for img, pos, alpha in self.dash_trail:
+            temp = img.copy()
+            temp.set_alpha(alpha)
+            screen.blit(temp, pos)
+
+        # Dibujar personaje
+        screen.blit(self.image, self.rect)
 
 
 # ? Clase Sprite Normal
