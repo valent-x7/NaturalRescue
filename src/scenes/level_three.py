@@ -3,20 +3,22 @@ from sprites import *
 from pytmx import load_pygame
 from os import getcwd
 from os.path import join
+from random import choice
 
 class LevelThree:
     def __init__(self, game, screen: pygame.Surface):
         self.game_screen = screen # -> Game Screen
         self.wd = getcwd() # -> Working Directory
 
-        # ? Monkey Sprites
-        self.monkey_spritesheet = Spritesheet(join(self.wd, "img", "monkey_spritesheet.png"))
+        # ? Scientist Sprites
+        self.scientist_spritesheet = Spritesheet(join(self.wd, "img", "scientist_spritesheet.png"))
 
         self.all_sprites = AllSprites3() # -> All sprites Group
         self.water_sprites = pygame.sprite.Group() # -> Sprites de agua
         self.collision_sprites = pygame.sprite.Group() # -> Sprites de colisión
         self.damage_sprites = pygame.sprite.Group() # -> Sprites de daño
         self.plant_spots = pygame.sprite.Group() # -> Lugares de cultivo
+        self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
 
         self.setup_map() # -> Setup map
 
@@ -36,6 +38,9 @@ class LevelThree:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_m:
                     return "MENU"
+            
+            elif event.type == self.enemy_event and len(self.enemy_sprites) < 1:
+                Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords), self.player)
                 
         return "LEVEL_3"
 
@@ -56,25 +61,34 @@ class LevelThree:
                 if layer.name == "Ground" or layer.name == "Decoration":
                     Sprite(self.all_sprites.background_sprites, (x * TILE, y * TILE), image)
 
+        self.enemy_spawn_coords = [] # -> Spawn de enemigos
+
         # ? Objects
         for obj in map.objects:
             # -> Collision Rects
             if obj.name == "ObjectCollision":
                 CollisionSpriteRect((self.collision_sprites), obj.x, obj.y, obj.width, obj.height)
             
-            elif obj.name == "LaboratoryObject":
+            elif obj.name == "LaboratoryObject": # -> Laboratory Objects
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites.background_sprites), "Collision", (obj.x, obj.y), image)
             
-            elif obj.name == "DepthObject":
+            elif obj.name == "DepthObject": # -> Objectos en base al centro de su eje y
                 if hasattr(obj, "gid") and obj.gid:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites.depth_sprites), "Collision", (obj.x, obj.y), image)
+            
+            elif obj.name == "Ghost": # -> Coordenadas de enemigos
+                self.enemy_spawn_coords.append((obj.x, obj.y))
 
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, (self.all_sprites, self.all_sprites.depth_sprites), self.collision_sprites, 
-                            self.water_sprites, self.damage_sprites, self.plant_spots)
+        self.player = Scientist(self.scientist_spritesheet, (self.all_sprites, self.all_sprites.depth_sprites),
+                                (player_obj.x, player_obj.y), self.collision_sprites)
+        
+        # ? Enemy Event
+        self.enemy_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.enemy_event, 3000) # -> Evento de enemigos cada 3 sg
