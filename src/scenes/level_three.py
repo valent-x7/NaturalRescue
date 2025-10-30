@@ -1,6 +1,7 @@
 from settings import *
 from sprites import *
 from pytmx import load_pygame
+from ui.utils import draw_text, get_text
 from os import getcwd
 from os.path import join
 from random import choice
@@ -17,7 +18,7 @@ class LevelThree:
         self.water_sprites = pygame.sprite.Group() # -> Sprites de agua
         self.collision_sprites = pygame.sprite.Group() # -> Sprites de colisión
         self.damage_sprites = pygame.sprite.Group() # -> Sprites de daño
-        self.plant_spots = pygame.sprite.Group() # -> Lugares de cultivo
+        self.valve_sprites = pygame.sprite.Group() # -> Valvulas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
 
         self.setup_map() # -> Setup map
@@ -34,12 +35,23 @@ class LevelThree:
         self.all_sprites.center_on_target(self.player, self.map_width, self.map_height)
         self.all_sprites.draw_sprites()
 
+        if game.paused:
+                draw_text(self.game_screen, TITLE_FONT_PATH, 64,
+                        get_text(self.translations, game.current_lang, "paused-title"),
+                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
+                draw_text(self.game_screen, TITLE_FONT_PATH, 36,
+                        get_text(self.translations, game.current_lang, "paused-description"),
+                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_m:
+                    game.paused = False
                     return "MENU"
+                elif event.key == pygame.K_p:
+                    game.paused = not game.paused # -> Invertimos el valor de pausa
             
-            elif event.type == self.enemy_event and len(self.enemy_sprites) < 1:
+            elif event.type == self.enemy_event and len(self.enemy_sprites) < 3:
                 Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords), self.player)
                 
         return "LEVEL_3"
@@ -80,6 +92,9 @@ class LevelThree:
                     image = map.get_tile_image_by_gid(obj.gid)
 
                     CollisionSprite((self.all_sprites.depth_sprites), "Collision", (obj.x, obj.y), image)
+            
+            elif obj.name == "Valve Position": # -> Valvulas
+                Valve((self.all_sprites, self.all_sprites.depth_sprites, self.valve_sprites), (obj.x, obj.y))
             
             elif obj.name == "Ghost": # -> Coordenadas de enemigos
                 self.enemy_spawn_coords.append((obj.x, obj.y))

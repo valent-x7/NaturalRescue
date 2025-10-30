@@ -662,6 +662,41 @@ class PlantSpot(pygame.sprite.Sprite):
             # ? Cambiamos imagen si o si
             self.image = self.get_image_by_water()
 
+# ? Valvula
+class Valve(pygame.sprite.Sprite):
+    def __init__(self, groups, position):
+        super().__init__(groups)
+        self.wd = os.getcwd() # -> Get working direction
+
+        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 6)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+        self.rect = self.image.get_frect(topleft = (position))
+        self.hitbox_rect = self.rect.inflate(-5, -20)
+
+        # ? Atributes
+        self.animation_speed = 10
+        self.is_leaking = True # -> Tiene fuga activada
+
+    def update(self, player, delta_time):
+        keystate = pygame.key.get_pressed()
+
+        if self.check_player_collision(player) and keystate[pygame.K_h]:
+            self.is_leaking = False
+
+        self.animate(delta_time)
+
+    def check_player_collision(self, player):
+        if player.rect.colliderect(self.hitbox_rect):
+            return True
+
+    def animate(self, delta_time):
+        if self.is_leaking:
+            self.current_frame += self.animation_speed * delta_time
+            self.image = self.frames[int(self.current_frame) % len(self.frames)]
+        else:
+            self.image = self.frames[0]
+
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
@@ -739,7 +774,7 @@ class AllSprites3(pygame.sprite.Group):
 
     def update(self, delta_time, events, player = None):
         for sprite in self.sprites():
-            if isinstance(sprite, PlantSpot):
+            if isinstance(sprite, Valve):
                 sprite.update(player, delta_time)
             else:
                 sprite.update(delta_time, events)
@@ -1029,8 +1064,8 @@ class Ghost(pygame.sprite.Sprite):
         self.hitbox_rect = self.rect.inflate(-14, -10) # ? -> Rect de Hitbox (Colisiones)
 
         # ? Enemy Attributes
-        self.speed = 55
-        self.animation_speed = 8
+        self.speed = random.randint(55, 62)
+        self.animation_speed = random.randint(8, 12)
 
         self.player = player # -> Get Game Player
     
