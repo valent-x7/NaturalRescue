@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="191">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="220">
  <tileset firstgid="1" source="../tsx/TileSetLab.tsx"/>
  <tileset firstgid="193" source="../tsx/LaboratoryObjects.tsx"/>
  <layer id="1" name="Ground" width="32" height="26">
@@ -78,16 +78,8 @@
   <object id="21" name="ObjectCollision" x="674.193" y="431.899" width="90.5978" height="35.1597"/>
   <object id="22" name="ObjectCollision" x="225.43" y="435.949" width="91.1598" height="34.5048"/>
   <object id="23" name="ObjectCollision" x="94.8849" y="695.003" width="287.927" height="26.7205"/>
-  <object id="24" name="LaboratoryObject" gid="198" x="383.305" y="478.619" width="32" height="32"/>
-  <object id="26" name="LaboratoryObject" gid="198" x="575.407" y="542.859" width="32" height="32"/>
-  <object id="27" name="LaboratoryObject" gid="199" x="462.841" y="510.805" width="64" height="64"/>
-  <object id="28" name="LaboratoryObject" gid="199" x="357.031" y="574.014" width="64" height="64"/>
-  <object id="31" name="LaboratoryObject" gid="199" x="566.336" y="479.54" width="64" height="64"/>
   <object id="33" name="LaboratoryObject" gid="195" x="319.772" y="408.483" width="32" height="32"/>
   <object id="46" name="LaboratoryObject" gid="196" x="636.045" y="408.888" width="32" height="32"/>
-  <object id="52" name="LaboratoryObject" gid="196" x="480.378" y="640.323" width="32" height="32"/>
-  <object id="53" name="LaboratoryObject" gid="197" x="503.969" y="640.323" width="32" height="32"/>
-  <object id="54" name="LaboratoryObject" gid="195" x="457.412" y="640.532" width="32" height="32"/>
   <object id="58" name="LaboratoryObject" gid="200" x="48.5041" y="493.799" width="96" height="96"/>
   <object id="62" name="LaboratoryObject" gid="201" x="110.274" y="781.106" width="96" height="96"/>
   <object id="65" name="LaboratoryObject" gid="201" x="814.679" y="778.959" width="96" height="96"/>
@@ -107,7 +99,7 @@
   <object id="113" name="LaboratoryObject" gid="201" x="335.003" y="425.029" width="96" height="96"/>
   <object id="114" name="ObjectCollision" x="316.922" y="362.282" width="97.0979" height="35.4943"/>
   <object id="117" name="ObjectCollision" x="576.639" y="368.426" width="99.6918" height="29.5383"/>
-  <object id="118" name="ObjectCollision" x="297.478" y="361.933" width="21.8624" height="108.282"/>
+  <object id="118" name="ObjectCollision" x="297.478" y="361.933" width="23.6214" height="108.282"/>
   <object id="119" name="ObjectCollision" x="672.585" y="358.814" width="22.8478" height="108.282"/>
   <object id="120" name="LaboratoryObject" gid="206" x="800.395" y="127.038" width="64" height="64"/>
   <object id="121" name="LaboratoryObject" gid="207" x="64.8596" y="126.891" width="32" height="32"/>
@@ -145,12 +137,43 @@
   <object id="185" name="ObjectCollision" x="636.798" y="606.906" width="40.217" height="12.2865"/>
   <object id="186" name="ObjectCollision" x="673.294" y="562.347" width="12.3106" height="44.6939"/>
   <object id="187" name="ObjectCollision" x="317.247" y="605.875" width="40.217" height="12.7365"/>
-  <object id="188" name="ObjectCollision" x="305.904" y="544.657" width="12.6113" height="61.6117"/>
+  <object id="188" name="ObjectCollision" x="305.904" y="544.657" width="15.2498" height="61.6117"/>
   <object id="189" name="ObjectCollision" x="225.297" y="544.636" width="91.9638" height="33.2041"/>
   <object id="190" name="ObjectCollision" x="140.292" y="115.416" width="61.9686" height="22.6369"/>
+  <object id="205" name="ObjectCollision" x="369.099" y="545.041" width="29.6725" height="5.13562"/>
+  <object id="208" name="ObjectCollision" x="481.307" y="557.863" width="20.0587" height="6.14864"/>
+  <object id="209" name="ObjectCollision" x="591.895" y="542.727" width="31.3572" height="7.68158"/>
+  <object id="218" name="LaboratoryObject" gid="212" x="256.789" y="451.7" width="32" height="32"/>
+  <object id="219" name="LaboratoryObject" gid="212" x="702.211" y="451.246" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="5" name="DepthObjects">
+  <object id="195" name="DepthObject" gid="198" x="367.916" y="562.216" width="32" height="32"/>
+  <object id="196" name="DepthObject" gid="199" x="464.569" y="516.794" width="64" height="64"/>
+  <object id="197" name="DepthObject" gid="198" x="366.882" y="465.47" width="32" height="32"/>
+  <object id="198" name="DepthObject" gid="198" x="591.414" y="561.292" width="32" height="32"/>
+  <object id="199" name="DepthObject" gid="198" x="571.113" y="471.154" width="32" height="32"/>
+  <object id="200" name="DepthObject" gid="197" x="475.291" y="575.097" width="32" height="32"/>
+  <object id="201" name="DepthObject" gid="196" x="477.727" y="435.424" width="32" height="32"/>
+  <object id="202" name="DepthObject" gid="197" x="453.904" y="638.185" width="32" height="32"/>
+  <object id="203" name="DepthObject" gid="196" x="476.319" y="638.596" width="32" height="32"/>
+  <object id="204" name="DepthObject" gid="195" x="498.837" y="638.905" width="32" height="32"/>
+  <object id="211" name="ObjectCollision" x="571.463" y="451.781" width="31.3572" height="7.68158"/>
+  <object id="212" name="ObjectCollision" x="367.076" y="445.941" width="31.3572" height="7.68158"/>
+  <object id="213" name="ObjectCollision" x="484.156" y="417.521" width="19.0478" height="7.56322"/>
+  <object id="214" name="ObjectCollision" x="467.306" y="494.274" width="61.151" height="7.68158"/>
+  <object id="217" name="ObjectCollision" x="459.11" y="620.897" width="66.3761" height="15.6959"/>
  </objectgroup>
  <objectgroup id="2" name="Entities">
   <object id="1" name="Player" x="832.705" y="153.078">
+   <point/>
+  </object>
+  <object id="191" name="Ghost" x="15.6927" y="719.708">
+   <point/>
+  </object>
+  <object id="193" name="Ghost" x="992.098" y="725.798">
+   <point/>
+  </object>
+  <object id="194" name="Ghost" x="114.588" y="305.568">
    <point/>
   </object>
  </objectgroup>

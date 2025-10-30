@@ -138,14 +138,17 @@ class Monkey(pygame.sprite.Sprite):
     def input(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_a, pygame.K_d):
+                if event.key in (pygame.K_a, pygame.K_d, pygame.K_LEFT, pygame.K_RIGHT):
                     self.last_axis = "x"
-                elif event.key in (pygame.K_w, pygame.K_s):
+                elif event.key in (pygame.K_w, pygame.K_s, pygame.K_UP, pygame.K_DOWN):
                     self.last_axis = "y"
 
         keyState = pygame.key.get_pressed()
-        self.vec.x = int(keyState[pygame.K_d]) - int(keyState[pygame.K_a]) # -> Izquierda o derecha
-        self.vec.y = int(keyState[pygame.K_s]) - int(keyState[pygame.K_w]) # -> Arriba o abajo
+
+        # -> Izquierda o derecha
+        self.vec.x = (int(keyState[pygame.K_d]) or int(keyState[pygame.K_RIGHT])) - (int(keyState[pygame.K_a]) or int(keyState[pygame.K_LEFT]))
+        # -> Arriba o abajo
+        self.vec.y = (int(keyState[pygame.K_s]) or int(keyState[pygame.K_DOWN])) - (int(keyState[pygame.K_w]) or int(keyState[pygame.K_UP]))
 
         # ? Anulamos movimiento diagonal
         if self.vec.x != 0 and self.vec.y != 0:
@@ -368,6 +371,136 @@ class Penguin(pygame.sprite.Sprite):
         # Actualizar hitbox (si la usas para algo)
         self.hitbox_rect.center = self.rect.center
 
+class Scientist(pygame.sprite.Sprite):
+    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites):
+        super().__init__(groups)
+
+        self.collision_sprites = collision_sprites
+
+        # ? Frames (imagenes)
+        self.down_frames = [spritesheet.get_sprite(0, 0, TILE, TILE),
+                            spritesheet.get_sprite(32, 0, TILE, TILE),
+                            spritesheet.get_sprite(64, 0, TILE, TILE)]
+        
+        self.left_frames = [spritesheet.get_sprite(0, 32, TILE, TILE),
+                            spritesheet.get_sprite(32, 32, TILE, TILE),
+                            spritesheet.get_sprite(64, 32, TILE, TILE)]
+        
+        self.right_frames = [spritesheet.get_sprite(0, 64, TILE, TILE),
+                            spritesheet.get_sprite(32, 64, TILE, TILE),
+                            spritesheet.get_sprite(64, 64, TILE, TILE)]
+        
+        self.up_frames = [spritesheet.get_sprite(0, 96, TILE, TILE),
+                            spritesheet.get_sprite(32, 96, TILE, TILE),
+                            spritesheet.get_sprite(64, 96, TILE, TILE)]
+    
+        self.current_frame = 1
+        self.direction_frame = "down" # -> Imagen (Player caminando hacia abajo)
+        self.image = self.down_frames[self.current_frame] # -> Imagen de inicio
+
+        self.rect = self.image.get_frect(topleft = (position[0] - TILE // 2, position[1] - TILE // 2)) # -> Rect
+        self.hitbox_rect = self.rect.inflate(-14, -10) # -> Hitbox Rect
+
+        # ? Attributes
+        self.moving = False # -> Por defecto el jugador no se mueve
+        self.direction_vector = pygame.Vector2() # -> Vector de dirección
+        self.last_axis = None # -> Ultima tecla
+        self.speed = 128
+        self.animation_speed = 14
+
+    # ? Actualizar jugador
+    def update(self, delta_time, events):
+        self.moving = False
+        self.input(events)
+        self.move(delta_time)
+        self.animate(self.moving, delta_time)
+
+    def input(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_a, pygame.K_d, pygame.K_LEFT, pygame.K_RIGHT):
+                    self.last_axis = "x"
+                elif event.key in (pygame.K_w, pygame.K_s, pygame.K_UP, pygame.K_DOWN):
+                    self.last_axis = "y"
+
+        keyState = pygame.key.get_pressed()
+
+        # -> Izquierda o derecha
+        self.direction_vector.x = (int(keyState[pygame.K_d]) or int(keyState[pygame.K_RIGHT])) - (int(keyState[pygame.K_a]) or int(keyState[pygame.K_LEFT]))
+        # -> Arriba o abajo
+        self.direction_vector.y = (int(keyState[pygame.K_s]) or int(keyState[pygame.K_DOWN])) - (int(keyState[pygame.K_w]) or int(keyState[pygame.K_UP]))
+
+        # ? Anulamos movimiento diagonal
+        if self.direction_vector.x != 0 and self.direction_vector.y != 0:
+            if self.last_axis == "x":
+                self.direction_vector.y = 0
+            elif self.last_axis == "y":
+                self.direction_vector.x = 0
+            else:
+                self.direction_vector.y = 0
+
+    # ? Mover jugador
+    def move(self, delta_time):
+        self.hitbox_rect.x += self.direction_vector.x * self.speed * delta_time
+        self.collision("horizontal")
+        self.hitbox_rect.y += self.direction_vector.y * self.speed * delta_time
+        self.collision("vertical")
+        self.rect.center = self.hitbox_rect.center
+
+        # Variables para animación
+        if self.direction_vector.y == 1:
+            self.direction_frame = "down"
+            self.moving = True
+        elif self.direction_vector.y == -1:
+            self.direction_frame = "up"
+            self.moving = True
+        elif self.direction_vector.x == 1:
+            self.direction_frame = "right"
+            self.moving = True
+        elif self.direction_vector.x == -1:
+            self.direction_frame = "left"
+            self.moving = True
+
+    # ? Checar colisiones
+    def collision(self, direction):
+        for sprite in self.collision_sprites:
+            # * Si hay colisión
+            if sprite.rect.colliderect(self.hitbox_rect):
+                # ? Colisión horizontal
+                if direction == "horizontal":
+                    if self.direction_vector.x > 0:
+                        self.hitbox_rect.right = sprite.rect.left
+                    if self.direction_vector.x < 0:
+                        self.hitbox_rect.left = sprite.rect.right
+                # ? Colisión vertical
+                elif direction == "vertical":
+                    if self.direction_vector.y > 0:
+                        self.hitbox_rect.bottom = sprite.rect.top
+                    if self.direction_vector.y < 0:
+                        self.hitbox_rect.top = sprite.rect.bottom                       
+
+    # ? Animar jugador
+    def animate(self, moving, delta_time):
+        if moving:
+            self.current_frame += self.animation_speed * delta_time # -> Aumentamos frame
+            
+            if self.direction_frame == "down":
+                self.image = self.down_frames[int(self.current_frame) % len(self.down_frames)]
+            elif self.direction_frame == "up":
+                self.image = self.up_frames[int(self.current_frame) % len(self.up_frames)]
+            elif self.direction_frame == "right":
+                self.image = self.right_frames[int(self.current_frame) % len(self.right_frames)]
+            elif self.direction_frame == "left":
+                self.image = self.left_frames[int(self.current_frame) % len(self.left_frames)]
+        else:
+            if self.direction_frame == "down":
+                self.image = self.down_frames[1]
+            elif self.direction_frame == "up":
+                self.image = self.up_frames[1]
+            elif self.direction_frame == "right":
+                self.image = self.right_frames[1]
+            elif self.direction_frame == "left":
+                self.image = self.left_frames[1]
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -588,6 +721,75 @@ class AllSprites(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
+        
+# ? Clase de los sprites!!
+class AllSprites3(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        self.camera_offset = pygame.Vector2(0, 0)
+        self.half_w = self.display_surface.get_width() // 2
+        self.half_h = self.display_surface.get_height() // 2
+
+        self.background_sprites = pygame.sprite.Group()
+        self.depth_sprites = pygame.sprite.Group()
+
+        self.zoom = 2
+
+    def update(self, delta_time, events, player = None):
+        for sprite in self.sprites():
+            if isinstance(sprite, PlantSpot):
+                sprite.update(player, delta_time)
+            else:
+                sprite.update(delta_time, events)
+
+    # ? Metodo para centrar la camara en el jugador
+    def center_on_target(self, target, map_width, map_height):
+        # ? Obtenemos los valores reales, basados en el zoom!!
+        screen_w = self.display_surface.get_width() / self.zoom
+        screen_h = self.display_surface.get_height() / self.zoom
+
+        # Offset calculado para centrar al jugador
+        x = target.rect.centerx - (screen_w / 2)
+        y = target.rect.centery - (screen_h / 2)
+
+        # ? Limitar movimiento de la cámara
+        if map_width > screen_w:
+            x = max(0, min(x, map_width - screen_w))
+        else:
+            x = (map_width - screen_w) / 2
+
+        if map_height > screen_h:
+            y = max(0, min(y, map_height - screen_h))
+        else:
+            y = (map_height - screen_h) / 2
+
+        self.camera_offset.x = x
+        self.camera_offset.y = y
+
+    # ? Dibujar sprites
+    def draw_sprites(self):
+        # Superficie base del tamaño de la ventana
+        surface = pygame.Surface(self.display_surface.get_size(), pygame.SRCALPHA)
+
+        # ? Dibujar sprites con offset
+        for sprite in self.background_sprites:
+            offset_rect = sprite.rect.copy()
+            offset_rect.topleft -= self.camera_offset
+            surface.blit(sprite.image, offset_rect)
+
+        for sprite in sorted(self.depth_sprites, key = lambda sprite: sprite.rect.centery):
+            offset_rect = sprite.rect.copy()
+            offset_rect.topleft -= self.camera_offset
+            surface.blit(sprite.image, offset_rect)
+
+        # ? Escalar la superficie
+        scaled_surf = pygame.transform.scale_by(surface, self.zoom)
+
+        # Dibujar superficie
+        self.display_surface.blit(scaled_surf, (0, 0))
+
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
@@ -813,3 +1015,44 @@ class Enemy(pygame.sprite.Sprite):
             self.player.hit_sound.play()
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
+
+class Ghost(pygame.sprite.Sprite):
+    def __init__(self, groups, position, player, difficulty = "normal"):
+        super().__init__(groups) # -> Grupos
+        self.wd = os.getcwd() # -> Directorio de trabajo
+        
+        self.frames = [pygame.image.load(os.path.join("assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+        
+        self.rect = self.image.get_frect(center = position)
+        self.hitbox_rect = self.rect.inflate(-14, -10) # ? -> Rect de Hitbox (Colisiones)
+
+        # ? Enemy Attributes
+        self.speed = 55
+        self.animation_speed = 8
+
+        self.player = player # -> Get Game Player
+    
+    # * Actualizar enemigo
+    def update(self, delta_time, events = None):
+        self.animate(delta_time)
+        self.move(delta_time)
+
+    # ? Mover Personaje
+    def move(self, delta_time):
+        player_position = pygame.Vector2(self.player.rect.center)
+        enemy_position = pygame.Vector2(self.rect.center)
+        direction = (player_position - enemy_position) # -> Dirección a la que se moverá el Ghost
+        
+        self.direction = direction.normalize() if direction.length() > 0 else direction
+
+        # ? Mover Hitbox del Ghost
+        self.hitbox_rect.centerx += self.direction.x * self.speed * delta_time
+        self.hitbox_rect.centery += self.direction.y * self.speed * delta_time
+        self.rect.center = self.hitbox_rect.center # -> Definir rectangulo final
+
+    # ? Ghost animation
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.frames[int(self.current_frame) % len(self.frames)]
