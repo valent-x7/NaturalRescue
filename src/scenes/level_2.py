@@ -4,6 +4,7 @@ from sprites import Penguin, Sprite
 from os import getcwd
 from sprites import *
 from pytmx import load_pygame
+from ui.timebar import TimeBar
 
 class Level_two:
     def __init__(self, game, screen):
@@ -18,10 +19,11 @@ class Level_two:
         self.damage_sprites = pygame.sprite.Group()
         
         # Cargar el mapa y sprites PRIMERO
-        self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
-        self.penguin = Penguin(8*TILE, 28*TILE, self.penguin_spritesheet)
+        self.setup_map(["FondoRoca", "Estructura", "Agua"])
+        self.penguin = Penguin(4*TILE, 28*TILE, self.penguin_spritesheet)
         self.all_sprites.add(self.penguin, layer=6)
         self.setup_decor("Decoración")
+        self.setup_ui()
         
         # Obtener tamaño del mapa desde el archivo TMX
         map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
@@ -36,13 +38,10 @@ class Level_two:
         self.zoomed_surface = pygame.Surface((int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom)))
         
         # Cargar fondo
-        bg_original = pygame.image.load(join(self.wd, 'img', 'bgiceberg.png')).convert_alpha()
-        self.bg_width = bg_original.get_width() * 2
-        self.bg_height = bg_original.get_height() * 2
-        self.bg = pygame.transform.scale(bg_original, (self.bg_width, self.bg_height))
+        self.bg_original = pygame.image.load(join(self.wd, 'img', 'bgiceberg.png')).convert_alpha()
         
         # POSICIÓN INICIAL DE LA CÁMARA - MOSTRAR ESQUINA INFERIOR IZQUIERDA
-        self.camera_x = 0
+        self.camera_x = self.level_width - WINDOW_WIDTH
         self.camera_y = self.level_height - WINDOW_HEIGHT  # Comenzar desde abajo
         
         print(f"Cámara inicial: ({self.camera_x}, {self.camera_y})")
@@ -53,8 +52,8 @@ class Level_two:
         self.create_static_cache()
         
         # Precalcular offsets para el zoom
-        self.x_offset = (self.zoomed_surface.get_width() - WINDOW_WIDTH) // 2 
-        self.y_offset = (self.zoomed_surface.get_height() - WINDOW_HEIGHT) // 2 
+        self.x_offset = ((self.zoomed_surface.get_width() - WINDOW_WIDTH) // 2)
+        self.y_offset = ((self.zoomed_surface.get_height() - WINDOW_HEIGHT) // 2)
         
         # Precalcular máscaras
         self.precalculate_masks()
@@ -91,8 +90,10 @@ class Level_two:
             decor_sprite = Sprite(self.all_sprites, pos, image)
             self.all_sprites.add(decor_sprite, layer=12)
 
+    def setup_ui(self):
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH * self.zoom, 32, 225)
+
     def create_static_cache(self):
-        """Crear una superficie con TODOS los sprites estáticos"""
         print("Creando cache estática...")
         # Dibujar TODOS los sprites estáticos en la cache
         for sprite in self.all_sprites:
@@ -101,7 +102,6 @@ class Level_two:
         print("Cache estática creada correctamente")
 
     def precalculate_masks(self):
-        """Precalcular máscaras una sola vez al inicio"""
         if hasattr(self.penguin, 'image'):
             self.penguin.mask = pygame.mask.from_surface(self.penguin.image)
         
@@ -110,7 +110,6 @@ class Level_two:
                 sprite.mask = pygame.mask.from_surface(sprite.image)
 
     def update_camera(self):
-        """Actualizar cámara - seguir al pingüino pero mantener límites"""
         # Calcular posición objetivo para centrar al pingüino
         target_x = self.penguin.rect.centerx - WINDOW_WIDTH // 2
         target_y = self.penguin.rect.centery - WINDOW_HEIGHT // 2
@@ -126,10 +125,9 @@ class Level_two:
         # Debug info
         penguin_screen_x = self.penguin.rect.x - self.camera_x
         penguin_screen_y = self.penguin.rect.y - self.camera_y
-        print(f"Cámara: ({self.camera_x:.1f}, {self.camera_y:.1f}) | Pingüino en pantalla: ({penguin_screen_x:.1f}, {penguin_screen_y:.1f})")
+        # print(f"Cámara: ({self.camera_x:.1f}, {self.camera_y:.1f}) | Pingüino en pantalla: ({penguin_screen_x:.1f}, {penguin_screen_y:.1f})")
 
     def collide_with_mask(self, sprite1, sprite2):
-        """Detección de colisiones con máscaras"""
         if not sprite1.rect.colliderect(sprite2.rect):
             return False
         
@@ -139,7 +137,6 @@ class Level_two:
         return sprite2.mask.overlap(sprite1.mask, (offset_x, offset_y)) is not None
 
     def handle_water_collision(self):
-        """Manejar colisiones con agua"""
         water_collisions = pygame.sprite.spritecollide(
             self.penguin, 
             self.damage_sprites, 
@@ -175,12 +172,13 @@ class Level_two:
                 self.penguin.update(self.collision_sprites, dt)
                 self.handle_water_collision()
             else:
-                return "RESTART"
+                return "GAMEOVER"
 
             self.update_camera()
+            self.timebar.update()
 
             # Limpiar superficie de nivel
-            self.level_surface.fill((0, 0, 0, 0))
+            self.level_surface.blit(self.bg_original, (0,0))
             
             # Dibujar el mapa visible desde el cache
             if self.static_sprites_cache:
@@ -221,6 +219,8 @@ class Level_two:
             # Dibujar la superficie con zoom centrada en la pantalla
             self.game_screen.fill((0, 0, 0))  # Fondo negro para bordes
             self.game_screen.blit(self.zoomed_surface, (-self.x_offset, -self.y_offset))
+            
+            self.timebar.draw(self.game_screen) # -> Barra de tiempo
 
             pygame.display.flip()
 
