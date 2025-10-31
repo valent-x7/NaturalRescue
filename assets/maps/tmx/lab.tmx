@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="220">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="28" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="235">
  <tileset firstgid="1" source="../tsx/TileSetLab.tsx"/>
  <tileset firstgid="193" source="../tsx/LaboratoryObjects.tsx"/>
- <layer id="1" name="Ground" width="32" height="26">
+ <layer id="1" name="Ground" width="32" height="28">
   <data encoding="csv">
 4,5,5,5,5,5,5,5,6,0,0,0,0,0,0,0,0,0,0,0,0,4,5,5,5,5,5,5,5,5,6,0,
 20,1,2,2,2,2,2,3,22,0,4,5,5,5,6,0,0,0,0,0,0,20,1,2,2,2,2,2,2,3,22,0,
@@ -23,21 +23,23 @@
 20,69,70,69,70,71,69,71,69,71,69,70,69,70,69,70,70,69,70,69,69,68,68,69,68,69,68,69,68,69,22,0,
 20,52,69,70,69,69,52,65,37,82,70,69,70,69,70,69,70,69,70,69,70,65,37,37,37,37,37,37,37,37,38,0,
 36,37,37,37,37,37,37,38,0,20,52,70,69,70,69,70,69,70,69,70,52,22,0,0,0,0,0,0,0,0,0,0,
-0,0,4,5,5,5,5,5,6,36,37,82,68,70,69,68,70,69,70,65,37,38,4,5,5,5,5,5,6,0,0,0,
-0,0,20,1,2,2,2,3,22,4,5,81,69,71,65,37,82,70,69,66,5,6,20,1,2,2,2,3,22,0,0,0,
-0,0,20,17,18,18,18,19,22,20,18,18,70,69,22,0,20,69,71,18,18,22,20,17,18,18,18,19,22,0,0,0,
-0,0,20,21,34,21,34,21,66,81,18,18,69,71,22,0,20,69,69,18,18,66,81,33,21,34,21,35,22,0,0,0,
-0,0,20,71,69,70,69,70,69,70,69,71,69,71,22,0,20,69,68,70,69,70,69,70,69,70,69,71,22,0,0,0,
-0,0,20,52,69,69,70,69,70,69,71,69,71,52,22,0,20,52,70,69,70,69,70,69,70,69,70,52,22,0,0,0,
-0,0,36,37,37,37,37,37,37,37,37,37,37,37,38,0,36,37,37,37,37,37,37,37,37,37,37,37,38,0,0,0
+0,4,5,5,5,5,5,5,6,36,37,82,68,70,69,68,70,69,70,65,37,38,4,5,5,5,5,5,5,6,0,0,
+0,20,1,2,2,2,2,3,22,4,5,81,69,71,65,37,82,70,69,66,5,6,20,1,2,2,2,2,3,22,0,0,
+0,20,17,18,18,18,18,19,22,20,18,18,70,69,22,0,20,69,71,18,18,22,20,17,18,18,18,18,19,22,0,0,
+0,20,33,21,34,21,34,21,66,81,18,18,69,71,22,0,20,69,69,18,18,66,81,33,21,34,21,34,35,22,0,0,
+0,20,52,71,69,70,69,52,69,70,69,71,69,71,22,0,20,69,68,70,69,70,69,70,69,70,69,71,71,22,0,0,
+0,20,69,70,69,69,71,69,70,69,71,69,71,71,22,0,20,52,70,69,70,69,70,69,70,69,70,69,71,22,0,0,
+0,20,70,69,68,68,70,69,65,37,37,37,37,37,38,0,36,37,37,37,37,37,82,69,70,69,68,70,69,22,0,0,
+0,20,52,70,69,68,68,52,22,0,0,0,0,0,0,0,0,0,0,0,0,0,20,52,69,68,71,68,52,22,0,0,
+0,36,37,37,37,37,37,37,38,0,0,0,0,0,0,0,0,0,0,0,0,0,36,37,37,37,37,37,37,38,0,0
 </data>
  </layer>
- <layer id="4" name="Decoration" width="32" height="26">
+ <layer id="4" name="Decoration" width="32" height="28">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,11,12,0,0,
 0,0,0,26,27,28,0,0,0,0,0,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,26,27,28,0,0,
-0,0,0,0,0,0,0,0,84,85,0,26,27,28,0,84,85,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,86,86,86,86,86,86,84,85,0,26,27,28,0,84,85,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -47,7 +49,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,26,27,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,84,0,85,0,0,0,0,0,0,0,0,0,0,0,84,0,85,0,0,0,0,0,0,0,0,
+0,86,86,86,86,86,0,84,0,85,0,0,0,0,0,0,0,0,0,0,0,84,0,85,86,86,86,86,86,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -56,6 +58,8 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,11,12,0,0,0,0,
 0,0,0,26,27,28,0,0,0,0,84,85,0,0,0,0,0,0,0,84,85,0,0,0,0,26,27,28,0,0,0,0,
+0,0,86,86,86,86,0,86,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,86,86,0,86,86,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -77,7 +81,7 @@
   <object id="20" name="ObjectCollision" x="547.74" y="344.105" width="129.06" height="34.5048"/>
   <object id="21" name="ObjectCollision" x="674.193" y="431.899" width="90.5978" height="35.1597"/>
   <object id="22" name="ObjectCollision" x="225.43" y="435.949" width="91.1598" height="34.5048"/>
-  <object id="23" name="ObjectCollision" x="94.8849" y="695.003" width="287.927" height="26.7205"/>
+  <object id="23" name="ObjectCollision" x="60.729" y="695.003" width="322.083" height="26.7205"/>
   <object id="33" name="LaboratoryObject" gid="195" x="319.772" y="408.483" width="32" height="32"/>
   <object id="46" name="LaboratoryObject" gid="196" x="636.045" y="408.888" width="32" height="32"/>
   <object id="58" name="LaboratoryObject" gid="200" x="48.5041" y="493.799" width="96" height="96"/>
@@ -94,10 +98,10 @@
   <object id="100" name="LaboratoryObject" gid="203" x="63.9059" y="96.3582" width="32" height="32"/>
   <object id="104" name="LaboratoryObject" gid="203" x="192.489" y="96.1567" width="32" height="32"/>
   <object id="108" name="LaboratoryObject" gid="204" x="223.788" y="704.842" width="32" height="32"/>
-  <object id="110" name="ObjectCollision" x="128.776" y="707.659" width="61.0314" height="45.3158"/>
+  <object id="110" name="ObjectCollision" x="128.776" y="707.659" width="61.0314" height="38.5004"/>
   <object id="112" name="LaboratoryObject" gid="200" x="559.304" y="425.48" width="96" height="96"/>
   <object id="113" name="LaboratoryObject" gid="201" x="335.003" y="425.029" width="96" height="96"/>
-  <object id="114" name="ObjectCollision" x="316.922" y="362.282" width="97.0979" height="35.4943"/>
+  <object id="114" name="ObjectCollision" x="316.922" y="362.282" width="97.0979" height="27.496"/>
   <object id="117" name="ObjectCollision" x="576.639" y="368.426" width="99.6918" height="29.5383"/>
   <object id="118" name="ObjectCollision" x="297.478" y="361.933" width="23.6214" height="108.282"/>
   <object id="119" name="ObjectCollision" x="672.585" y="358.814" width="22.8478" height="108.282"/>
@@ -119,17 +123,17 @@
   <object id="166" name="ObjectCollision" x="65.7885" y="440.712" width="61.9686" height="22.6369"/>
   <object id="167" name="ObjectCollision" x="8.37919" y="436.094" width="25.5888" height="144.013"/>
   <object id="168" name="ObjectCollision" x="32.7821" y="577.154" width="193.046" height="17.784"/>
-  <object id="169" name="ObjectCollision" x="92.545" y="798.463" width="358.568" height="21.8715"/>
-  <object id="170" name="ObjectCollision" x="84.3997" y="721.088" width="10.7453" height="79.4396"/>
-  <object id="172" name="ObjectCollision" x="541.651" y="797.223" width="358.568" height="23.4594"/>
-  <object id="173" name="ObjectCollision" x="607.777" y="696.798" width="287.927" height="26.7205"/>
-  <object id="174" name="ObjectCollision" x="833.568" y="703.416" width="61.0314" height="45.3158"/>
+  <object id="169" name="ObjectCollision" x="255.024" y="798.463" width="196.089" height="21.8715"/>
+  <object id="170" name="ObjectCollision" x="54.3997" y="721.088" width="10.7453" height="146.738"/>
+  <object id="172" name="ObjectCollision" x="541.651" y="797.223" width="194.754" height="23.4594"/>
+  <object id="173" name="ObjectCollision" x="607.777" y="696.798" width="324.696" height="26.7205"/>
+  <object id="174" name="ObjectCollision" x="833.568" y="703.416" width="61.0314" height="40.0441"/>
   <object id="175" name="ObjectCollision" x="607.82" y="606.909" width="28.9581" height="90.0429"/>
   <object id="176" name="ObjectCollision" x="353.033" y="605.866" width="29.7389" height="89.5868"/>
   <object id="177" name="ObjectCollision" x="449.386" y="641.71" width="18.9171" height="158.483"/>
   <object id="178" name="ObjectCollision" x="523.348" y="642.048" width="18.9171" height="158.483"/>
   <object id="179" name="ObjectCollision" x="449.413" y="639.438" width="92.8712" height="12.8999"/>
-  <object id="180" name="ObjectCollision" x="894.948" y="717.948" width="12.9669" height="79.4396"/>
+  <object id="180" name="ObjectCollision" x="927.948" y="717.948" width="12.9669" height="148.411"/>
   <object id="181" name="ObjectCollision" x="768.07" y="423.19" width="193.046" height="17.784"/>
   <object id="182" name="ObjectCollision" x="832.084" y="437.227" width="61.9686" height="22.6369"/>
   <object id="183" name="ObjectCollision" x="958.221" y="423.545" width="25.5888" height="144.013"/>
@@ -145,8 +149,14 @@
   <object id="209" name="ObjectCollision" x="591.895" y="542.727" width="31.3572" height="7.68158"/>
   <object id="218" name="LaboratoryObject" gid="212" x="256.789" y="451.7" width="32" height="32"/>
   <object id="219" name="LaboratoryObject" gid="212" x="702.211" y="451.246" width="32" height="32"/>
+  <object id="229" name="ObjectCollision" x="729.071" y="797.647" width="7.21852" height="70.5611"/>
+  <object id="230" name="ObjectCollision" x="255.015" y="799.19" width="7.21852" height="68.3583"/>
+  <object id="231" name="ObjectCollision" x="731.718" y="862.433" width="197.635" height="7.9506"/>
+  <object id="232" name="ObjectCollision" x="64.1171" y="863.357" width="197.218" height="7.20375"/>
+  <object id="233" name="LaboratoryObject" gid="193" x="895.694" y="752.1" width="32" height="64"/>
+  <object id="234" name="LaboratoryObject" gid="193" x="96.2099" y="752.153" width="32" height="64"/>
  </objectgroup>
- <objectgroup id="5" name="DepthObjects">
+ <objectgroup id="5" name="DepthObjects" visible="0">
   <object id="195" name="DepthObject" gid="198" x="367.916" y="562.216" width="32" height="32"/>
   <object id="196" name="DepthObject" gid="199" x="464.569" y="516.794" width="64" height="64"/>
   <object id="197" name="DepthObject" gid="198" x="366.882" y="465.47" width="32" height="32"/>
@@ -163,7 +173,7 @@
   <object id="214" name="ObjectCollision" x="467.306" y="494.274" width="61.151" height="7.68158"/>
   <object id="217" name="ObjectCollision" x="459.11" y="620.897" width="66.3761" height="15.6959"/>
  </objectgroup>
- <objectgroup id="2" name="Entities">
+ <objectgroup id="2" name="Entities" visible="0">
   <object id="1" name="Player" x="832.705" y="153.078">
    <point/>
   </object>
@@ -174,6 +184,21 @@
    <point/>
   </object>
   <object id="194" name="Ghost" x="114.588" y="305.568">
+   <point/>
+  </object>
+  <object id="223" name="Valve Position" x="32.0082" y="96.0032">
+   <point/>
+  </object>
+  <object id="225" name="Valve Position" x="192.006" y="416">
+   <point/>
+  </object>
+  <object id="226" name="Valve Position" x="928.003" y="416">
+   <point/>
+  </object>
+  <object id="227" name="Valve Position" x="800.002" y="704.001">
+   <point/>
+  </object>
+  <object id="228" name="Valve Position" x="191.998" y="703.997">
    <point/>
   </object>
  </objectgroup>
