@@ -374,6 +374,7 @@ class Penguin(pygame.sprite.Sprite):
 class Scientist(pygame.sprite.Sprite):
     def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites):
         super().__init__(groups)
+        self.wd = os.getcwd()
 
         self.collision_sprites = collision_sprites
 
@@ -401,16 +402,26 @@ class Scientist(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft = (position[0] - TILE // 2, position[1] - TILE // 2)) # -> Rect
         self.hitbox_rect = self.rect.inflate(-14, -10) # -> Hitbox Rect
 
+        # ? Sounds
+        self.footsteps_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "footsteps_metal.mp3"))
+        self.ouch_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ouch.mp3"))
+
         # ? Attributes
+        self.valves = 0 # -> Valves closed
+        self.can_be_damaged = True # -> Puede ser dañado
+        self.last_time_damaged = 0
+        self.damage_cooldown = 2000 # -> Cooldown
         self.moving = False # -> Por defecto el jugador no se mueve
         self.direction_vector = pygame.Vector2() # -> Vector de dirección
         self.last_axis = None # -> Ultima tecla
-        self.speed = 128
+        self.health = SCIENTIST_HEALTH
+        self.speed = SCIENTIST_SPEED
         self.animation_speed = 14
 
     # ? Actualizar jugador
     def update(self, delta_time, events):
         self.moving = False
+        self.check_damage()
         self.input(events)
         self.move(delta_time)
         self.animate(self.moving, delta_time)
@@ -492,6 +503,10 @@ class Scientist(pygame.sprite.Sprite):
                 self.image = self.right_frames[int(self.current_frame) % len(self.right_frames)]
             elif self.direction_frame == "left":
                 self.image = self.left_frames[int(self.current_frame) % len(self.left_frames)]
+
+            if not self.footsteps_sound.get_num_channels(): # -> Sonido de pasos
+                self.footsteps_sound.play(-1)
+        
         else:
             if self.direction_frame == "down":
                 self.image = self.down_frames[1]
@@ -501,6 +516,19 @@ class Scientist(pygame.sprite.Sprite):
                 self.image = self.right_frames[1]
             elif self.direction_frame == "left":
                 self.image = self.left_frames[1]
+
+            self.footsteps_sound.stop() # -> Detener el sonido de pasos
+
+    def check_damage(self):
+        if not self.can_be_damaged:
+            self.image.set_alpha(150)
+            now = pygame.time.get_ticks()
+            # -> Ultima vez que recibió daño
+            if now - self.last_time_damaged >= self.damage_cooldown:
+                self.can_be_damaged = True
+                self.image.set_alpha(255) # -> Efecto de transparencia
+        else:
+            self.image.set_alpha(255)
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -668,7 +696,7 @@ class Valve(pygame.sprite.Sprite):
         super().__init__(groups)
         self.wd = os.getcwd() # -> Get working direction
 
-        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 6)]
+        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 7)]
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
         self.rect = self.image.get_frect(topleft = (position))
@@ -780,28 +808,14 @@ class AllSprites3(pygame.sprite.Group):
                 sprite.update(delta_time, events)
 
     # ? Metodo para centrar la camara en el jugador
-    def center_on_target(self, target, map_width, map_height):
+    def center_on_target(self, target):
         # ? Obtenemos los valores reales, basados en el zoom!!
         screen_w = self.display_surface.get_width() / self.zoom
         screen_h = self.display_surface.get_height() / self.zoom
 
         # Offset calculado para centrar al jugador
-        x = target.rect.centerx - (screen_w / 2)
-        y = target.rect.centery - (screen_h / 2)
-
-        # ? Limitar movimiento de la cámara
-        if map_width > screen_w:
-            x = max(0, min(x, map_width - screen_w))
-        else:
-            x = (map_width - screen_w) / 2
-
-        if map_height > screen_h:
-            y = max(0, min(y, map_height - screen_h))
-        else:
-            y = (map_height - screen_h) / 2
-
-        self.camera_offset.x = x
-        self.camera_offset.y = y
+        self.camera_offset.x = target.rect.centerx - (screen_w / 2)
+        self.camera_offset.y = target.rect.centery - (screen_h / 2)
 
     # ? Dibujar sprites
     def draw_sprites(self):
@@ -1066,11 +1080,18 @@ class Ghost(pygame.sprite.Sprite):
         # ? Enemy Attributes
         self.speed = random.randint(55, 62)
         self.animation_speed = random.randint(8, 12)
+        
+        # * Lógica de daño
+        self.can_damage = True
+        self.damage_cooldown = 2000 # -> 2000 segundos
+        self.damage_timer = 0
+        self.base_damage = 5 if difficulty == "normal" else 10
 
         self.player = player # -> Get Game Player
     
     # * Actualizar enemigo
     def update(self, delta_time, events = None):
+        self.check_player_collision(delta_time)
         self.animate(delta_time)
         self.move(delta_time)
 
@@ -1091,3 +1112,21 @@ class Ghost(pygame.sprite.Sprite):
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
         self.image = self.frames[int(self.current_frame) % len(self.frames)]
+
+    # ? Colisión con el jugador
+    def check_player_collision(self, delta_time):
+        # ? Actualizar el cooldown de daño
+        if not self.can_damage:
+            self.damage_timer -= delta_time * 1000
+            if self.damage_timer <= 0:
+                self.can_damage = True # -> Puede hacer daño
+                self.damage_timer = 0
+
+        if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage and self.player.can_be_damaged:
+            self.player.health -= self.base_damage
+            self.player.last_time_damaged = pygame.time.get_ticks()
+            self.player.can_be_damaged = False
+            self.player.ouch_sound.play()
+
+            self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
+            self.damage_timer = self.damage_cooldown
