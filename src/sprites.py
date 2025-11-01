@@ -1028,6 +1028,24 @@ class Enemy(pygame.sprite.Sprite):
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
 
+class WaterEnemy(pygame.sprite.Sprite):
+    def __init__(self, groups, position, player, difficulty="normal"):
+        super().__init__(groups)
+        self.wd = os.getcwd()
+
+        self.frames = [pygame.image.load(os.path.join("assets", "img", "water", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        self.animation_speed = 8
+
+        self.player = player
+
+    def update(self, delta_time, events = None):
+        self.animate(delta_time)
+
+    
+
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
@@ -1050,6 +1068,10 @@ class Ghost(pygame.sprite.Sprite):
     def update(self, delta_time, events = None):
         self.animate(delta_time)
         self.move(delta_time)
+    
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.frames[int(self.current_frame) % len(self.frames)]
 
     # ? Mover Personaje
     def move(self, delta_time):

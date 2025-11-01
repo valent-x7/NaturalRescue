@@ -11,6 +11,7 @@ class Level_two:
         self.game = game
         self.wd = getcwd()
         self.penguin_spritesheet = Spritesheet(join(self.wd, "img", "penguin_spritesheet.png"))
+        self.water_sprite = pygame.image.load(join(self.wd, "img", "watersrote.png"))
         
         self.zoom = 1
         self.all_sprites = pygame.sprite.LayeredUpdates()
@@ -28,8 +29,8 @@ class Level_two:
         self.level_width = map.width * TILE
         self.level_height = map.height * TILE
         
-        print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
-        print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
+        # print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
+        # print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
         
         # Precalcular superficies - IMPORTANTE: usar nivel completo para el cache
         self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -92,7 +93,6 @@ class Level_two:
             self.all_sprites.add(decor_sprite, layer=12)
 
     def create_static_cache(self):
-        """Crear una superficie con TODOS los sprites estáticos"""
         print("Creando cache estática...")
         # Dibujar TODOS los sprites estáticos en la cache
         for sprite in self.all_sprites:
@@ -101,7 +101,6 @@ class Level_two:
         print("Cache estática creada correctamente")
 
     def precalculate_masks(self):
-        """Precalcular máscaras una sola vez al inicio"""
         if hasattr(self.penguin, 'image'):
             self.penguin.mask = pygame.mask.from_surface(self.penguin.image)
         
@@ -110,7 +109,6 @@ class Level_two:
                 sprite.mask = pygame.mask.from_surface(sprite.image)
 
     def update_camera(self):
-        """Actualizar cámara - seguir al pingüino pero mantener límites"""
         # Calcular posición objetivo para centrar al pingüino
         target_x = self.penguin.rect.centerx - WINDOW_WIDTH // 2
         target_y = self.penguin.rect.centery - WINDOW_HEIGHT // 2
@@ -129,7 +127,6 @@ class Level_two:
         print(f"Cámara: ({self.camera_x:.1f}, {self.camera_y:.1f}) | Pingüino en pantalla: ({penguin_screen_x:.1f}, {penguin_screen_y:.1f})")
 
     def collide_with_mask(self, sprite1, sprite2):
-        """Detección de colisiones con máscaras"""
         if not sprite1.rect.colliderect(sprite2.rect):
             return False
         
@@ -139,7 +136,6 @@ class Level_two:
         return sprite2.mask.overlap(sprite1.mask, (offset_x, offset_y)) is not None
 
     def handle_water_collision(self):
-        """Manejar colisiones con agua"""
         water_collisions = pygame.sprite.spritecollide(
             self.penguin, 
             self.damage_sprites, 
@@ -221,6 +217,7 @@ class Level_two:
             # Dibujar la superficie con zoom centrada en la pantalla
             self.game_screen.fill((0, 0, 0))  # Fondo negro para bordes
             self.game_screen.blit(self.zoomed_surface, (-self.x_offset, -self.y_offset))
+            self.game_screen.blit(self.water_sprite, (WINDOW_WIDTH-1920, WINDOW_HEIGHT-512))
 
             pygame.display.flip()
 
