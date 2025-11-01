@@ -29,6 +29,7 @@
         "water-tank-full": "Full",
         "water-tank-mid": "Mid",
         "water-tank-empty": "Empty",
+        "puricapsule": "Puricapsule",
 
         "gameover-title": "GAME OVER",
         "press-m-to-menu": "Press M to go to Menu",
@@ -36,7 +37,9 @@
         "wingame_title": "Congratulations",
         "wingame_subtitle": "You passed the level 1",
 
-        "mission-text": "Head to the lake to collect water to water the tree shoots"
+        "mission-text": "Head to the lake to collect water to water the tree shoots",
+        "mission-text-3": "Find and close the valves",
+        "mission-text-3-warning": "Find them fast... They don't like visitors."        
     },
     "es": {
         "play": "Jugar",
@@ -68,6 +71,7 @@
         "water-tank-full": "Lleno",
         "water-tank-mid": "Mitad",
         "water-tank-empty": "Vacío",
+        "puricapsule": "Puricápsula",
 
         "gameover-title": "FIN DEL JUEGO",
         "press-m-to-menu": "Presiona M para ir al Menú",
@@ -75,6 +79,8 @@
         "wingame_title": "Felicidades",
         "wingame_subtitle": "Pasaste el nivel 1",
 
-        "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol"
+        "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol",
+        "mission-text-3": "Encuentra y cierra las válvulas",
+        "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas."        
     }
 }

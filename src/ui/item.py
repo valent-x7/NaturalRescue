@@ -108,3 +108,28 @@ class AcornItem:
         draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}", "#FFFFFF", self.rect.centerx + (self.rect.width / 2) + 20, self.rect.bottom - 20)
 
         screen.blit(self.image, self.rect)
+
+class PuriCapsuleItem:
+    def __init__(self, image_path):
+        self.display_surface = pygame.display.get_surface()
+
+        image = pygame.image.load(image_path)
+        self.image = pygame.transform.scale(image, (78, 78)).convert_alpha()
+
+        self.rect = self.image.get_frect()
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 464, 64)
+
+    def draw(self, screen, name_item, amount_item):
+        # ? Borde del circulo
+        pygame.draw.circle(screen, "#000000", (self.rect.centerx, self.rect.centery), 42)
+
+        # ? Fondo del item
+        pygame.draw.circle(screen, "#444444", (self.rect.centerx, self.rect.centery), 40)
+
+        # ? Texto del item
+        draw_text(screen, TITLE_FONT_PATH, 12, name_item, "#FFFFFF", self.rect.centerx, self.rect.top - 15)
+
+        # ? Cantidad del item
+        draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}", "#FFFFFF", self.rect.centerx + (self.rect.width / 2) + 20, self.rect.bottom - 20)
+
+        screen.blit(self.image, self.rect)
