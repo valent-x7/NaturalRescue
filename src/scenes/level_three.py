@@ -23,6 +23,7 @@ class LevelThree:
         self.valve_sprites = pygame.sprite.Group() # -> Valvulas
         self.capsules_sprites = pygame.sprite.Group() # -> Capsulas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
+        self.acid_sprites = pygame.sprite.Group() # -> Acido
 
         self.setup_images() # -> Setup Images
         self.setup_ui() # -> UI Elements
@@ -115,10 +116,13 @@ class LevelThree:
             elif obj.name == "Ghost": # -> Coordenadas de enemigos
                 self.enemy_spawn_coords.append((obj.x, obj.y))
 
+            elif obj.name == "Acid":
+                Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y))
+
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
         self.player = Scientist(self.scientist_spritesheet, (self.all_sprites, self.all_sprites.depth_sprites),
-                                (player_obj.x, player_obj.y), self.collision_sprites)
+                                (player_obj.x, player_obj.y), self.collision_sprites, self.acid_sprites)
         
         # ? Enemy Event
         self.enemy_event = pygame.event.custom_type()

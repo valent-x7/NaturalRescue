@@ -372,11 +372,12 @@ class Penguin(pygame.sprite.Sprite):
         self.hitbox_rect.center = self.rect.center
 
 class Scientist(pygame.sprite.Sprite):
-    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites):
+    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
         super().__init__(groups)
         self.wd = os.getcwd()
 
         self.collision_sprites = collision_sprites
+        self.acid_sprites = acid_sprites
 
         # ? Frames (imagenes)
         self.down_frames = [spritesheet.get_sprite(0, 0, TILE, TILE),
@@ -405,6 +406,7 @@ class Scientist(pygame.sprite.Sprite):
         # ? Sounds
         self.footsteps_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "footsteps_metal.mp3"))
         self.ouch_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ouch.mp3"))
+        self.grunt_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "grunt.mp3"))
 
         # ? Attributes
         self.valves = 0 # -> Valves closed
@@ -429,6 +431,7 @@ class Scientist(pygame.sprite.Sprite):
         self.check_damage()
         self.input(events)
         self.move(delta_time)
+        self.check_acid_collision()
         self.animate(self.moving, delta_time)
 
     def input(self, events):
@@ -534,6 +537,18 @@ class Scientist(pygame.sprite.Sprite):
                 self.image.set_alpha(255) # -> Efecto de transparencia
         else:
             self.image.set_alpha(255)
+
+    def check_acid_collision(self):
+        def hitbox_collide(sprite1, sprite2):
+            return sprite1.hitbox_rect.colliderect(sprite2.hitbox_rect)
+
+        hit_acid = pygame.sprite.spritecollide(self, self.acid_sprites, False, collided=hitbox_collide)
+        if hit_acid and self.can_be_damaged:
+            self.health -= 5
+            self.can_be_damaged = False
+            self.last_time_damaged = pygame.time.get_ticks()
+            self.grunt_sound.play()
+            hit_acid[0].acid_burn.play()
 
     # Disparar capsulas
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
@@ -857,7 +872,6 @@ class AllSprites3(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
-
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
@@ -1260,3 +1274,29 @@ class Ghost(pygame.sprite.Sprite):
         else:
             self.kill() # -> Matar sprite
             return
+        
+class Acid(pygame.sprite.Sprite):
+    def __init__(self, groups, position):
+        super().__init__(groups)
+
+        self.wd = os.getcwd() # -> Working directory
+        self.acid_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "acid", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.current_frame = 0
+        self.image = self.acid_frames[self.current_frame]
+
+        # ? Sonido
+        self.acid_burn = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "acid_burn.mp3"))
+        self.acid_burn.set_volume(0.1)
+        
+        self.rect = self.image.get_frect(topleft = (position))
+        self.hitbox_rect = self.rect.inflate(-20, -45)
+
+        # ? Attributes
+        self.animation_speed = random.randint(6, 8)
+
+    def update(self, delta_time, events = None):
+        self.animate(delta_time)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.acid_frames[int(self.current_frame) % len(self.acid_frames)]
