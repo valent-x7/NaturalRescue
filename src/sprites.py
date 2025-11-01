@@ -416,7 +416,12 @@ class Scientist(pygame.sprite.Sprite):
         self.last_axis = None # -> Ultima tecla
         self.health = SCIENTIST_HEALTH
         self.speed = SCIENTIST_SPEED
+        self.capsules = 100
         self.animation_speed = 14
+
+        # -> Lógica de disparo
+        self.last_shot = 0
+        self.cooldown_shot = 500
 
     # ? Actualizar jugador
     def update(self, delta_time, events):
@@ -529,6 +534,15 @@ class Scientist(pygame.sprite.Sprite):
                 self.image.set_alpha(255) # -> Efecto de transparencia
         else:
             self.image.set_alpha(255)
+
+    # Disparar capsulas
+    def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot >= self.cooldown_shot and self.capsules > 0:
+            # ? Creamos capsula
+            PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
+            self.last_shot = current_time
+            self.capsules -= 1
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -702,6 +716,10 @@ class Valve(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft = (position))
         self.hitbox_rect = self.rect.inflate(-5, -20)
 
+        # ? Sonido
+        self.close_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "release_air.mp3"))
+        self.close_sound.set_volume(0.1)
+
         # ? Atributes
         self.animation_speed = 10
         self.is_leaking = True # -> Tiene fuga activada
@@ -711,6 +729,7 @@ class Valve(pygame.sprite.Sprite):
 
         if self.check_player_collision(player) and keystate[pygame.K_h]:
             self.is_leaking = False
+            self.close_sound.play()
 
         self.animate(delta_time)
 
@@ -921,6 +940,81 @@ class Acorn(pygame.sprite.Sprite):
         # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
         return cls(groups, player_pos, direction, collision_sprites)
     
+class PuriCapsule(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, direction, collision_sprites):
+        super().__init__(groups)
+
+        # ? Imagen y gráficos
+        working_directory = os.getcwd()
+        image_path = os.path.join(working_directory, "assets", "images", "items", "puricapsula.png")
+        original_image = pygame.image.load(image_path).convert_alpha()
+        self.original_image = pygame.transform.scale(original_image, (18, 18)).convert_alpha()
+        self.image = self.original_image
+
+        # ? Audio
+        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
+        self.throw_sound.set_volume(0.1)
+        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "metal_hit.mp3"))
+        self.impact_sound.set_volume(0.1)
+
+        # Rectangulo y HitBox
+        self.rect = self.image.get_frect(center = pos)
+        self.hitbox_rect = self.rect.inflate(-15, -5)
+
+        # ? Dirección de la capsula
+        if direction.length_squared() > 0:
+            self.direction = direction.normalize()
+        else:
+            self.direction = pygame.Vector2(0, 0)
+
+        # ? Attributes
+        self.time_to_live = 1000 # -> Tiempo de vida
+        self.collision_sprites = collision_sprites
+        self.angle = 0 
+        self.rotation_speed = 360 # -> Velocidad de rotación
+
+        self.throw_sound.play()
+
+    def update(self, dt, events = None):
+        # Descontamos tiempo de vida
+        self.time_to_live -= (dt * 1000)
+
+        self.rotate_image(dt) # -> Rotamos imagen
+
+        # Eliminamos sprite si su tiempo de vida pasó o colisiona
+        if self.time_to_live <= 0 or self.check_collisions():
+            self.impact_sound.play()
+            self.kill()
+            return
+        
+        # Movemos sprite
+        self.rect.center += self.direction * ACORN_SPEED * dt
+        self.hitbox_rect.center = self.rect.center
+
+    def rotate_image(self, delta_time): # -> Rotar imagen del projectil
+        self.angle += self.rotation_speed * delta_time
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_frect(center = self.rect.center)
+        self.hitbox_rect.center = self.rect.center
+
+    # ? Si choca con un sprite de collision
+    def check_collisions(self):
+        return pygame.sprite.spritecollideany(self, self.collision_sprites)
+
+    @classmethod # * Crear PuriCapsule
+    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites):
+        player_pos = pygame.Vector2(player.rect.center) # -> Posición del jugador
+
+        # ? La posición real del mouse cuidando el zoom!!
+        mouse_x = (mouse_pos[0] / zoom) + camera_offset.x
+        mouse_y = (mouse_pos[1] / zoom) + camera_offset.y
+
+        target_pos = pygame.Vector2(mouse_x, mouse_y) # -> Dirección objetivo
+        direction = target_pos - player_pos # -> Dirección
+
+        # ? Creamos puricapsula (Grupo, posicion jugador, dirección, sprites de colisión)
+        return cls(groups, player_pos, direction, collision_sprites)
+
 # ? Sprite de enemigos
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, difficulty = "normal"):
@@ -1066,20 +1160,31 @@ class Enemy(pygame.sprite.Sprite):
             self.damage_timer = self.damage_cooldown
 
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, groups, position, player, difficulty = "normal"):
+    def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
         self.wd = os.getcwd() # -> Directorio de trabajo
         
-        self.frames = [pygame.image.load(os.path.join("assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
         self.current_frame = 0
+        self.dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", "dissolve", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.current_dissolve_frame = 0
+
         self.image = self.frames[self.current_frame]
         
         self.rect = self.image.get_frect(center = position)
         self.hitbox_rect = self.rect.inflate(-14, -10) # ? -> Rect de Hitbox (Colisiones)
 
+        self.capsules_group = capsules_group
+
+        # ? Sonido
+        self.impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ghost_impact.mp3"))
+        self.impact_sound.set_volume(0.1)
+
         # ? Enemy Attributes
         self.speed = random.randint(55, 62)
         self.animation_speed = random.randint(8, 12)
+        self.health = 3
+        self.is_dissolving = False
         
         # * Lógica de daño
         self.can_damage = True
@@ -1091,9 +1196,13 @@ class Ghost(pygame.sprite.Sprite):
     
     # * Actualizar enemigo
     def update(self, delta_time, events = None):
-        self.check_player_collision(delta_time)
-        self.animate(delta_time)
-        self.move(delta_time)
+        if self.is_dissolving:
+            self.dissolve_ghost(delta_time)
+        else:
+            self.check_capsule_collision()
+            self.check_player_collision(delta_time)
+            self.animate(delta_time)
+            self.move(delta_time)
 
     # ? Mover Personaje
     def move(self, delta_time):
@@ -1130,3 +1239,24 @@ class Ghost(pygame.sprite.Sprite):
 
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
+
+    def check_capsule_collision(self):
+        hit_capsule = pygame.sprite.spritecollide(self, self.capsules_group, True)
+
+        if hit_capsule: # -> Si una capsula golpea
+            for capsule in hit_capsule:
+                self.impact_sound.play()
+                self.health -= 1 # -> Bajamos vida
+
+                if self.health <= 0:
+                    self.is_dissolving = True
+                    self.current_dissolve_frame = 0
+                
+    def dissolve_ghost(self, delta_time):
+        self.current_dissolve_frame += self.animation_speed * delta_time
+
+        if int(self.current_dissolve_frame) < len(self.dissolve_frames):
+            self.image = self.dissolve_frames[int(self.current_dissolve_frame)]
+        else:
+            self.kill() # -> Matar sprite
+            return

@@ -18,10 +18,10 @@ class LevelThree:
         self.scientist_spritesheet = Spritesheet(join(self.wd, "img", "scientist_spritesheet.png"))
 
         self.all_sprites = AllSprites3() # -> All sprites Group
-        self.water_sprites = pygame.sprite.Group() # -> Sprites de agua
         self.collision_sprites = pygame.sprite.Group() # -> Sprites de colisión
         self.damage_sprites = pygame.sprite.Group() # -> Sprites de daño
         self.valve_sprites = pygame.sprite.Group() # -> Valvulas
+        self.capsules_sprites = pygame.sprite.Group() # -> Capsulas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
 
         self.setup_images() # -> Setup Images
@@ -44,7 +44,7 @@ class LevelThree:
 
         # ? Draw UI
         self.healthbar.draw(self.game_screen)
-        self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), 100)
+        self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), self.player.capsules)
 
         self.draw_messages(game, self.game_screen, ["mission-text-3", "mission-text-3-warning"])
 
@@ -65,10 +65,14 @@ class LevelThree:
                     return "MENU"
                 elif event.key == pygame.K_p:
                     game.paused = not game.paused # -> Invertimos el valor de pausa
+                
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game.paused:
+                self.player.shoot((self.all_sprites, self.all_sprites.depth_sprites, self.capsules_sprites), self.player, event.pos,
+                                  self.all_sprites.camera_offset, self.all_sprites.zoom)
             
             elif event.type == self.enemy_event and len(self.enemy_sprites) < 3:
                 Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords),
-                      self.player, game.current_difficulty)
+                      self.player, self.capsules_sprites, game.current_difficulty)
                 
         return new_state
 
