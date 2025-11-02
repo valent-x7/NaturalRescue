@@ -12,7 +12,12 @@ class Level_two:
         self.wd = getcwd()
         self.penguin_spritesheet = Spritesheet(join(self.wd, "img", "penguin_spritesheet.png"))
         
-        self.zoom = 1
+        # Obtener tamaño del mapa desde el archivo TMX
+        map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
+        self.level_width = map.width * TILE
+        self.level_height = map.height * TILE
+        
+        self.zoom = 1.0
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.collision_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
@@ -21,13 +26,14 @@ class Level_two:
         self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
         self.penguin = Penguin(8*TILE, 28*TILE, self.penguin_spritesheet)
         
+        # POSICIÓN DEL AGUA - Comenzar MUCHO más abajo para evitar colisión inicial
         water_start_x_map = 0
-        water_start_y_map = WINDOW_HEIGHT
+        water_start_y_map = self.level_height + 500  # Fuera del nivel visible inicialmente
+        
         self.water = WaterEnemy((water_start_x_map, water_start_y_map), self.penguin)
 
         water_img_height = self.water.image.get_height()
         self.water.image = pygame.transform.scale(self.water.image, (WINDOW_WIDTH, water_img_height))
-
         self.water.rect = self.water.image.get_rect(topleft=(water_start_x_map, water_start_y_map))
         self.water.mask = pygame.mask.from_surface(self.water.image)
 
@@ -37,14 +43,16 @@ class Level_two:
 
         self.damage_sprites.add(self.water)
         
-        # Obtener tamaño del mapa desde el archivo TMX
-        map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
-        self.level_width = map.width * TILE
-        self.level_height = map.height * TILE
-        
         print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
         print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
+        print(f"Posición inicial del agua: ({water_start_x_map}, {water_start_y_map})")
         print(f"Sprites en damage_sprites: {len(self.damage_sprites)}")
+        
+        # DEBUG: Verificar posiciones y máscaras
+        print(f"Penguin rect: {self.penguin.rect}")
+        print(f"Water rect: {self.water.rect}")
+        print(f"Penguin mask count: {self.penguin.mask.count() if hasattr(self.penguin, 'mask') else 'No mask'}")
+        print(f"Water mask count: {self.water.mask.count() if hasattr(self.water, 'mask') else 'No mask'}")
         
         # Precalcular superficies - IMPORTANTE: usar nivel completo para el cache
         self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -135,31 +143,42 @@ class Level_two:
         self.camera_y = max(0, min(self.camera_y, self.level_height - WINDOW_HEIGHT))
 
     def collide_with_mask(self, sprite1, sprite2):
+        if not hasattr(sprite1, 'mask') or not hasattr(sprite2, 'mask'):
+            return False
+
         if not sprite1.rect.colliderect(sprite2.rect):
             return False
-    
-        # Offset: Vector de sprite1 (Pingüino) a sprite2 (Agua)
+        
+        # CORRECCIÓN: Usar los atributos correctos del rect
         offset_x = sprite2.rect.x - sprite1.rect.x
         offset_y = sprite2.rect.y - sprite1.rect.y
 
-        # sprite1.mask.overlap(sprite2.mask, offset_x, offset_y)
-        return sprite1.mask.overlap(sprite2.mask, (offset_x, offset_y)) is  not None
+        return sprite1.mask.overlap(sprite2.mask, (offset_x, offset_y)) is not None
 
     def handle_water_collision(self):
-            # 💡 Simplificamos a un solo chequeo que usa la función     collide_with_mask
-        water_collisions = pygame.sprite.spritecollide(
-            self.penguin, 
-            self.damage_sprites, 
-            False,
-            collided=self.collide_with_mask
-        )
-
-        if water_collisions:
-            print(f"¡COLISIÓN DETECTADA con agua mediante máscara!")
-            self.penguin.damage()
-            return True
-
+        # Solo verificar colisión si el pingüino está vivo y no muriendo
+        if not self.penguin.alive or self.penguin.is_dying:
+            return False
+    
+        # Verificar colisión rectangular primero (más eficiente)
+        water_collision_rect = False
+        for water in self.damage_sprites:
+            if self.penguin.rect.colliderect(water.rect):
+                water_collision_rect = True
+                break
+        
+        if not water_collision_rect:
+            return False
+    
+        # Luego verificar colisión por máscara pixel-perfect
+        for water in self.damage_sprites:
+            if self.collide_with_mask(self.penguin, water):
+                print(f"¡COLISIÓN DETECTADA con agua mediante máscara!")
+                self.penguin.damage()
+                return True
+    
         return False
+    
     def draw_level2(self):
         clock = pygame.time.Clock()
         running = True
@@ -180,11 +199,15 @@ class Level_two:
                     elif event.key == pygame.K_r:
                         return "RESTART"
                      
-            # Actualizar jugador si está vivo
-            if self.penguin.alive:
+            # Actualizar jugador si está vivo o muriendo
+            if self.penguin.alive or self.penguin.is_dying:
                 self.penguin.update(self.collision_sprites, dt)
-                self.handle_water_collision()
 
+                # Solo verificar colisión con agua si está vivo (no muriendo)
+                if self.penguin.alive:
+                    self.handle_water_collision()
+
+                # Actualizar el agua (debería subir gradualmente)
                 if self.water:
                     self.water.update(dt)   
 
@@ -218,19 +241,20 @@ class Level_two:
                 )
             
             # Dibujar jugador en posición relativa a la cámara
-            if self.penguin.alive:
+            if self.penguin.alive or self.penguin.is_dying:
                 adjusted_pos = (
                     self.penguin.rect.x - self.camera_x,
                     self.penguin.rect.y - self.camera_y
                 )
                 self.level_surface.blit(self.penguin.image, adjusted_pos)
 
+            # Dibujar agua en posición relativa a la cámara
             if self.water and hasattr(self.water, 'rect') and self.water.rect:
-                    adjusted_water_pos = (
-                        0,
-                        self.water.rect.y - self.camera_y
-                    )
-                    self.level_surface.blit(self.water.image, adjusted_water_pos)
+                adjusted_water_pos = (
+                    0,  # El agua ocupa todo el ancho
+                    self.water.rect.y - self.camera_y
+                )
+                self.level_surface.blit(self.water.image, adjusted_water_pos)
 
             # Aplicar zoom a la superficie del nivel
             pygame.transform.scale(

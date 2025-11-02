@@ -257,10 +257,13 @@ class Penguin(pygame.sprite.Sprite):
         self.direction = 'down'
         self.frame = 1
         self.animation_speed = 8
+        self.is_dying = False
+        self.dead_timer = 0
+        self.angle = 0  # Para la rotación de muerte
 
         self.y_vel = 0
         self.on_ground = False
-        self.x_vel = 0  
+        self.x_vel = 0 
 
         self.alive = True
 
@@ -273,23 +276,30 @@ class Penguin(pygame.sprite.Sprite):
                                self.spritesheet.get_sprite(64, 32, self.w, self.h)]
         
         self.right_animation = [self.spritesheet.get_sprite(0, 64, self.w, self.h), 
-                               self.spritesheet.get_sprite(32, 64, self.w, self.h),
-                               self.spritesheet.get_sprite(64, 64, self.w, self.h)]
+                                self.spritesheet.get_sprite(32, 64, self.w, self.h),
+                                self.spritesheet.get_sprite(64, 64, self.w, self.h)]
         
         self.up_animation = [self.spritesheet.get_sprite(0, 96, self.w, self.h), 
-                               self.spritesheet.get_sprite(32, 96, self.w, self.h),
-                               self.spritesheet.get_sprite(64, 96, self.w, self.h)]
+                             self.spritesheet.get_sprite(32, 96, self.w, self.h),
+                             self.spritesheet.get_sprite(64, 96, self.w, self.h)]
         
-        self.image = self.down_animation[1]
+        # Guardar la imagen original para la rotación (evita distorsión)
+        self.original_image = self.down_animation[1] 
+        self.image = self.original_image
         self.frame = 1
         
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
-        
-        # Crear máscara inicial
         self.mask = pygame.mask.from_surface(self.image)
     
     def animate(self, moving, delta_time):
+        # ⚠️ Si está muriendo, no debe animar con los frames de movimiento
+        if self.is_dying:
+            # Usar la imagen de la animación de 'down' para rotar
+            self.image = pygame.transform.rotate(self.original_image, self.angle)
+            self.rect = self.image.get_rect(center=self.rect.center)
+            return
+
         if moving: 
             self.frame += self.animation_speed * delta_time
             if self.direction == "down":
@@ -311,71 +321,121 @@ class Penguin(pygame.sprite.Sprite):
                 self.image = self.left_animation[1]
 
     def damage(self):
-        self.alive = False
-        print("¡Pingüino muerto por el agua!")
-        self.kill()
-
-    def update(self, platforms, delta_time):
-
         if not self.alive:
             return
+        
+        self.alive = False
+        self.is_dying = True
+        self.dead_timer = 1.0 # La animación durará 1 segundo
 
-        keys = pygame.key.get_pressed()
-        self.animate(self.moving, delta_time)
+        self.y_vel = -12.0 # Salto de muerte más fuerte
+        self.x_vel = 0
+        self.original_image = self.image # Congelar el frame de la animación al morir
+        print("¡Pingüino muerto por el agua, iniciando animación!")
 
-        # ACTUALIZAR MÁSCARA CADA FRAME
-        self.mask = pygame.mask.from_surface(self.image)
-
-        self.moving = False
-        self.x_vel = 0  # Resetear velocidad horizontal cada frame
-
-        # Movimiento horizontal
-        if keys[pygame.K_a]:
-            self.direction = 'left'
-            self.moving = True
-            self.x_vel = -5
-        if keys[pygame.K_d]:
-            self.direction = 'right'
-            self.moving = True
-            self.x_vel = 5
-
-        # Salto
-        if keys[pygame.K_w] and self.on_ground:
-            self.direction = 'up'
-            self.moving = True
-            self.y_vel = -10
-            self.on_ground = False
-
-        # Aplicar gravedad
+    def apply_gravity(self):
         self.y_vel += 0.55
-        
-        # MOVIMIENTO HORIZONTAL CON DETECCIÓN DE COLISIONES
-        self.rect.x += self.x_vel
-        
-        # Verificar colisiones horizontales
-        for platform in platforms:
-            if self.rect.colliderect(platform.rect):
-                if self.x_vel > 0:  # Moviéndose a la derecha
-                    self.rect.right = platform.rect.left
-                elif self.x_vel < 0:  # Moviéndose a la izquierda
-                    self.rect.left = platform.rect.right
-        
-        # MOVIMIENTO VERTICAL CON DETECCIÓN DE COLISIONES
         self.rect.y += self.y_vel
-        
-        # Verificar colisiones verticales
+
+    def handle_collisions(self, platforms):
+        # Colisiones verticales
         self.on_ground = False
         for platform in platforms:
             if self.rect.colliderect(platform.rect):
-                if self.y_vel > 0:  # Cayendo
+                # Colisión desde arriba (cayendo)
+                if self.y_vel > 0 and self.rect.bottom > platform.rect.top and self.rect.top < platform.rect.top:
                     self.rect.bottom = platform.rect.top
                     self.y_vel = 0
                     self.on_ground = True
-                elif self.y_vel < 0:  # Saltando
+                # Colisión desde abajo (saltando)
+                elif self.y_vel < 0 and self.rect.top < platform.rect.bottom and self.rect.bottom > platform.rect.bottom:
                     self.rect.top = platform.rect.bottom
                     self.y_vel = 0
+
+        # Colisiones horizontales
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                # Colisión desde la izquierda
+                if self.x_vel > 0 and self.rect.right > platform.rect.left and self.rect.left < platform.rect.left:
+                    self.rect.right = platform.rect.left
+                # Colisión desde la derecha
+                elif self.x_vel < 0 and self.rect.left < platform.rect.right and self.rect.right > platform.rect.right:
+                    self.rect.left = platform.rect.right
+
+    def handle_input(self):
+        keys = pygame.key.get_pressed()
         
-        # Actualizar hitbox (si la usas para algo)
+        self.moving = False
+        self.x_vel = 0
+        
+        # Movimiento horizontal
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.x_vel = -5
+            self.direction = 'left'
+            self.moving = True
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.x_vel = 5
+            self.direction = 'right'
+            self.moving = True
+            
+        # Movimiento vertical
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            self.direction = 'up'
+            self.moving = True
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            self.direction = 'down'
+            self.moving = True
+            
+        # Salto
+        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
+            self.y_vel = -12
+            self.on_ground = False
+
+    def update(self, platforms, delta_time):
+        # 1. LÓGICA DE MUERTE (Ejecución Prioritaria)
+        if self.is_dying:
+            self.dead_timer -= delta_time
+            
+            # Física de muerte: Gravedad y movimiento
+            self.y_vel += 0.55
+            self.rect.y += self.y_vel
+            self.rect.x += self.x_vel  # Movimiento horizontal también
+            self.angle += 360 * delta_time # Rotar 360 grados por segundo
+            
+            self.animate(False, delta_time) # Llamar a animate para rotar la imagen
+            self.mask = pygame.mask.from_surface(self.image) # Actualizar máscara después de rotar
+
+            if self.dead_timer <= 0:
+                self.is_dying = False
+                self.kill() # ✅ SOLO ELIMINAR EL SPRITE AQUÍ
+                
+            return # 🛑 Detener el resto de la lógica (input, colisiones normales)
+
+        # 2. Si no está vivo (y no muriendo), retornar.
+        if not self.alive:
+            return
+
+        # 3. LÓGICA DE JUEGO NORMAL
+        
+        # Manejar input del jugador
+        self.handle_input()
+        
+        # Aplicar movimiento horizontal
+        self.rect.x += self.x_vel
+        
+        # Aplicar gravedad y movimiento vertical
+        self.apply_gravity()
+        
+        # Manejar colisiones con plataformas
+        self.handle_collisions(platforms)
+        
+        # Animar al pingüino
+        self.animate(self.moving, delta_time)
+        
+        # Actualizar máscara para colisiones
+        self.mask = pygame.mask.from_surface(self.image)
+        
+        # Actualizar hitbox
         self.hitbox_rect.center = self.rect.center
 
 class Scientist(pygame.sprite.Sprite):
@@ -1204,19 +1264,38 @@ class WaterEnemy(pygame.sprite.Sprite):
 
         self.y_float = float(self.rect.y)
 
-        self.speed = 10.0 
+        # CORRECCIÓN: Velocidad más realista y ajustable por dificultad
+        if difficulty == "easy":
+            self.speed = 20.0  # Velocidad en píxeles por segundo
+        elif difficulty == "hard":
+            self.speed = 35.0
+        else:  # normal
+            self.speed = 25.0
+            
         self.animation_speed = 4
         self.player = player
 
         self.mask = pygame.mask.from_surface(self.image) # Máscara inicial
+        
+        # DEBUG: Para verificar que se está moviendo
+        self.last_debug_time = 0
+        print(f"Agua creada en Y: {self.rect.y}, Velocidad: {self.speed} px/seg")
 
-    def update(self, delta_time, events = None):
-        self.y_float -= self.speed * delta_time
+    def update(self, delta_time, events=None):
+        # CORRECCIÓN: Movimiento correcto usando delta_time
+        # delta_time está en segundos, así que multiplicamos por velocidad en px/seg
+        movement = self.speed * delta_time
+        self.y_float -= movement
         self.rect.y = int(self.y_float)
 
         self.animate(delta_time)
-
         self.mask = pygame.mask.from_surface(self.image)
+        
+        # DEBUG: Mostrar posición cada segundo
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_debug_time > 1000:  # Cada 1000 ms (1 segundo)
+            print(f"Agua en Y: {self.rect.y}, Movimiento: {movement:.2f} px/frame")
+            self.last_debug_time = current_time
 
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
@@ -1226,9 +1305,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         
         if new_image is not self.image:
             self.image = new_image
-
             self.mask = pygame.mask.from_surface(self.image)
-
 
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
