@@ -18,13 +18,14 @@ translations = load_language("languajes.json")
 class Game:
 
     # Música
-    def play_music(self, filepath, loop=-1, fade_ms=500):
+    def play_music(self, filepath, loop=-1, fade_ms=500, volume = 0.5):
         try:
             # Si hay música sonando, hacemos fadeout
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.fadeout(fade_ms)
             # Cargamos y reproducimos la nueva música
             pygame.mixer.music.load(filepath)
+            pygame.mixer.music.set_volume(volume)
             pygame.mixer.music.play(loop)
         except Exception as e:
             print("Error al reproducir la música:", e)
@@ -236,6 +237,10 @@ class Game:
                 self.state = self.Level_Two.draw_level2()
 
             elif self.state == "LEVEL_3":
+                if getattr(self, "current_music", None) != "level_3":
+                    self.play_music("assets/music/level_three_music.mp3", volume=0.1)
+                    self.current_music = "level_3"
+
                 if not self.Level_Three:
                     self.Level_Three = LevelThree(self, self.SCREEN)
                     

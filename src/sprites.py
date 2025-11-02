@@ -285,6 +285,9 @@ class Penguin(pygame.sprite.Sprite):
         
         self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
+        
+        # Crear máscara inicial
+        self.mask = pygame.mask.from_surface(self.image)
     
     def animate(self, moving, delta_time):
         if moving: 
@@ -309,7 +312,7 @@ class Penguin(pygame.sprite.Sprite):
 
     def damage(self):
         self.alive = False
-        print("Kill")
+        print("¡Pingüino muerto por el agua!")
         self.kill()
 
     def update(self, platforms, delta_time):
@@ -319,6 +322,9 @@ class Penguin(pygame.sprite.Sprite):
 
         keys = pygame.key.get_pressed()
         self.animate(self.moving, delta_time)
+
+        # ACTUALIZAR MÁSCARA CADA FRAME
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.moving = False
         self.x_vel = 0  # Resetear velocidad horizontal cada frame
@@ -373,10 +379,12 @@ class Penguin(pygame.sprite.Sprite):
         self.hitbox_rect.center = self.rect.center
 
 class Scientist(pygame.sprite.Sprite):
-    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites):
+    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
         super().__init__(groups)
+        self.wd = os.getcwd()
 
         self.collision_sprites = collision_sprites
+        self.acid_sprites = acid_sprites
 
         # ? Frames (imagenes)
         self.down_frames = [spritesheet.get_sprite(0, 0, TILE, TILE),
@@ -402,18 +410,35 @@ class Scientist(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft = (position[0] - TILE // 2, position[1] - TILE // 2)) # -> Rect
         self.hitbox_rect = self.rect.inflate(-14, -10) # -> Hitbox Rect
 
+        # ? Sounds
+        self.footsteps_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "footsteps_metal.mp3"))
+        self.ouch_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ouch.mp3"))
+        self.grunt_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "grunt.mp3"))
+
         # ? Attributes
+        self.valves = 0 # -> Valves closed
+        self.can_be_damaged = True # -> Puede ser dañado
+        self.last_time_damaged = 0
+        self.damage_cooldown = 2000 # -> Cooldown
         self.moving = False # -> Por defecto el jugador no se mueve
         self.direction_vector = pygame.Vector2() # -> Vector de dirección
         self.last_axis = None # -> Ultima tecla
-        self.speed = 128
+        self.health = SCIENTIST_HEALTH
+        self.speed = SCIENTIST_SPEED
+        self.capsules = 100
         self.animation_speed = 14
+
+        # -> Lógica de disparo
+        self.last_shot = 0
+        self.cooldown_shot = 500
 
     # ? Actualizar jugador
     def update(self, delta_time, events):
         self.moving = False
+        self.check_damage()
         self.input(events)
         self.move(delta_time)
+        self.check_acid_collision()
         self.animate(self.moving, delta_time)
 
     def input(self, events):
@@ -493,6 +518,10 @@ class Scientist(pygame.sprite.Sprite):
                 self.image = self.right_frames[int(self.current_frame) % len(self.right_frames)]
             elif self.direction_frame == "left":
                 self.image = self.left_frames[int(self.current_frame) % len(self.left_frames)]
+
+            if not self.footsteps_sound.get_num_channels(): # -> Sonido de pasos
+                self.footsteps_sound.play(-1)
+        
         else:
             if self.direction_frame == "down":
                 self.image = self.down_frames[1]
@@ -502,6 +531,40 @@ class Scientist(pygame.sprite.Sprite):
                 self.image = self.right_frames[1]
             elif self.direction_frame == "left":
                 self.image = self.left_frames[1]
+
+            self.footsteps_sound.stop() # -> Detener el sonido de pasos
+
+    def check_damage(self):
+        if not self.can_be_damaged:
+            self.image.set_alpha(150)
+            now = pygame.time.get_ticks()
+            # -> Ultima vez que recibió daño
+            if now - self.last_time_damaged >= self.damage_cooldown:
+                self.can_be_damaged = True
+                self.image.set_alpha(255) # -> Efecto de transparencia
+        else:
+            self.image.set_alpha(255)
+
+    def check_acid_collision(self):
+        def hitbox_collide(sprite1, sprite2):
+            return sprite1.hitbox_rect.colliderect(sprite2.hitbox_rect)
+
+        hit_acid = pygame.sprite.spritecollide(self, self.acid_sprites, False, collided=hitbox_collide)
+        if hit_acid and self.can_be_damaged:
+            self.health -= 5
+            self.can_be_damaged = False
+            self.last_time_damaged = pygame.time.get_ticks()
+            self.grunt_sound.play()
+            hit_acid[0].acid_burn.play()
+
+    # Disparar capsulas
+    def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot >= self.cooldown_shot and self.capsules > 0:
+            # ? Creamos capsula
+            PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
+            self.last_shot = current_time
+            self.capsules -= 1
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -674,6 +737,46 @@ class PlantSpot(pygame.sprite.Sprite):
             # ? Cambiamos imagen si o si
             self.image = self.get_image_by_water()
 
+# ? Valvula
+class Valve(pygame.sprite.Sprite):
+    def __init__(self, groups, position):
+        super().__init__(groups)
+        self.wd = os.getcwd() # -> Get working direction
+
+        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 7)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+        self.rect = self.image.get_frect(topleft = (position))
+        self.hitbox_rect = self.rect.inflate(-5, -20)
+
+        # ? Sonido
+        self.close_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "release_air.mp3"))
+        self.close_sound.set_volume(0.1)
+
+        # ? Atributes
+        self.animation_speed = 10
+        self.is_leaking = True # -> Tiene fuga activada
+
+    def update(self, player, delta_time):
+        keystate = pygame.key.get_pressed()
+
+        if self.check_player_collision(player) and keystate[pygame.K_h]:
+            self.is_leaking = False
+            self.close_sound.play()
+
+        self.animate(delta_time)
+
+    def check_player_collision(self, player):
+        if player.rect.colliderect(self.hitbox_rect):
+            return True
+
+    def animate(self, delta_time):
+        if self.is_leaking:
+            self.current_frame += self.animation_speed * delta_time
+            self.image = self.frames[int(self.current_frame) % len(self.frames)]
+        else:
+            self.image = self.frames[0]
+
 # ? Clase de los sprites!!
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
@@ -751,34 +854,20 @@ class AllSprites3(pygame.sprite.Group):
 
     def update(self, delta_time, events, player = None):
         for sprite in self.sprites():
-            if isinstance(sprite, PlantSpot):
+            if isinstance(sprite, Valve):
                 sprite.update(player, delta_time)
             else:
                 sprite.update(delta_time, events)
 
     # ? Metodo para centrar la camara en el jugador
-    def center_on_target(self, target, map_width, map_height):
+    def center_on_target(self, target):
         # ? Obtenemos los valores reales, basados en el zoom!!
         screen_w = self.display_surface.get_width() / self.zoom
         screen_h = self.display_surface.get_height() / self.zoom
 
         # Offset calculado para centrar al jugador
-        x = target.rect.centerx - (screen_w / 2)
-        y = target.rect.centery - (screen_h / 2)
-
-        # ? Limitar movimiento de la cámara
-        if map_width > screen_w:
-            x = max(0, min(x, map_width - screen_w))
-        else:
-            x = (map_width - screen_w) / 2
-
-        if map_height > screen_h:
-            y = max(0, min(y, map_height - screen_h))
-        else:
-            y = (map_height - screen_h) / 2
-
-        self.camera_offset.x = x
-        self.camera_offset.y = y
+        self.camera_offset.x = target.rect.centerx - (screen_w / 2)
+        self.camera_offset.y = target.rect.centery - (screen_h / 2)
 
     # ? Dibujar sprites
     def draw_sprites(self):
@@ -801,7 +890,6 @@ class AllSprites3(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
-
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
@@ -884,6 +972,81 @@ class Acorn(pygame.sprite.Sprite):
         # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
         return cls(groups, player_pos, direction, collision_sprites)
     
+class PuriCapsule(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, direction, collision_sprites):
+        super().__init__(groups)
+
+        # ? Imagen y gráficos
+        working_directory = os.getcwd()
+        image_path = os.path.join(working_directory, "assets", "images", "items", "puricapsula.png")
+        original_image = pygame.image.load(image_path).convert_alpha()
+        self.original_image = pygame.transform.scale(original_image, (18, 18)).convert_alpha()
+        self.image = self.original_image
+
+        # ? Audio
+        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
+        self.throw_sound.set_volume(0.1)
+        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "metal_hit.mp3"))
+        self.impact_sound.set_volume(0.1)
+
+        # Rectangulo y HitBox
+        self.rect = self.image.get_frect(center = pos)
+        self.hitbox_rect = self.rect.inflate(-15, -5)
+
+        # ? Dirección de la capsula
+        if direction.length_squared() > 0:
+            self.direction = direction.normalize()
+        else:
+            self.direction = pygame.Vector2(0, 0)
+
+        # ? Attributes
+        self.time_to_live = 1000 # -> Tiempo de vida
+        self.collision_sprites = collision_sprites
+        self.angle = 0 
+        self.rotation_speed = 360 # -> Velocidad de rotación
+
+        self.throw_sound.play()
+
+    def update(self, dt, events = None):
+        # Descontamos tiempo de vida
+        self.time_to_live -= (dt * 1000)
+
+        self.rotate_image(dt) # -> Rotamos imagen
+
+        # Eliminamos sprite si su tiempo de vida pasó o colisiona
+        if self.time_to_live <= 0 or self.check_collisions():
+            self.impact_sound.play()
+            self.kill()
+            return
+        
+        # Movemos sprite
+        self.rect.center += self.direction * ACORN_SPEED * dt
+        self.hitbox_rect.center = self.rect.center
+
+    def rotate_image(self, delta_time): # -> Rotar imagen del projectil
+        self.angle += self.rotation_speed * delta_time
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_frect(center = self.rect.center)
+        self.hitbox_rect.center = self.rect.center
+
+    # ? Si choca con un sprite de collision
+    def check_collisions(self):
+        return pygame.sprite.spritecollideany(self, self.collision_sprites)
+
+    @classmethod # * Crear PuriCapsule
+    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites):
+        player_pos = pygame.Vector2(player.rect.center) # -> Posición del jugador
+
+        # ? La posición real del mouse cuidando el zoom!!
+        mouse_x = (mouse_pos[0] / zoom) + camera_offset.x
+        mouse_y = (mouse_pos[1] / zoom) + camera_offset.y
+
+        target_pos = pygame.Vector2(mouse_x, mouse_y) # -> Dirección objetivo
+        direction = target_pos - player_pos # -> Dirección
+
+        # ? Creamos puricapsula (Grupo, posicion jugador, dirección, sprites de colisión)
+        return cls(groups, player_pos, direction, collision_sprites)
+
 # ? Sprite de enemigos
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, difficulty = "normal"):
@@ -1029,45 +1192,88 @@ class Enemy(pygame.sprite.Sprite):
             self.damage_timer = self.damage_cooldown
 
 class WaterEnemy(pygame.sprite.Sprite):
-    def __init__(self, groups, position, player, difficulty="normal"):
-        super().__init__(groups)
+    def __init__(self, position, player, difficulty="normal"):
+        super().__init__()
         self.wd = os.getcwd()
 
-        self.frames = [pygame.image.load(os.path.join("assets", "img", "water", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.frames = [pygame.image.load(os.path.join("assets", "images", "water", f"{i}.png")).convert_alpha() for i in range(1, 4)]
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
 
-        self.animation_speed = 8
+        self.rect = self.image.get_rect(topleft=position)
 
+        self.y_float = float(self.rect.y)
+
+        self.speed = 10.0 
+        self.animation_speed = 4
         self.player = player
 
+        self.mask = pygame.mask.from_surface(self.image) # Máscara inicial
+
     def update(self, delta_time, events = None):
+        self.y_float -= self.speed * delta_time
+        self.rect.y = int(self.y_float)
+
         self.animate(delta_time)
 
-    
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        
+        new_frame_index = int(self.current_frame) % len(self.frames)
+        new_image = self.frames[new_frame_index]
+        
+        if new_image is not self.image:
+            self.image = new_image
+
+            self.mask = pygame.mask.from_surface(self.image)
+
 
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, groups, position, player, difficulty = "normal"):
+    def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
         self.wd = os.getcwd() # -> Directorio de trabajo
         
-        self.frames = [pygame.image.load(os.path.join("assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
         self.current_frame = 0
+        self.dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", "dissolve", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.current_dissolve_frame = 0
+
         self.image = self.frames[self.current_frame]
         
         self.rect = self.image.get_frect(center = position)
         self.hitbox_rect = self.rect.inflate(-14, -10) # ? -> Rect de Hitbox (Colisiones)
 
+        self.capsules_group = capsules_group
+
+        # ? Sonido
+        self.impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ghost_impact.mp3"))
+        self.impact_sound.set_volume(0.1)
+
         # ? Enemy Attributes
-        self.speed = 55
-        self.animation_speed = 8
+        self.speed = random.randint(55, 62)
+        self.animation_speed = random.randint(8, 12)
+        self.health = 3
+        self.is_dissolving = False
+        
+        # * Lógica de daño
+        self.can_damage = True
+        self.damage_cooldown = 2000 # -> 2000 segundos
+        self.damage_timer = 0
+        self.base_damage = 5 if difficulty == "normal" else 10
 
         self.player = player # -> Get Game Player
     
     # * Actualizar enemigo
     def update(self, delta_time, events = None):
-        self.animate(delta_time)
-        self.move(delta_time)
+        if self.is_dissolving:
+            self.dissolve_ghost(delta_time)
+        else:
+            self.check_capsule_collision()
+            self.check_player_collision(delta_time)
+            self.animate(delta_time)
+            self.move(delta_time)
     
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
@@ -1090,3 +1296,68 @@ class Ghost(pygame.sprite.Sprite):
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
         self.image = self.frames[int(self.current_frame) % len(self.frames)]
+
+    # ? Colisión con el jugador
+    def check_player_collision(self, delta_time):
+        # ? Actualizar el cooldown de daño
+        if not self.can_damage:
+            self.damage_timer -= delta_time * 1000
+            if self.damage_timer <= 0:
+                self.can_damage = True # -> Puede hacer daño
+                self.damage_timer = 0
+
+        if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage and self.player.can_be_damaged:
+            self.player.health -= self.base_damage
+            self.player.last_time_damaged = pygame.time.get_ticks()
+            self.player.can_be_damaged = False
+            self.player.ouch_sound.play()
+
+            self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
+            self.damage_timer = self.damage_cooldown
+
+    def check_capsule_collision(self):
+        hit_capsule = pygame.sprite.spritecollide(self, self.capsules_group, True)
+
+        if hit_capsule: # -> Si una capsula golpea
+            for capsule in hit_capsule:
+                self.impact_sound.play()
+                self.health -= 1 # -> Bajamos vida
+
+                if self.health <= 0:
+                    self.is_dissolving = True
+                    self.current_dissolve_frame = 0
+                
+    def dissolve_ghost(self, delta_time):
+        self.current_dissolve_frame += self.animation_speed * delta_time
+
+        if int(self.current_dissolve_frame) < len(self.dissolve_frames):
+            self.image = self.dissolve_frames[int(self.current_dissolve_frame)]
+        else:
+            self.kill() # -> Matar sprite
+            return
+        
+class Acid(pygame.sprite.Sprite):
+    def __init__(self, groups, position):
+        super().__init__(groups)
+
+        self.wd = os.getcwd() # -> Working directory
+        self.acid_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "acid", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.current_frame = 0
+        self.image = self.acid_frames[self.current_frame]
+
+        # ? Sonido
+        self.acid_burn = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "acid_burn.mp3"))
+        self.acid_burn.set_volume(0.1)
+        
+        self.rect = self.image.get_frect(topleft = (position))
+        self.hitbox_rect = self.rect.inflate(-20, -45)
+
+        # ? Attributes
+        self.animation_speed = random.randint(6, 8)
+
+    def update(self, delta_time, events = None):
+        self.animate(delta_time)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.acid_frames[int(self.current_frame) % len(self.acid_frames)]

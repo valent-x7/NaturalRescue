@@ -11,7 +11,6 @@ class Level_two:
         self.game = game
         self.wd = getcwd()
         self.penguin_spritesheet = Spritesheet(join(self.wd, "img", "penguin_spritesheet.png"))
-        self.water_sprite = pygame.image.load(join(self.wd, "img", "watersrote.png"))
         
         self.zoom = 1
         self.all_sprites = pygame.sprite.LayeredUpdates()
@@ -21,16 +20,31 @@ class Level_two:
         # Cargar el mapa y sprites PRIMERO
         self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
         self.penguin = Penguin(8*TILE, 28*TILE, self.penguin_spritesheet)
+        
+        water_start_x_map = 0
+        water_start_y_map = WINDOW_HEIGHT
+        self.water = WaterEnemy((water_start_x_map, water_start_y_map), self.penguin)
+
+        water_img_height = self.water.image.get_height()
+        self.water.image = pygame.transform.scale(self.water.image, (WINDOW_WIDTH, water_img_height))
+
+        self.water.rect = self.water.image.get_rect(topleft=(water_start_x_map, water_start_y_map))
+        self.water.mask = pygame.mask.from_surface(self.water.image)
+
         self.all_sprites.add(self.penguin, layer=6)
+        self.all_sprites.add(self.water, layer=12)
         self.setup_decor("Decoración")
+
+        self.damage_sprites.add(self.water)
         
         # Obtener tamaño del mapa desde el archivo TMX
         map = load_pygame(join(self.wd, "assets", "maps", "tmx", "ice.tmx"))
         self.level_width = map.width * TILE
         self.level_height = map.height * TILE
         
-        # print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
-        # print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
+        print(f"Tamaño del nivel: {self.level_width}x{self.level_height}")
+        print(f"Posición inicial del pingüino: ({8*TILE}, {28*TILE})")
+        print(f"Sprites en damage_sprites: {len(self.damage_sprites)}")
         
         # Precalcular superficies - IMPORTANTE: usar nivel completo para el cache
         self.level_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -47,7 +61,6 @@ class Level_two:
         self.camera_y = self.level_height - WINDOW_HEIGHT  # Comenzar desde abajo
         
         print(f"Cámara inicial: ({self.camera_x}, {self.camera_y})")
-        print(f"Pingüino en pantalla inicial: ({8*TILE - self.camera_x}, {28*TILE - self.camera_y})")
         
         # Cache para sprites estáticos
         self.static_sprites_cache = pygame.Surface((self.level_width, self.level_height), pygame.SRCALPHA)
@@ -92,12 +105,12 @@ class Level_two:
             decor_sprite = Sprite(self.all_sprites, pos, image)
             self.all_sprites.add(decor_sprite, layer=12)
 
-    def create_static_cache(self):
-        print("Creando cache estática...")
-        # Dibujar TODOS los sprites estáticos en la cache
+    def create_static_cache(self):    
         for sprite in self.all_sprites:
-            if sprite != self.penguin:  # Excluir al jugador
-                self.static_sprites_cache.blit(sprite.image, sprite.rect.topleft)
+            if sprite not in (self.penguin, self.water): 
+                if hasattr(sprite, 'rect') and sprite.rect is not None:
+                    self.static_sprites_cache.blit(sprite.image, sprite.rect.topleft)
+            
         print("Cache estática creada correctamente")
 
     def precalculate_masks(self):
@@ -120,32 +133,33 @@ class Level_two:
         # Limitar la cámara para que no se salga del mapa
         self.camera_x = max(0, min(self.camera_x, self.level_width - WINDOW_WIDTH))
         self.camera_y = max(0, min(self.camera_y, self.level_height - WINDOW_HEIGHT))
-        
-        # Debug info
-        penguin_screen_x = self.penguin.rect.x - self.camera_x
-        penguin_screen_y = self.penguin.rect.y - self.camera_y
-        print(f"Cámara: ({self.camera_x:.1f}, {self.camera_y:.1f}) | Pingüino en pantalla: ({penguin_screen_x:.1f}, {penguin_screen_y:.1f})")
 
     def collide_with_mask(self, sprite1, sprite2):
         if not sprite1.rect.colliderect(sprite2.rect):
             return False
-        
+    
+        # Offset: Vector de sprite1 (Pingüino) a sprite2 (Agua)
         offset_x = sprite2.rect.x - sprite1.rect.x
         offset_y = sprite2.rect.y - sprite1.rect.y
-        
-        return sprite2.mask.overlap(sprite1.mask, (offset_x, offset_y)) is not None
+
+        # sprite1.mask.overlap(sprite2.mask, offset_x, offset_y)
+        return sprite1.mask.overlap(sprite2.mask, (offset_x, offset_y)) is  not None
 
     def handle_water_collision(self):
+            # 💡 Simplificamos a un solo chequeo que usa la función     collide_with_mask
         water_collisions = pygame.sprite.spritecollide(
             self.penguin, 
             self.damage_sprites, 
             False,
             collided=self.collide_with_mask
         )
-        
-        if water_collisions:
-            self.penguin.damage()
 
+        if water_collisions:
+            print(f"¡COLISIÓN DETECTADA con agua mediante máscara!")
+            self.penguin.damage()
+            return True
+
+        return False
     def draw_level2(self):
         clock = pygame.time.Clock()
         running = True
@@ -170,6 +184,10 @@ class Level_two:
             if self.penguin.alive:
                 self.penguin.update(self.collision_sprites, dt)
                 self.handle_water_collision()
+
+                if self.water:
+                    self.water.update(dt)   
+
             else:
                 return "RESTART"
 
@@ -207,6 +225,13 @@ class Level_two:
                 )
                 self.level_surface.blit(self.penguin.image, adjusted_pos)
 
+            if self.water and hasattr(self.water, 'rect') and self.water.rect:
+                    adjusted_water_pos = (
+                        0,
+                        self.water.rect.y - self.camera_y
+                    )
+                    self.level_surface.blit(self.water.image, adjusted_water_pos)
+
             # Aplicar zoom a la superficie del nivel
             pygame.transform.scale(
                 self.level_surface,
@@ -217,7 +242,6 @@ class Level_two:
             # Dibujar la superficie con zoom centrada en la pantalla
             self.game_screen.fill((0, 0, 0))  # Fondo negro para bordes
             self.game_screen.blit(self.zoomed_surface, (-self.x_offset, -self.y_offset))
-            self.game_screen.blit(self.water_sprite, (WINDOW_WIDTH-1920, WINDOW_HEIGHT-512))
 
             pygame.display.flip()
 
