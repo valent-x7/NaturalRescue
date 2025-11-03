@@ -117,7 +117,7 @@ class PuriCapsuleItem:
         self.image = pygame.transform.scale(image, (78, 78)).convert_alpha()
 
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width - self.rect.width - 464, 64)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 350, 64)
 
     def draw(self, screen, name_item, amount_item):
         # ? Borde del circulo
@@ -132,4 +132,25 @@ class PuriCapsuleItem:
         # ? Cantidad del item
         draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}", "#FFFFFF", self.rect.centerx + (self.rect.width / 2) + 20, self.rect.bottom - 20)
 
+        screen.blit(self.image, self.rect)
+
+class ResourceCounter:
+    def __init__(self, image_path, position, amount_total = None):
+        image = pygame.image.load(image_path)
+        self.image = pygame.transform.scale(image, (48, 48))
+        self.rect = self.image.get_frect(topleft = (position))
+
+        # ? Attributes
+        self.amount_total = amount_total
+
+    def draw(self, screen, name_item, amount_item):
+        # ? Texto del item
+        draw_text(screen, TITLE_FONT_PATH, 12, name_item, "#FFFFFF", self.rect.centerx + 76, self.rect.top - 10)
+
+        # ? Cantidad del item
+        if self.amount_total:
+            draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}/{self.amount_total}", "#FFFFFF", self.rect.centerx + (self.rect.width / 2) + 48, self.rect.bottom - 25)
+        else:
+            draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}", "#FFFFFF", self.rect.centerx + (self.rect.width / 2) + 48, self.rect.bottom - 25)
+        
         screen.blit(self.image, self.rect)

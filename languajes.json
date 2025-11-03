@@ -29,6 +29,7 @@
         "water-tank-full": "Full",
         "water-tank-mid": "Mid",
         "water-tank-empty": "Empty",
+        "valves": "Valves",
         "puricapsule": "Puricapsule",
 
         "gameover-title": "GAME OVER",
@@ -39,7 +40,9 @@
 
         "mission-text": "Head to the lake to collect water to water the tree shoots",
         "mission-text-3": "Find and close the valves",
-        "mission-text-3-warning": "Find them fast... They don't like visitors."        
+        "mission-text-3-warning": "Find them fast... They don't like visitors.",
+        "purified-ghosts": "Purified ghosts",
+        "purify-ghosts": "Purify {count} ghosts"            
     },
     "es": {
         "play": "Jugar",
@@ -71,6 +74,7 @@
         "water-tank-full": "Lleno",
         "water-tank-mid": "Mitad",
         "water-tank-empty": "Vacío",
+        "valves": "Valvulas",
         "puricapsule": "Puricápsula",
 
         "gameover-title": "FIN DEL JUEGO",
@@ -81,6 +85,8 @@
 
         "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol",
         "mission-text-3": "Encuentra y cierra las válvulas",
-        "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas."        
+        "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas.",
+        "purified-ghosts": "Fantasmas purificados",
+        "purify-ghosts": "Purifica {count} fantasmas"        
     }
 }

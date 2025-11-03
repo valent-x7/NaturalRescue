@@ -2,7 +2,8 @@ from settings import *
 from sprites import *
 from pytmx import load_pygame
 from ui.healthbar import HealthBar
-from ui.item import PuriCapsuleItem
+from ui.timebar import TimeBar
+from ui.item import PuriCapsuleItem, ResourceCounter
 from ui.utils import draw_text, get_text
 from os import getcwd
 from os.path import join
@@ -26,29 +27,34 @@ class LevelThree:
         self.acid_sprites = pygame.sprite.Group() # -> Acido
 
         self.setup_images() # -> Setup Images
-        self.setup_ui() # -> UI Elements
         self.setup_map() # -> Setup map
+        self.setup_ui() # -> UI Elements
 
         self.translations = game.translations # -> Traducciones
 
     def run(self, game, events):
-        # self.game_screen.fill("black")
+        self.game_screen.fill("black")
 
-        self.healthbar.hp = self.player.health
+        self.healthbar.hp =  self.player.health
         if not game.paused:
                 self.player.input(events)
                 self.all_sprites.update(game.dt, events, self.player)
+                self.timebar.update()
 
         self.all_sprites.center_on_target(self.player)
         self.all_sprites.draw_sprites()
         self.game_screen.blit(self.vignette, [0, 0])
 
         # ? Draw UI
+        self.timebar.draw(self.game_screen)
         self.healthbar.draw(self.game_screen)
         self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), self.player.capsules)
+        self.ghosts_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "purified-ghosts"), self.player.ghosts)
+        self.valves_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "valves"), self.player.valves)
 
         self.draw_messages(game, self.game_screen, ["mission-text-3", "mission-text-3-warning"])
 
+        self.check_doors_state(game.current_lang, game.dt)
         new_state = self.check_new_state() # -> Check new state
 
         if game.paused:
@@ -118,6 +124,12 @@ class LevelThree:
 
             elif obj.name == "Acid":
                 Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y))
+            
+            elif obj.name == "Door":
+                door = LabDoor((self.all_sprites, self.all_sprites.background_sprites, self.collision_sprites), (obj.x, obj.y))
+
+                if hasattr(obj, "properties") and "required_ghosts" in obj.properties:
+                    door.required_ghosts = obj.properties["required_ghosts"]
 
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
@@ -138,6 +150,9 @@ class LevelThree:
     def setup_ui(self):
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, SCIENTIST_HEALTH, self.scientist_image) # -> Barra de vida
         self.puricapsule_item = PuriCapsuleItem(os.path.join(self.wd, "assets", "images", "items", "puricapsula.png"))
+        self.ghosts_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "ghost.png"), (242, 148))
+        self.valves_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "valve.png"), (48, 148), len(self.valve_sprites))
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225)
 
     def draw_messages(self, game, screen, messages):
         #  Mostrar texto en rectángulo por 5 segundos
@@ -195,7 +210,7 @@ class LevelThree:
             y_offset += line_height
 
     def check_new_state(self):
-        if self.player.valves >= 2:
+        if self.player.valves >= 5:
             # self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
         # elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
@@ -205,3 +220,17 @@ class LevelThree:
             # self.game_over = True
             return "GAMEOVER" # -> Return gameover state
         return "LEVEL_3" # -> Return same state
+    
+    def check_doors_state(self, current_lang, delta_time):
+        for door in self.collision_sprites:
+            if isinstance(door, LabDoor):
+                screen_x = (door.rect.x - self.all_sprites.camera_offset.x) * self.all_sprites.zoom
+                screen_y = (door.rect.y - self.all_sprites.camera_offset.y) * self.all_sprites.zoom
+                ghosts = max(0, door.required_ghosts - self.player.ghosts)
+                draw_text(self.game_screen, TITLE_FONT_PATH, 12, 
+                          get_text(self.translations, current_lang, "purify-ghosts").format(count = ghosts),
+                            "yellow", screen_x, screen_y - 30 * self.all_sprites.zoom)
+                
+                # ? Cada puerta tiene un requisito de fantasmas
+                if hasattr(door, "required_ghosts") and self.player.ghosts >= door.required_ghosts:
+                    door.open(delta_time)
