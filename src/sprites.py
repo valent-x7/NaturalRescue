@@ -316,6 +316,9 @@ class Penguin(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.image = self.left_animation[1]
 
+    def collect(self):
+        print("Huevo recogido")
+
     def damage(self):
         if not self.alive or self.is_dying:
             return
@@ -1245,7 +1248,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         elif difficulty == "hard":
             self.speed = 35.0
         else:  # normal
-            self.speed = 50.0
+            self.speed = 30.0
             
         self.animation_speed = 4
         self.player = player

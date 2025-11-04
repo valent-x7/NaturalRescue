@@ -15,20 +15,20 @@ class Level_two:
         self.level_width = map.width * TILE
         self.level_height = map.height * TILE
         
-        self.zoom = 1.0
+        self.zoom = 1.3
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.collision_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
         
-        self.setup_map(["Fondo", "Capa iceberg", "FondoRoca", "Estructura", "Agua"])
+        self.setup_map(["Fondo", "FondoRoca", "Estructura", "Agua"])
         
         self.penguin = Penguin(8*TILE, 28*TILE, self.penguin_spritesheet)
 
         EGG_POSITIONS = [
             (40*TILE, 23*TILE),
             (56*TILE, 8*TILE),
-            (1*TILE, 18*TILE),
-            (28*TILE, 25*TILE)
+            (7*TILE, 16*TILE),
+            (18*TILE, 4*TILE)
         ]
 
         self.eggs_group = pygame.sprite.Group()
@@ -39,7 +39,7 @@ class Level_two:
             self.eggs_group.add(egg)
         
         water_start_x_map = 0
-        water_start_y_map = self.level_height + 256
+        water_start_y_map = self.level_height
         
         self.water = WaterEnemy((water_start_x_map, water_start_y_map), self.penguin)
 
@@ -63,7 +63,9 @@ class Level_two:
         self.bg = pygame.transform.scale(bg_original, (self.bg_width, self.bg_height))
         
         self.camera_x = 0
-        self.camera_y = self.level_height - WINDOW_HEIGHT
+        self.camera_y = self.level_height - (WINDOW_HEIGHT / self.zoom)
+
+        self.camera_y = max(0, self.camera_y) 
         
         self.static_sprites_cache = pygame.Surface((self.level_width, self.level_height), pygame.SRCALPHA)
         self.create_static_cache()
@@ -122,14 +124,20 @@ class Level_two:
                 egg.mask = pygame.mask.from_surface(egg.image)
 
     def update_camera(self):
-        target_x = self.penguin.rect.centerx - WINDOW_WIDTH // 2
-        target_y = self.penguin.rect.centery - WINDOW_HEIGHT // 2
+        
+        visible_width = WINDOW_WIDTH / self.zoom
+        visible_height = WINDOW_HEIGHT / self.zoom
+        target_x = self.penguin.rect.centerx - (visible_width / 2)
+        target_y = self.penguin.rect.centery - (visible_height / 2)
         
         self.camera_x = target_x
         self.camera_y = target_y
-        
-        self.camera_x = max(0, min(self.camera_x, self.level_width - WINDOW_WIDTH))
-        self.camera_y = max(0, min(self.camera_y, self.level_height - WINDOW_HEIGHT))
+        camera_x_max = self.level_width - visible_width
+        self.camera_x = max(0, min(self.camera_x, camera_x_max))
+
+        camera_y_max = self.level_height - visible_height
+        self.camera_y = max(0, min(self.camera_y, camera_y_max))
+
 
     def collide_with_mask(self, sprite1, sprite2):
         if not hasattr(sprite1, 'mask') or not hasattr(sprite2, 'mask'):
@@ -151,6 +159,15 @@ class Level_two:
                 return True
         return False
     
+    def handle_egg_collision(self):
+        for egg in self.eggs_group:
+            if self.collide_with_mask(self.penguin, egg):
+                self.eggs_group.remove(egg)
+                self.all_sprites.remove(egg)
+                self.penguin.collect()
+                return True
+        return False
+    
     def draw_level2(self):
         clock = pygame.time.Clock()
         running = True
@@ -158,13 +175,11 @@ class Level_two:
         while running:
             dt = clock.tick(60) / 1000.0
             
-            # --- MANEJO DE EVENTOS CORREGIDO ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                    return "SALIR" # Es mejor que devuelva SALIR para consistencia
+                    return "SALIR" 
                 
-                # Comprueba si se presionó una tecla
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_m:
                         running = False
@@ -175,22 +190,23 @@ class Level_two:
                     elif event.key == pygame.K_r:
                         return "RESTART"
             
-            # Actualiza todos los sprites. El `update` de Egg ahora funcionará correctamente.
             self.all_sprites.update(dt, self.collision_sprites)
             
             if self.penguin.alive:
+                self.handle_egg_collision()
                 self.handle_water_collision()
 
             if not self.penguin.alive and not self.penguin.is_dying:
                 return "RESTART"
 
-            self.update_camera()
+            self.update_camera() 
             self.level_surface.fill((0, 0, 0, 0))
 
             if self.static_sprites_cache:
+                src_rect = pygame.Rect(self.camera_x, self.camera_y, WINDOW_WIDTH / self.zoom, WINDOW_HEIGHT / self.zoom)
                 src_rect = pygame.Rect(self.camera_x, self.camera_y, WINDOW_WIDTH, WINDOW_HEIGHT)
                 self.level_surface.blit(self.static_sprites_cache, (0, 0), src_rect)
-            
+
             for egg in self.eggs_group:
                 adjusted_egg_pos = (
                     egg.rect.x - self.camera_x,
@@ -213,12 +229,11 @@ class Level_two:
             )
             
             self.game_screen.fill((0, 0, 0))
-            self.game_screen.blit(self.zoomed_surface, (-self.x_offset, -self.y_offset))
+            self.game_screen.blit(self.zoomed_surface, (0, 0))
             pygame.display.flip()
 
         return "LEVEL_2"
 
-# ... (Clase Platform, si la tienes en este archivo) ...
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, color=(131,208,212)):
         super().__init__()
