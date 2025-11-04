@@ -265,7 +265,7 @@ class Penguin(pygame.sprite.Sprite):
         self.angle = 0  # Para la rotación de muerte
 
         # --- Atributos de Física y Movimiento ---
-        self.speed = 3.5  # ¡Ajusta este valor para cambiar la velocidad!
+        self.speed = 3.0  # ¡Ajusta este valor para cambiar la velocidad!
         self.x_vel = 0
         self.y_vel = 0
         self.on_ground = False
@@ -1248,7 +1248,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         elif difficulty == "hard":
             self.speed = 35.0
         else:  # normal
-            self.speed = 30.0
+            self.speed = 20.0
             
         self.animation_speed = 4
         self.player = player
