@@ -1270,10 +1270,10 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         
         # DEBUG: Mostrar posición cada segundo
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_debug_time > 1000:  # Cada 1000 ms (1 segundo)
-            print(f"Agua en Y: {self.rect.y}, Movimiento: {movement:.2f} px/frame")
-            self.last_debug_time = current_time
+        # current_time = pygame.time.get_ticks()
+        # if current_time - self.last_debug_time > 1000:  # Cada 1000 ms (1 segundo)
+        #     print(f"Agua en Y: {self.rect.y}, Movimiento: {movement:.2f} px/frame")
+        #     self.last_debug_time = current_time
 
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
@@ -1283,7 +1283,6 @@ class WaterEnemy(pygame.sprite.Sprite):
         
         if new_image is not self.image:
             self.image = new_image
-            self.mask = pygame.mask.from_surface(self.image)
 
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):

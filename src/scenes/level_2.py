@@ -62,7 +62,12 @@ class Level_two:
         water_start_y_map = self.level_height
         self.water = WaterEnemy((water_start_x_map, water_start_y_map), self.penguin)
         water_img_height = self.water.image.get_height()
-        self.water.image = pygame.transform.scale(self.water.image, (WINDOW_WIDTH, water_img_height))
+        scaled_width = self.level_width     
+        self.water.frames = [
+            pygame.transform.scale(frame, (scaled_width, water_img_height)) 
+            for frame in self.water.frames
+        ]
+        self.water.image = self.water.frames[self.water.current_frame]
         self.water.rect = self.water.image.get_rect(topleft=(water_start_x_map, water_start_y_map))
         self.water.mask = pygame.mask.from_surface(self.water.image)
 
