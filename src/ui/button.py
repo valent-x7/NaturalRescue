@@ -64,3 +64,25 @@ class Button:
                 self.sound.play()
                 return True
         return False
+
+class ImageButtonUI:
+    def __init__(self, screen: pygame.Surface, image_path, position, image_scale = None):
+        self.screen = screen
+
+        if not image_scale:
+            self.image = pygame.image.load(image_path).convert_alpha()
+        else:
+            image = pygame.image.load(image_path)
+            self.image = pygame.transform.scale(image, image_scale).convert_alpha()
+
+        self.rect = self.image.get_frect(topleft = position)
+
+    def draw(self):
+        self.screen.blit(self.image, self.rect)
+
+    # Detectar clic
+    def is_clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False

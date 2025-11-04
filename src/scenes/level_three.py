@@ -4,6 +4,7 @@ from pytmx import load_pygame
 from ui.healthbar import HealthBar
 from ui.timebar import TimeBar
 from ui.item import PuriCapsuleItem, ResourceCounter
+from ui.button import ImageButtonUI
 from ui.utils import draw_text, get_text
 from os import getcwd
 from os.path import join
@@ -37,9 +38,14 @@ class LevelThree:
 
         self.healthbar.hp =  self.player.health
         if not game.paused:
+                pygame.mixer.unpause() # -> Reanudar todos los sonidos
+                pygame.mixer.music.unpause() # Reanudar música
                 self.player.input(events)
                 self.all_sprites.update(game.dt, events, self.player)
                 self.timebar.update()
+        else:
+            pygame.mixer.pause() # -> Pausar sonidos
+            pygame.mixer.music.pause() # -> Pausar música
 
         self.all_sprites.center_on_target(self.player)
         self.all_sprites.draw_sprites()
@@ -51,8 +57,10 @@ class LevelThree:
         self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), self.player.capsules)
         self.ghosts_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "purified-ghosts"), self.player.ghosts)
         self.valves_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "valves"), self.player.valves)
+        self.resume_button.draw() # -> Botón de reanudar
+        self.pause_button.draw() # -> Botón de pausar
 
-        self.draw_messages(game, self.game_screen, ["mission-text-3", "mission-text-3-warning"])
+        self.draw_messages(game, self.game_screen, ["mission-text-3", "mission-text-3-warning"], paused=game.paused)
 
         self.check_doors_state(game.current_lang, game.dt)
         new_state = self.check_new_state() # -> Check new state
@@ -72,6 +80,12 @@ class LevelThree:
                     return "MENU"
                 elif event.key == pygame.K_p:
                     game.paused = not game.paused # -> Invertimos el valor de pausa
+
+            elif self.resume_button.is_clicked(event) and game.paused:
+                game.paused = False
+
+            elif self.pause_button.is_clicked(event) and not game.paused:
+                game.paused = True
                 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game.paused:
                 self.player.shoot((self.all_sprites, self.all_sprites.depth_sprites, self.capsules_sprites), self.player, event.pos,
@@ -153,8 +167,10 @@ class LevelThree:
         self.ghosts_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "ghost.png"), (242, 148))
         self.valves_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "valve.png"), (48, 148), len(self.valve_sprites))
         self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225)
+        self.resume_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "resume.png"), (WINDOW_WIDTH - 136, 40), (64, 64))
+        self.pause_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "paused.png"), (WINDOW_WIDTH - 72, 40), (64, 64))
 
-    def draw_messages(self, game, screen, messages):
+    def draw_messages(self, game, screen, messages, paused = False):
         #  Mostrar texto en rectángulo por 5 segundos
         if not hasattr(self, "message_state"):
             self.message_state = {
@@ -168,14 +184,15 @@ class LevelThree:
         if state["index"] >= len(state["messages_list"]):
             return
 
-        elapsed = (pygame.time.get_ticks() - state["start-time"]) / 1000
+        if not paused:
+            elapsed = (pygame.time.get_ticks() - state["start-time"]) / 1000
 
-        if elapsed >= 6:
-            state["index"] += 1
-            state["start-time"] = pygame.time.get_ticks()
+            if elapsed >= 6:
+                state["index"] += 1
+                state["start-time"] = pygame.time.get_ticks()
 
-            if state["index"] >= len(state["messages_list"]):
-                return
+                if state["index"] >= len(state["messages_list"]):
+                    return
 
         key_message = state["messages_list"][state["index"]]
 
