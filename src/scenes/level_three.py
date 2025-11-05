@@ -124,18 +124,18 @@ class LevelThree:
 
             draw_text(self.game_screen, TITLE_FONT_PATH, 24, # -> Titulo
                       get_text(self.translations, game.current_lang, "exit-game-notice-title") , "yellow",
-                      WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 60)
+                      WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80)
             draw_text(self.game_screen, TITLE_FONT_PATH, 20, # -> Descripción
                     get_text(self.translations, game.current_lang, "exit-game-notice-description") , "white",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 30)
             draw_text(self.game_screen, TITLE_FONT_PATH, 18, # -> Elección
                     get_text(self.translations, game.current_lang, "exit-game-notice-prompt") , "#C8C8C8",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 60)
+                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 20)
             
             self.exit_btn.draw()
             self.go_back_btn.draw()
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 175, WINDOW_HEIGHT / 2 + 125)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-go-back"), "white", WINDOW_WIDTH / 2 + 175, WINDOW_HEIGHT / 2 + 125)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-go-back"), "white", WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85)
         
         return new_state
 
@@ -216,11 +216,11 @@ class LevelThree:
         # ? PopUp
         self.scrim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         self.scrim.fill((0, 0, 0, 150))
-        self.popup_rect = pygame.FRect(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+        self.popup_rect = pygame.FRect(0, 0, WINDOW_WIDTH / 2 + 125, WINDOW_HEIGHT / 3)
         self.popup_rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         # -> PopUpButtons
-        self.exit_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 - 175, WINDOW_HEIGHT / 2 + 125), "#e32227", "#f24449", "idk", 200, 45)
-        self.go_back_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 + 175, WINDOW_HEIGHT / 2 + 125), "#228b22", "#2ecc40", "idk", 200, 45)
+        self.exit_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85), "#e32227", "#f24449", "idk", 200, 45)
+        self.go_back_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85), "#228b22", "#2ecc40", "idk", 200, 45)
 
     def draw_messages(self, game, screen, messages, paused = False, showing_popup = False):
         #  Mostrar texto en rectángulo por 5 segundos
