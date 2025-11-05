@@ -105,10 +105,10 @@ class LevelSelectMenu:
                 return "START_LEVEL_1" # -> Nivel 1
             
             elif self.level2_btn.is_clicked(event):
-                return "LEVEL_2" # -> Nivel 2
+                return "START_LEVEL_2" # -> Nivel 2
             
             elif self.level3_btn.is_clicked(event):
-                return "LEVEL_3" # -> Nivel 3
+                return "START_LEVEL_3" # -> Nivel 3
             
             elif self.normal_difficulty_btn.is_clicked(event):
                 set_difficulty("config.json", "normal")

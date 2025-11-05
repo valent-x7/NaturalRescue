@@ -1,7 +1,7 @@
 from settings import *
 from menus.menu import MainMenu
 from menus.settings import SettingsMenu
-from menus.tutorial import Tutorial
+from menus.tutorial import Tutorial_levelone, Tutorial_leveltwo, Tutorial_levelthree
 from sprites import *
 from ui.utils import *
 from menus.level_select import LevelSelectMenu
@@ -75,8 +75,15 @@ class Game:
         self.WinScreen = None
         self.GameOverScreen = None
 
+        # ? Instancias para los tutoriales
+        self.Tutorial_One = None
+        self.Tutorial_Two = None
+        self.Tutorial_Three = None
+
         # ? Mostrar tutorial al inicio de cada nivel
         self.tutorial_1_done = False
+        self.tutorial_2_done = False 
+        self.tutorial_3_done = False
 
     # ? Cargar el lenguaje y crear botones
     def reload_language(self, lang):
@@ -91,9 +98,7 @@ class Game:
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
-        print("🔧 Iniciando carga de assets del tutorial...")
-        try:
-            self.tutorial_assets = {
+        self.tutorial_assets = {
                 "keys": {
                     "W": pygame.image.load(
                         "assets/images/keys/key_w.png"
@@ -142,14 +147,21 @@ class Game:
                         "assets/images/keys/pause.png"
                     ).convert_alpha(),
                 },
+                "arrows": {
+                     "W": pygame.image.load(
+                         "assets/images/keys/arrow_up.png"
+                         ).convert_alpha(),
+                     "A": pygame.image.load(
+                         "assets/images/keys/arrow_left.png"
+                         ).convert_alpha(),
+                     "S": pygame.image.load(
+                         "assets/images/keys/arrow_down.png"
+                         ).convert_alpha(),
+                     "D": pygame.image.load(
+                         "assets/images/keys/arrow_right.png"
+                         ).convert_alpha(),
             }
-            print("✅ Tutorial assets cargados correctamente")
-        except Exception as e:
-            print(f"❌ Error al cargar assets del tutorial: {e}")
-            import traceback
-
-            traceback.print_exc()
-            self.state = "MENU"  # Si falla, vuelve al menú
+        }
 
     def run(self):
 
@@ -157,7 +169,7 @@ class Game:
 
             # Usamos delta Time
             self.dt = self.clock.tick(60) / 1000  # Segundos por Frame
-            
+
             # Obtener Eventos
             events = pygame.event.get()
 
@@ -165,17 +177,17 @@ class Game:
                 if getattr(self, "current_music", None) != "menu":
                     self.play_music("assets/music/menu.ogg")
                     self.current_music = "menu"
-                
+
                 if not self.Main_Menu:
                     self.Main_Menu = MainMenu(self, self.SCREEN)
-                
+
                 self.state = self.Main_Menu.run(self, events)
-            
+
             elif self.state == "SETTINGS":
                 if getattr(self, "current_music", None) != "settings":
                     self.play_music("assets/music/settings.ogg")
                     self.current_music = "settings"
-                
+
                 self.state = self.Settings_Menu.run(self, events)
 
             elif self.state == "SALIR":
@@ -185,7 +197,7 @@ class Game:
                 if getattr(self, "current_music", None) != "level_select":
                     self.play_music("assets/music/levelselect.ogg")
                     self.current_music = "level_select"
-                
+
                 if not self.Level_Select_Menu:
                     self.Level_Select_Menu = LevelSelectMenu(self, self.SCREEN)
 
@@ -205,21 +217,78 @@ class Game:
                 else:
                     self.state = "LEVEL_1"
 
+            elif self.state == "START_LEVEL_2":
+                if not self.tutorial_2_done:
+                    self.state = "TUTORIAL_2"
+                else:
+                    self.state = "LEVEL_2"
+
+            # <--- CAMBIO: Añadido START_LEVEL_3
+            elif self.state == "START_LEVEL_3":
+                if not self.tutorial_3_done:
+                    self.state = "TUTORIAL_3"
+                else:
+                    self.state = "LEVEL_3"
+
+            # <--- CAMBIO: Lógica de TUTORIAL_1 actualizada
             elif self.state == "TUTORIAL_1":
-                if not hasattr(self, "tutorial_instance"):
-                    self.setup_tutorial()
-                    self.tutorial_instance = Tutorial(
-                        self.translations,  # Diccionario de traducciones
-                        self.current_lang,  # Idioma actual
-                        self.tutorial_assets,  # Imágenes o textos del tutorial
+                if not self.Tutorial_One:  # Si no existe la instancia
+                    if not hasattr(
+                        self, "tutorial_assets"
+                    ):  # Carga assets si es necesario
+                        self.setup_tutorial()
+                    self.Tutorial_One = Tutorial_levelone(  # Usa la clase correcta
+                        self.translations,
+                        self.current_lang,
+                        self.tutorial_assets,
                     )
 
                 if getattr(self, "current_music", None) != "tutorial":
                     self.play_music("assets/music/tutorial.ogg")
                     self.current_music = "tutorial"
 
-                self.state = self.tutorial_instance.draw(self, self.SCREEN, events, self.current_lang)
-            
+                # Ejecuta el draw de la instancia
+                self.state = self.Tutorial_One.draw(
+                    self, self.SCREEN, events, self.current_lang
+                )
+
+            # <--- CAMBIO: Añadida lógica para TUTORIAL_2
+            elif self.state == "TUTORIAL_2":
+                if not self.Tutorial_Two:
+                    if not hasattr(self, "tutorial_assets"):
+                        self.setup_tutorial()
+                    self.Tutorial_Two = Tutorial_leveltwo(  # Usa la clase correcta
+                        self.translations,
+                        self.current_lang,
+                        self.tutorial_assets,
+                    )
+
+                if getattr(self, "current_music", None) != "tutorial":
+                    self.play_music("assets/music/tutorial.ogg")
+                    self.current_music = "tutorial"
+
+                self.state = self.Tutorial_Two.draw(
+                    self, self.SCREEN, events, self.current_lang
+                )
+
+            # <--- CAMBIO: Añadida lógica para TUTORIAL_3
+            elif self.state == "TUTORIAL_3":
+                if not self.Tutorial_Three:
+                    if not hasattr(self, "tutorial_assets"):
+                        self.setup_tutorial()
+                    self.Tutorial_Three = Tutorial_levelthree(  # Usa la clase correcta
+                        self.translations,
+                        self.current_lang,
+                        self.tutorial_assets,
+                    )
+
+                if getattr(self, "current_music", None) != "tutorial":
+                    self.play_music("assets/music/tutorial.ogg")
+                    self.current_music = "tutorial"
+
+                self.state = self.Tutorial_Three.draw(
+                    self, self.SCREEN, events, self.current_lang
+                )
             # ? Niveles
             elif self.state == "LEVEL_1":
                 if getattr(self, "current_music", None) != "level_1":
@@ -243,14 +312,14 @@ class Game:
 
                 if not self.Level_Three:
                     self.Level_Three = LevelThree(self, self.SCREEN)
-                    
+
                 self.state = self.Level_Three.run(self, events)
 
             elif self.state == "GAMEOVER":
                 if not getattr(self, "entered_gameover", False):
                     self.play_music_once("assets/sound/gameover.ogg", "gameover")
                     self.entered_gameover = True
-                
+
                 if not self.GameOverScreen: # -> Si no hay GameOverScreen lo creamos
                     self.GameOverScreen = GameOver(self, self.SCREEN)
 
@@ -269,7 +338,7 @@ class Game:
                     self.Level_One = None
 
                     self.state = "START_LEVEL_1"
-            
+
             elif self.state == "WINSCREEN":
                 if not getattr(self, "entered_winscreen", False):
                     self.play_music_once("assets/sound/win.ogg", "winscreen")
@@ -289,7 +358,7 @@ class Game:
 
                     if hasattr(self, "Level_One"):
                         del self.Level_One # -> Borrar nivel uno
-                    
+
                     self.Level_One = None
 
                     self.state = "START_LEVEL_1"
