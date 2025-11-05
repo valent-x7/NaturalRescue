@@ -42,7 +42,12 @@
         "mission-text-3": "Find and close the valves",
         "mission-text-3-warning": "Find them fast... They don't like visitors.",
         "purified-ghosts": "Purified ghosts",
-        "purify-ghosts": "Purify {count} ghosts"            
+        "purify-ghosts": "Purify {count} ghosts",
+        "exit-game-notice-title": "Are you sure you want to exit?",
+        "exit-game-notice-description": "All progress for this level will be lost.",
+        "exit-game-notice-prompt": "Press (Y) to Exit / (N) to Go Back",
+        "exit-btn-exit": "Exit (Y)",
+        "exit-btn-go-back": "Go Back (N)"
     },
     "es": {
         "play": "Jugar",
@@ -87,6 +92,11 @@
         "mission-text-3": "Encuentra y cierra las válvulas",
         "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas.",
         "purified-ghosts": "Fantasmas purificados",
-        "purify-ghosts": "Purifica {count} fantasmas"        
+        "purify-ghosts": "Purifica {count} fantasmas",
+        "exit-game-notice-title": "¿Estás seguro de salir?",
+        "exit-game-notice-description": "Se perderá todo el progreso de este nivel.",
+        "exit-game-notice-prompt": "Presiona (Y) para Salir / (N) para Volver",
+        "exit-btn-exit": "Salir (Y)",
+        "exit-btn-go-back": "Volver (N)"     
     }
 }

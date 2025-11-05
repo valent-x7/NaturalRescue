@@ -86,3 +86,37 @@ class ImageButtonUI:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+class ButtonUI:
+    def __init__(self, screen, position, color, hover_color, text, width, height, thickness = 2):
+        self.screen = screen
+        self.color = color
+        self.hover_color = hover_color
+        self.text = text
+
+        self.rect = pygame.FRect(0, 0, width, height)
+        self.rect.center = position
+
+        # Creamos el thickness rect
+        self.thickness_rect = pygame.FRect((0, 0), (width + (2 * thickness), height + (2 * thickness)))
+        self.thickness_rect.center = position
+
+    def draw(self):
+        mouse_pos = pygame.mouse.get_pos()
+
+        # ? Dibujar borde
+        pygame.draw.rect(self.screen, "black", self.thickness_rect, 0, 12)
+        # ? Dibujar rect
+        pygame.draw.rect(self.screen, self.color, self.rect, 0, 12)
+
+        # Si hay hover, dibuja el botón con el color del hover
+        if self.rect.collidepoint(mouse_pos):
+            # Botón hover encima
+            pygame.draw.rect(self.screen, self.hover_color, self.rect, 0, 12)
+
+    # Detectar clic
+    def is_clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
