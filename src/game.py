@@ -60,6 +60,7 @@ class Game:
 
         # Estado de pausa
         self.paused = False
+        self.showing_quit_pop = False
 
         # ? Nivel actual
         self.current_level = 1  # -> El primero por defecto
