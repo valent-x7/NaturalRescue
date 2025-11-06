@@ -205,6 +205,7 @@ class Game:
                 self.state = self.Level_Select_Menu.run(self, events)
 
             elif self.state == "START_LEVEL_1":
+                self.current_level = 1
                 # -> Si existe nivel 1 y tiene gameover en true mandarlo a gameover directo
                 if hasattr(self, "Level_One") and getattr(self.Level_One, "game_over", False):
                     self.state = "GAMEOVER"
@@ -219,6 +220,7 @@ class Game:
                     self.state = "LEVEL_1"
 
             elif self.state == "START_LEVEL_2":
+                self.current_level = 2
                 if not self.tutorial_2_done:
                     self.state = "TUTORIAL_2"
                 else:
@@ -226,6 +228,7 @@ class Game:
 
             # <--- CAMBIO: Añadido START_LEVEL_3
             elif self.state == "START_LEVEL_3":
+                self.current_level = 3
                 if not self.tutorial_3_done:
                     self.state = "TUTORIAL_3"
                 else:
@@ -290,6 +293,7 @@ class Game:
                 self.state = self.Tutorial_Three.draw(
                     self, self.SCREEN, events, self.current_lang
                 )
+            
             # ? Niveles
             elif self.state == "LEVEL_1":
                 if getattr(self, "current_music", None) != "level_1":
@@ -322,23 +326,20 @@ class Game:
                     self.entered_gameover = True
 
                 if not self.GameOverScreen: # -> Si no hay GameOverScreen lo creamos
-                    self.GameOverScreen = GameOver(self, self.SCREEN)
+                    self.GameOverScreen = GameOver(self, self.SCREEN, self.current_level)
 
                 new_state = self.GameOverScreen.run(self, events) # -> Metodo run del GameOverScreen
 
                 if new_state == "MENU":
-                    self.entered_gameover = False
                     self.state = "MENU"
+                    self.entered_gameover = False
+                    self.unload_current_level()
+                    self.GameOverScreen = None
 
                 elif new_state == "RESTART_LEVEL":
                     self.entered_gameover = False
-
-                    if hasattr(self, "Level_One"):
-                        del self.Level_One # -> Borrar nivel uno
-
-                    self.Level_One = None
-
-                    self.state = "START_LEVEL_1"
+                    self.restart_current_level()
+                    self.GameOverScreen = None
 
             elif self.state == "WINSCREEN":
                 if not getattr(self, "entered_winscreen", False):
@@ -346,23 +347,20 @@ class Game:
                     self.entered_winscreen = True
 
                 if not self.WinScreen: # -> Si no hay WinScreen definido lo creamos
-                    self.WinScreen = WinScreen(self, self.SCREEN)
+                    self.WinScreen = WinScreen(self, self.SCREEN, self.current_level)
 
                 new_state = self.WinScreen.run(self, events) # -> Metodo Run del WinScreen
 
                 if new_state == "MENU":
                     self.state = "MENU"
                     self.entered_winscreen = False
+                    self.unload_current_level()
+                    self.WinScreen = None
 
                 elif new_state == "RESTART_LEVEL":
                     self.entered_winscreen = False
-
-                    if hasattr(self, "Level_One"):
-                        del self.Level_One # -> Borrar nivel uno
-
-                    self.Level_One = None
-
-                    self.state = "START_LEVEL_1"
+                    self.restart_current_level()
+                    self.WinScreen = None
 
             # Checar eventos del menú
             self.check_events(events)
@@ -384,3 +382,29 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
                     sys.exit()
+
+    # ? Borrar nivel
+    def unload_current_level(self):
+        if self.current_level == 1:
+            if hasattr(self, "Level_One"):
+                del self.Level_One
+                self.Level_One = None
+        elif self.current_level == 2:
+            if hasattr(self, "Level_Two"):
+                del self.Level_Two
+                self.Level_Two = None
+        elif self.current_level == 3:
+            if hasattr(self, "Level_Three"):
+                del self.Level_Three
+                self.Level_Three = None
+
+    # ? Reiniciar nivel en base del id
+    def restart_current_level(self):
+        self.unload_current_level()
+
+        if self.current_level == 1:
+            self.state = "START_LEVEL_1"
+        elif self.current_level == 2:
+            self.state = "START_LEVEL_2"
+        elif self.current_level == 3:
+            self.state = "START_LEVEL_3"

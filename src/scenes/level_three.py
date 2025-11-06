@@ -287,7 +287,7 @@ class LevelThree:
             if self.player.footsteps_sound.get_num_channels():
                 self.player.footsteps_sound.stop()
             # self.game_over = True
-            return "GAMEOVER" # -> Return gameover state
+            return "GAMEOVER"
         return "LEVEL_3" # -> Return same state
     
     def check_doors_state(self, current_lang, delta_time):
