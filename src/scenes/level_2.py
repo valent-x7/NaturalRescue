@@ -34,6 +34,7 @@ class Level_two:
 
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.collision_sprites = pygame.sprite.Group()
+        self.win_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
         self.static_sprites = pygame.sprite.Group()
         self.dynamic_sprites = pygame.sprite.Group()
@@ -43,8 +44,17 @@ class Level_two:
 
         self.penguin_start_pos = (TILE *8, TILE*28)
         self.penguin = Penguin(self.penguin_start_pos[0], self.penguin_start_pos[1], self.penguin_spritesheet)
+        # agrego al pingüino a all_sprites y dynamic (ya lo hacías)
         self.all_sprites.add(self.penguin, layer=6)
         self.dynamic_sprites.add(self.penguin)
+
+        # Helicoptero: se crea, se añade a win_sprites (para lógica de victoria),
+        # y también se añade a all_sprites y dynamic_sprites para que se renderice y actualice.
+        self.helicopter = Helicopter((TILE*10, TILE*3), self.penguin)
+        self.win_sprites.add(self.helicopter)
+        # <-- FIX: añadir helicopter a all_sprites y dynamic_sprites para que se dibuje/actualice
+        self.all_sprites.add(self.helicopter, layer=10)  # capa arbitraria entre 6 y 12
+        self.dynamic_sprites.add(self.helicopter)
 
         EGG_POSITIONS = [
             (40*TILE, 23*TILE),
@@ -137,16 +147,27 @@ class Level_two:
                 self.static_sprites_cache.blit(sprite.image, sprite.rect.topleft)
 
     def precalculate_masks(self):
+        # Masks para pingüino
         if hasattr(self.penguin, 'image'):
             self.penguin.mask = pygame.mask.from_surface(self.penguin.image)
 
+        # Mask para sprites de daño
         for sprite in self.damage_sprites:
             if hasattr(sprite, 'image'):
                 sprite.mask = pygame.mask.from_surface(sprite.image)
 
+        # Masks para huevos
         for egg in self.eggs_group:
             if hasattr(egg, 'image'):
                 egg.mask = pygame.mask.from_surface(egg.image)
+
+        # <-- FIX: mask para el helicoptero (si tiene imagen)
+        if hasattr(self, 'helicopter') and hasattr(self.helicopter, 'image'):
+            try:
+                self.helicopter.mask = pygame.mask.from_surface(self.helicopter.image)
+            except Exception:
+                # si la imagen no es válido o es animación, ignorar sin romper
+                pass
 
     def update_camera(self):
         visible_width = WINDOW_WIDTH / self.zoom
@@ -242,6 +263,7 @@ class Level_two:
                     elif event.key == pygame.K_r:
                         return "RESTART"
             
+            # actualizamos todos los sprites (ahora incluye helicopter)
             self.all_sprites.update(dt, self.collision_sprites)
             if self.penguin.alive:
                 self.handle_egg_collision()
@@ -277,12 +299,16 @@ class Level_two:
             for sprite in self.dynamic_sprites:
                 adjusted_pos = (sprite.rect.x - self.camera_x, sprite.rect.y - self.camera_y)
                 
+                # water se renderiza escalado en ancho (manejaste especial), lo dejo igual
                 if isinstance(sprite, WaterEnemy) and hasattr(sprite, 'rect') and sprite.rect:
                     adjusted_water_pos = (0 - self.camera_x, sprite.rect.y - self.camera_y)
                     self.level_surface.blit(sprite.image, adjusted_water_pos)
                     continue
 
                 self.level_surface.blit(sprite.image, adjusted_pos)
+            
+            # además del dynamic_sprites, por seguridad, si el helicopter tiene animaciones
+            # que actualicen su imagen en all_sprites, ya está agregado y será considerado.
             
             scaled_level = pygame.transform.scale(
                 self.level_surface,

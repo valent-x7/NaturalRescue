@@ -1330,6 +1330,35 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.y_float = float(self.rect.y)
         print(f"Agua reseteada a Y: {self.rect.y}")
 
+
+class Helicopter(pygame.sprite.Sprite):
+    def __init__(self, position, player):
+        super().__init__()
+        self.wd = os.getcwd()
+        self.frames = [pygame.image.load(os.path.join("assets", "images", "helicopter", f"{i}.png")).convert_alpha() for i in range(0, 4)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        self.rect = self.image.get_rect(topleft=position)
+        self.animation_speed = 4
+        self.player = player
+
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, delta_time, events=None):
+        self.animate(delta_time)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        
+        new_frame_index = int(self.current_frame) % len(self.frames)
+        new_image = self.frames[new_frame_index]
+        
+        if new_image is not self.image:
+            self.image = new_image
+
+
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
