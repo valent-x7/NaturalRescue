@@ -4,13 +4,14 @@ from settings import TITLE_FONT_PATH
 from math import ceil
 
 class TimeBar():
-    def __init__(self, x, y, w, h, maxt):
+    def __init__(self, x, y, w, h, maxt, col):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
         self.t = maxt
         self.maxt = maxt
+        self.col = col
 
         self.border = 2
         self.last_update = pygame.time.get_ticks()
@@ -32,7 +33,7 @@ class TimeBar():
         elif ratio <= 0.5:
             color = "#FFFF00"
         else: 
-            color = "#00FF00"
+            color = self.col
 
         pygame.draw.rect(surface, "#1E1E1E", (self.x - self.border, self.y - self.border, self.w + (2 * self.border), self.h + (2 * self.border)))
         pygame.draw.rect(surface, "#000000FF", (self.x, self.y, self.w, self.h))

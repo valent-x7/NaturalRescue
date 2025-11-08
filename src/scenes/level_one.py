@@ -165,7 +165,7 @@ class LevelOne:
         self.setup_image_for_ui() # -> Imagenes para la UI
 
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, MONKEY_HEALTH, self.monkey_image) # -> Barra de vida
-        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225) # -> Tiempo
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225, "#2AFE00") # -> Tiempo
 
         self.treesprout_item = TreeSprout(join(self.wd, "assets", "images", "items", "brote.png")) # -> Brote de arbol
         self.waterbar_item = PlayerWaterBar() # -> Tanque de agua

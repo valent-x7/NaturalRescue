@@ -253,6 +253,8 @@ class Penguin(pygame.sprite.Sprite):
         self.spritesheet = spritesheet
         self.w = TILE
         self.h = TILE
+        self.lives = 3
+        self.current_lives = 3
         
         # --- Atributos de Estado y Animación ---
         self.moving = False
@@ -261,8 +263,11 @@ class Penguin(pygame.sprite.Sprite):
         self.animation_speed = 8
         self.alive = True
         self.is_dying = False
+        self.is_damaged = False
+        self.damage_timer = 0
         self.dead_timer = 0
         self.angle = 0  # Para la rotación de muerte
+        self.invulnerable = False
 
         # --- Atributos de Física y Movimiento ---
         self.speed = 3.0  # ¡Ajusta este valor para cambiar la velocidad!
@@ -320,14 +325,25 @@ class Penguin(pygame.sprite.Sprite):
         print("Huevo recogido")
 
     def damage(self):
-        if not self.alive or self.is_dying:
+        if not self.alive or self.is_dying or self.invulnerable:
             return
         
-        self.alive = False
-        self.is_dying = True
-        self.dead_timer = 1.0 # La animación durará 1 segundo
-        self.y_vel = -12.0 # Salto de muerte
-        self.x_vel = 0
+        self.current_lives -= 1
+        
+        if self.current_lives <= 0:
+            self.alive = False
+            self.is_dying = True
+            self.dead_timer = 1.0 # La animación durará 1 segundo
+            self.y_vel = -12.0 # Salto de muerte
+            self.x_vel = 0
+            self.original_image = self.image
+            return
+
+        self.is_damaged = True
+        self.invulnerable = True
+        self.damage_timer = 2.0
+        self.y_vel = -8.0
+
         self.original_image = self.image
 
     def apply_gravity(self):
@@ -383,7 +399,22 @@ class Penguin(pygame.sprite.Sprite):
             self.on_ground = False
 
     def update(self, delta_time, platforms):
-        # 1. LÓGICA DE MUERTE
+        if self.is_damaged and self.invulnerable:
+            self.damage_timer -= delta_time
+            
+            # Efecto de parpadeo durante la invulnerabilidad
+            if int(self.damage_timer * 10) % 2 == 0:  # Parpadeo cada 0.1 segundos
+                self.image.set_alpha(128)  # Semi-transparente
+            else:
+                self.image.set_alpha(255)  # Normal
+            
+            # Fin de la invulnerabilidad
+            if self.damage_timer <= 0:
+                self.is_damaged = False
+                self.invulnerable = False
+                self.image.set_alpha(255)  # Restaurar opacidad normal
+        
+        # 2. LÓGICA DE MUERTE DEFINITIVA
         if self.is_dying:
             self.dead_timer -= delta_time
             self.y_vel += 0.55
@@ -400,7 +431,7 @@ class Penguin(pygame.sprite.Sprite):
         if not self.alive:
             return
 
-        # 2. LÓGICA DE JUEGO NORMAL
+        # 3. LÓGICA DE JUEGO NORMAL
         self.handle_input()
         
         # Movimiento y colisión horizontal
@@ -415,6 +446,23 @@ class Penguin(pygame.sprite.Sprite):
         self.animate(self.moving, delta_time)
         self.mask = pygame.mask.from_surface(self.image)
         self.hitbox_rect.center = self.rect.center
+
+    def reset(self, x, y):
+        self.rect.topleft = (x - self.w // 2, y - self.h // 2)
+        self.hitbox_rect.center = self.rect.center
+        self.alive = True
+        self.is_dying = False
+        self.is_damaged = False
+        self.invulnerable = False
+        self.damage_timer = 0
+        self.dead_timer = 0
+        self.angle = 0
+        self.x_vel = 0
+        self.y_vel = 0
+        self.on_ground = False
+        self.image.set_alpha(255)  # Asegurar opacidad normal
+        self.direction = 'down'
+        self.image = self.down_animation[1]
 
 class Scientist(pygame.sprite.Sprite):
     def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
@@ -1242,9 +1290,11 @@ class WaterEnemy(pygame.sprite.Sprite):
 
         self.y_float = float(self.rect.y)
 
-        # CORRECCIÓN: Velocidad más realista y ajustable por dificultad
+        # Guardar posición inicial para el reset
+        self.initial_position = position
+
         if difficulty == "easy":
-            self.speed = 20.0  # Velocidad en píxeles por segundo
+            self.speed = 20.0
         elif difficulty == "hard":
             self.speed = 35.0
         else:  # normal
@@ -1253,27 +1303,18 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.animation_speed = 4
         self.player = player
 
-        self.mask = pygame.mask.from_surface(self.image) # Máscara inicial
+        self.mask = pygame.mask.from_surface(self.image)
         
-        # DEBUG: Para verificar que se está moviendo
         self.last_debug_time = 0
         print(f"Agua creada en Y: {self.rect.y}, Velocidad: {self.speed} px/seg")
 
     def update(self, delta_time, events=None):
-        # CORRECCIÓN: Movimiento correcto usando delta_time
-        # delta_time está en segundos, así que multiplicamos por velocidad en px/seg
         movement = self.speed * delta_time
         self.y_float -= movement
         self.rect.y = int(self.y_float)
 
         self.animate(delta_time)
         self.mask = pygame.mask.from_surface(self.image)
-        
-        # DEBUG: Mostrar posición cada segundo
-        # current_time = pygame.time.get_ticks()
-        # if current_time - self.last_debug_time > 1000:  # Cada 1000 ms (1 segundo)
-        #     print(f"Agua en Y: {self.rect.y}, Movimiento: {movement:.2f} px/frame")
-        #     self.last_debug_time = current_time
 
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
@@ -1283,6 +1324,11 @@ class WaterEnemy(pygame.sprite.Sprite):
         
         if new_image is not self.image:
             self.image = new_image
+        
+    def reset(self):
+        self.rect.topleft = self.initial_position
+        self.y_float = float(self.rect.y)
+        print(f"Agua reseteada a Y: {self.rect.y}")
 
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
