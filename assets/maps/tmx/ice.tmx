@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="33" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="1">
- <tileset firstgid="1" source="../../../../Universidad/PI/layer-0-iceberg.tsx"/>
- <tileset firstgid="1981" source="../../../../Universidad/PI/Tiles-1.tsx"/>
- <tileset firstgid="2081" source="../../../../Universidad/PI/tiles2.tsx"/>
- <tileset firstgid="2181" source="../../../../Universidad/PI/iceberg-item.tsx"/>
- <tileset firstgid="2581" source="../../../../Universidad/PI/tiles.tsx"/>
+ <tileset firstgid="1" source="../tsx/layer-0-iceberg.tsx"/>
+ <tileset firstgid="1981" source="../tsx/Tiles-1.tsx"/>
+ <tileset firstgid="2081" source="../tsx/tiles2.tsx"/>
+ <tileset firstgid="2181" source="../tsx/iceberg-item.tsx"/>
+ <tileset firstgid="2581" source="../tsx/tiles.tsx"/>
  <layer id="1" name="Fondo" width="60" height="33">
   <data encoding="csv">
 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,
