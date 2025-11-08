@@ -86,8 +86,6 @@ class Level_two:
         self.damage_sprites.add(self.water)
         self.dynamic_sprites.add(self.water) # El agua es dinámica/animada
         
-        # --- Configuración de Superficies de Dibujo ---
-        # Estas superficies se usan para el zoom
         self.level_surface = pygame.Surface((int(WINDOW_WIDTH / self.zoom), int(WINDOW_HEIGHT / self.zoom)), pygame.SRCALPHA)
         self.zoomed_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT)) # Simplificado, ya que blitteamos directamente a game_screen
 
