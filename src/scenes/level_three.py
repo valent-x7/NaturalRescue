@@ -280,10 +280,11 @@ class LevelThree:
 
     def check_new_state(self):
         if self.player.valves >= 5:
-            # self.finished_level = True
+            if self.player.footsteps_sound.get_num_channels():
+                self.player.footsteps_sound.stop()
+            self.finished_level = True
             return "WINSCREEN" # -> Return winscreen state
-        # elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
-        elif self.healthbar.hp <= 0:
+        elif self.healthbar.hp <= 0 or self.timebar.t <= 0:
             if self.player.footsteps_sound.get_num_channels():
                 self.player.footsteps_sound.stop()
             # self.game_over = True

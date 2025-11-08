@@ -58,3 +58,25 @@ def set_language(config_path, lang):
 
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
+
+def draw_text_space(screen, font_path, font_size, text, color, x, y, line_spacing = 1.5):
+    # Cargamos fuente
+    font = pygame.font.Font(font_path, font_size)
+    lines = text.split('\n') # -> Dividimos texto
+    
+    # Calculamos la altura
+    line_height = font.get_linesize() 
+    total_height = (len(lines) - 1) * (line_height * line_spacing) + line_height
+    current_y = y - (total_height / 2) + (line_height / 2) # -> Calculamos la posición Y inicial
+    
+    for line in lines:
+        # Creamos superficie del texto y su rectángulo
+        text_surface = font.render(line, True, color)
+        text_rect = text_surface.get_frect()
+        
+        text_rect.centerx = x
+        text_rect.centery = current_y
+        
+        # Dibujamos en pantalla
+        screen.blit(text_surface, text_rect)
+        current_y += line_height * line_spacing # -> Avanzamos la pos de y
