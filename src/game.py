@@ -239,7 +239,7 @@ class Game:
 
                 if not self.Level_Two:
                     self.Level_Two = Level_two(self, self.SCREEN)
-                self.state = self.Level_Two.draw_level2()
+                self.state = self.Level_Two.run()
 
             elif self.state == "LEVEL_3":
                 if getattr(self, "current_music", None) != "level_3":

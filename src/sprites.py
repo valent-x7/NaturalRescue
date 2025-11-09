@@ -254,6 +254,7 @@ class Penguin(pygame.sprite.Sprite):
         self.w = TILE
         self.h = TILE
         self.lives = 3
+        self.eggs = 0
         self.current_lives = 3
         
         # --- Atributos de Estado y Animación ---
@@ -322,7 +323,7 @@ class Penguin(pygame.sprite.Sprite):
                 self.image = self.left_animation[1]
 
     def collect(self):
-        print("Huevo recogido")
+        print("Huevo recogido")  
 
     def damage(self):
         if not self.alive or self.is_dying or self.invulnerable:
@@ -339,6 +340,11 @@ class Penguin(pygame.sprite.Sprite):
             self.original_image = self.image
             return
 
+        self.is_dying = True
+        self.dead_timer = 1.0 # La animación durará 1 segundo
+        self.y_vel = -12.0 # Salto de muerte
+        self.x_vel = 0
+        self.original_image = self.image
         self.is_damaged = True
         self.invulnerable = True
         self.damage_timer = 2.0
@@ -1298,7 +1304,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         elif difficulty == "hard":
             self.speed = 35.0
         else:  # normal
-            self.speed = 20.0
+            self.speed = 5.0
             
         self.animation_speed = 4
         self.player = player
