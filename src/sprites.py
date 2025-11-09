@@ -271,7 +271,7 @@ class Penguin(pygame.sprite.Sprite):
         self.invulnerable = False
 
         # --- Atributos de Física y Movimiento ---
-        self.speed = 3.0  # ¡Ajusta este valor para cambiar la velocidad!
+        self.speed = 2.9  # ¡Ajusta este valor para cambiar la velocidad!
         self.x_vel = 0
         self.y_vel = 0
         self.on_ground = False
@@ -353,7 +353,7 @@ class Penguin(pygame.sprite.Sprite):
         self.original_image = self.image
 
     def apply_gravity(self):
-        self.y_vel += 0.5
+        self.y_vel += 0.55
         self.rect.y += self.y_vel
 
     def handle_horizontal_collisions(self, platforms):

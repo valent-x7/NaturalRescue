@@ -19,7 +19,7 @@ class Level_two:
         self.level_height = self.map.height * TILE
 
         # --- Cámara y Zoom ---
-        self.zoom = 1.8
+        self.zoom = 2.5
         self.visible_w = int(WINDOW_WIDTH / self.zoom)
         self.visible_h = int(WINDOW_HEIGHT / self.zoom)
 
@@ -28,7 +28,7 @@ class Level_two:
         iceberg_bg = pygame.image.load(path.join(self.wd, 'img', 'icebergbg.png')).convert_alpha()
 
         ZOOMED_W, ZOOMED_H = int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom)
-        self.bg_far = pygame.transform.scale(bg_original, (ZOOMED_W, ZOOMED_H))
+        self.bg_far = pygame.transform.scale(bg_original, (ZOOMED_W*0.6, ZOOMED_H*0.6))
         self.bg_near = pygame.transform.scale(iceberg_bg, (ZOOMED_W, ZOOMED_H))
         self.parallax_bg_factor = 0.2
         self.parallax_ice_factor = 0.5
