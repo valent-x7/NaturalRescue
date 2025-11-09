@@ -250,6 +250,7 @@ class Monkey(pygame.sprite.Sprite):
 class Penguin(pygame.sprite.Sprite):
     def __init__(self, x, y, spritesheet):
         super().__init__()
+        self.wd = os.getcwd()
         self.spritesheet = spritesheet
         self.w = TILE
         self.h = TILE
@@ -300,6 +301,8 @@ class Penguin(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft=(x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
         self.mask = pygame.mask.from_surface(self.image)
+        self.jump_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "penguin_jump.mp3"))
+        self.jump_sfx.set_volume(1)
 
     def animate(self, moving, delta_time):
         if self.is_dying:
@@ -322,9 +325,14 @@ class Penguin(pygame.sprite.Sprite):
                 self.image = self.right_animation[1]
             elif self.direction == "left":
                 self.image = self.left_animation[1]
+        
+        
+        self.catch = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "pick.mp3"))
+        self.catch.set_volume(1)
 
     def collect(self):
         print("Huevo recogido")  
+        self.catch.play()
 
     def damage(self):
         if not self.alive or self.is_dying or self.invulnerable:
@@ -402,6 +410,7 @@ class Penguin(pygame.sprite.Sprite):
             self.moving = True
             
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
+            self.jump_sfx.play()
             self.y_vel = -12
             self.on_ground = False
 
@@ -1347,7 +1356,7 @@ class Helicopter(pygame.sprite.Sprite):
         self.image = self.frames[self.current_frame]
 
         self.rect = self.image.get_rect(topleft=position)
-        self.animation_speed = 4
+        self.animation_speed = 8
         self.player = player
 
         self.mask = pygame.mask.from_surface(self.image)

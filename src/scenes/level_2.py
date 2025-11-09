@@ -150,11 +150,12 @@ class Level_two:
         next_state = None  # ← estado de cambio
 
         if self.penguin.alive:
-            result = self.handle_egg_collision()
+            self.handle_egg_collision()
+            self.handle_water_collision()
+
+            result = self.handle_helicopter_collision()
             if result == "WINSCREEN":
                 next_state = "WINSCREEN"
-
-            self.handle_water_collision()
 
         self.update_camera()
         self.timebar.update()
@@ -264,6 +265,12 @@ class Level_two:
             print("Has terminado de recoger los huevos")
             self.penguin.can_win = True
 
+    def handle_helicopter_collision(self):
+        if self.penguin.can_win:
+            if self.collide_with_mask(self.penguin, self.helicopter):
+                print("¡Has llegado al helicóptero!")
+                return "WINSCREEN"
+        return None
 
     def reset_level(self):
         print(f"¡Vida perdida! Vidas restantes: {self.penguin.current_lives}")
