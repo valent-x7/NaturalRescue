@@ -269,6 +269,7 @@ class Penguin(pygame.sprite.Sprite):
         self.dead_timer = 0
         self.angle = 0  # Para la rotación de muerte
         self.invulnerable = False
+        self.can_win = False
 
         # --- Atributos de Física y Movimiento ---
         self.speed = 2.9  # ¡Ajusta este valor para cambiar la velocidad!

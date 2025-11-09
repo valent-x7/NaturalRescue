@@ -262,7 +262,7 @@ class Level_two:
 
         if self.penguin.eggs >= 5:
             print("Has terminado de recoger los huevos")
-            return "WINSCREEN"
+            self.penguin.can_win = True
 
 
     def reset_level(self):
