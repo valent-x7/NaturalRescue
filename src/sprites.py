@@ -1314,7 +1314,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         elif difficulty == "hard":
             self.speed = 35.0
         else:  # normal
-            self.speed = 15.0
+            self.speed = 25.0
             
         self.animation_speed = 4
         self.player = player
@@ -1323,6 +1323,10 @@ class WaterEnemy(pygame.sprite.Sprite):
         
         self.last_debug_time = 0
         print(f"Agua creada en Y: {self.rect.y}, Velocidad: {self.speed} px/seg")
+        self.water_vol = 0.5
+        self.water_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterloop.wav"))
+        self.water_sfx.set_volume(self.water_vol)
+        self.water_sfx.play(loops=1)
 
     def update(self, delta_time, events=None):
         movement = self.speed * delta_time

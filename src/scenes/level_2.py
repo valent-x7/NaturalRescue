@@ -269,6 +269,7 @@ class Level_two:
         if self.penguin.can_win:
             if self.collide_with_mask(self.penguin, self.helicopter):
                 print("¡Has llegado al helicóptero!")
+                self.water.water_sfx.stop()
                 return "WINSCREEN"
         return None
 
