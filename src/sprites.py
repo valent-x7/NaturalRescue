@@ -302,6 +302,8 @@ class Penguin(pygame.sprite.Sprite):
         self.hitbox_rect = self.rect.inflate(-14, -10)
         self.mask = pygame.mask.from_surface(self.image)
         self.jump_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "penguin_jump.mp3"))
+        self.damage_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterdrop.mp3"))
+        self.damage_sfx.set_volume(1)
         self.jump_sfx.set_volume(1)
 
     def animate(self, moving, delta_time):
@@ -335,9 +337,11 @@ class Penguin(pygame.sprite.Sprite):
         self.catch.play()
 
     def damage(self):
+        
         if not self.alive or self.is_dying or self.invulnerable:
             return
         
+        self.damage_sfx.play()
         self.current_lives -= 1
         
         if self.current_lives <= 0:
