@@ -30,6 +30,7 @@
         "water-tank-mid": "Mid",
         "water-tank-empty": "Empty",
         "puricapsule": "Puricapsule",
+        "egg": "Captured eggs",
 
         "gameover-title": "GAME OVER",
         "press-m-to-menu": "Press M to go to Menu",
@@ -72,6 +73,7 @@
         "water-tank-mid": "Mitad",
         "water-tank-empty": "Vacío",
         "puricapsule": "Puricápsula",
+        "eggs": "Huevos recogidos",
 
         "gameover-title": "FIN DEL JUEGO",
         "press-m-to-menu": "Presiona M para ir al Menú",

@@ -4,6 +4,9 @@ from os import getcwd, path
 from sprites import *
 from pytmx import load_pygame
 from ui.timebar import TimeBar
+from ui.utils import draw_text, get_text
+from ui.item import EggItem, LivesDisplay
+from textwrap import wrap
 
 class Level_two:
     def __init__(self, game, screen):
@@ -13,11 +16,13 @@ class Level_two:
 
         # Spritesheets y recursos
         self.penguin_spritesheet = Spritesheet(path.join(self.wd, "img", "penguin_spritesheet.png"))
+        self.penguin_icon_path = path.join(self.wd, "assets", "images", "items", "penguinheart.png")
         map_path = path.join(self.wd, "assets", "maps", "tmx", "ice.tmx")
         self.map = load_pygame(map_path)
         self.level_width = self.map.width * TILE
         self.level_height = self.map.height * TILE
 
+        self.translations = self.game.translations
         # --- Cámara y Zoom ---
         self.zoom = 2.5
         self.visible_w = int(WINDOW_WIDTH / self.zoom)
@@ -124,7 +129,9 @@ class Level_two:
         self.dynamic_sprites.add(self.water)
 
     def setup_ui(self):
+        self.egg_item = EggItem(os.path.join(self.wd, "assets", "images", "items", "egg.png"))
         self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225, "#00d5ff")
+        self.lives_display = LivesDisplay(self.penguin_icon_path)
 
     def create_static_cache(self):
         for sprite in self.static_sprites:
@@ -187,6 +194,7 @@ class Level_two:
         scaled_level = pygame.transform.scale(self.level_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.game_screen.blit(scaled_level, (0, 0))
         self.timebar.draw(self.game_screen)
+        self.egg_item.draw(self.game_screen, get_text(self.translations, self.game.current_lang, "Huevos"), self.penguin.eggs)
         self.draw_lives()
 
     # ====================== LOOP PRINCIPAL ======================
@@ -280,6 +288,4 @@ class Level_two:
         self.camera_x, self.camera_y = 0, max(0, self.level_height - self.visible_h)
 
     def draw_lives(self):
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Vidas: {self.penguin.current_lives}", True, (255, 255, 255))
-        self.game_screen.blit(text, (10, 40))
+        self.lives_display.draw(self.game_screen, self.penguin.current_lives)
