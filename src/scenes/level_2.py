@@ -213,6 +213,7 @@ class Level_two:
                     if e.key == pygame.K_ESCAPE:
                         return "SALIR"
                     if e.key == pygame.K_m:
+                        self.water.water_sfx.stop()
                         return "LEVEL_SELECT"
                     if e.key == pygame.K_r:
                         return "RESTART"
@@ -226,6 +227,7 @@ class Level_two:
             pygame.display.flip()
 
             if not self.penguin.alive:
+                self.water.water_sfx.stop()
                 return "GAMEOVER"
 
         return "LEVEL_2"
