@@ -9,7 +9,7 @@ class TreeSprout:
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (100, 100)).convert_alpha()
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width - self.rect.width - 60, 64)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 265, 64)
 
     def draw(self, screen, name_item, amount_item):
         # ? Borde del circulo
@@ -52,7 +52,7 @@ class PlayerWaterBar:
         self.current_status = "water-tank-empty"
 
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width - self.rect.width - 262, 64)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 467, 64)
 
     def get_status(self): # -> Devuelve la clave de traducción
         return self.current_status
@@ -92,7 +92,7 @@ class AcornItem:
         self.image = pygame.transform.scale(image, (100, 100)).convert_alpha()
 
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width - self.rect.width - 464, 64)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 669, 64)
 
     def draw(self, screen, name_item, amount_item):
         # ? Borde del circulo
@@ -135,9 +135,9 @@ class PuriCapsuleItem:
         screen.blit(self.image, self.rect)
 
 class ResourceCounter:
-    def __init__(self, image_path, position, amount_total = None):
+    def __init__(self, image_path, position, scale = (48, 48), amount_total = None):
         image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(image, (48, 48))
+        self.image = pygame.transform.scale(image, scale)
         self.rect = self.image.get_frect(topleft = (position))
 
         # ? Attributes
