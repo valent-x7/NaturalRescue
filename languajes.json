@@ -39,6 +39,7 @@
         "wingame_subtitle": "You passed the level 1",
 
         "mission-text": "Head to the lake to collect water to water the tree shoots",
+        "mission-text2": "Collect the penguin chick eggs that are scattered across the mountain",
         "mission-text-3": "Find and close the valves",
         "mission-text-3-warning": "Find them fast... They don't like visitors."        
     },
@@ -82,6 +83,7 @@
         "wingame_subtitle": "Pasaste el nivel 1",
 
         "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol",
+        "mission-text-2": "Recoge los huevos de cría pingüino que están esparcidas por la montaña",
         "mission-text-3": "Encuentra y cierra las válvulas",
         "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas."        
     }

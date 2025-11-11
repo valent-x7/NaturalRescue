@@ -130,7 +130,7 @@ class Level_two:
 
     def setup_ui(self):
         self.egg_item = EggItem(os.path.join(self.wd, "assets", "images", "items", "egg.png"))
-        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225, "#00d5ff")
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 100, "#00d5ff")
         self.lives_display = LivesDisplay(self.penguin_icon_path)
 
     def create_static_cache(self):
@@ -196,6 +196,7 @@ class Level_two:
         self.timebar.draw(self.game_screen)
         self.egg_item.draw(self.game_screen, get_text(self.translations, self.game.current_lang, "Huevos"), self.penguin.eggs)
         self.draw_lives()
+        self.draw_messages(self.game, self.game_screen, ["mission-text-2"])
 
     # ====================== LOOP PRINCIPAL ======================
 
@@ -269,6 +270,8 @@ class Level_two:
                 self.all_sprites.remove(egg)
                 self.dynamic_sprites.remove(egg)
                 self.penguin.collect()
+                self.water.rect.y += 32
+                self.water.y_float += 32
                 self.penguin.eggs += 1
 
         if self.penguin.eggs >= 5:
@@ -291,3 +294,58 @@ class Level_two:
 
     def draw_lives(self):
         self.lives_display.draw(self.game_screen, self.penguin.current_lives)
+    
+    def draw_messages(self, game, screen, messages):
+        #  Mostrar texto en rectángulo por 5 segundos
+        if not hasattr(self, "message_state"):
+            self.message_state = {
+                "messages_list": messages,
+                "index": 0,
+                "start-time": pygame.time.get_ticks()
+            }
+        
+        state = self.message_state
+
+        if state["index"] >= len(state["messages_list"]):
+            return
+
+        elapsed = (pygame.time.get_ticks() - state["start-time"]) / 1000
+
+        if elapsed >= 6:
+            state["index"] += 1
+            state["start-time"] = pygame.time.get_ticks()
+
+            if state["index"] >= len(state["messages_list"]):
+                return
+
+        key_message = state["messages_list"][state["index"]]
+
+        message = get_text(
+            self.translations,
+            game.current_lang,
+            key_message
+        )
+
+        # Dividir el texto en líneas cortas
+        wrapped_text = wrap(message, width=50)
+        font = pygame.font.Font(TITLE_FONT_PATH, 22)
+        line_height = font.size("Tg")[1]
+        text_height = line_height * len(wrapped_text) + 20
+        text_width = max(font.size(line)[0] for line in wrapped_text) + 40
+
+        # Crear rectángulo semitransparente
+        rect_x = (WINDOW_WIDTH - text_width) // 2
+        rect_y = 30
+        rect_surface = pygame.Surface((text_width, text_height), pygame.SRCALPHA)
+        rect_surface.fill((0, 0, 0, 160))  # Negro con transparencia
+
+        # Dibujar rectángulo
+        screen.blit(rect_surface, (rect_x, rect_y))
+
+        # Dibujar texto dentro del rectángulo
+        y_offset = rect_y + 10
+        for line in wrapped_text:
+            text_surface = font.render(line, True, (255, 255, 255))
+            text_rect = text_surface.get_rect(centerx=WINDOW_WIDTH // 2, y=y_offset)
+            screen.blit(text_surface, text_rect)
+            y_offset += line_height

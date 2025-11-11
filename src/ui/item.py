@@ -152,10 +152,10 @@ class EggItem:
         pygame.draw.circle(screen, "#444444", (self.rect.centerx, self.rect.centery), 40)
 
         # ? Texto del item
-        draw_text(screen, TITLE_FONT_PATH, 12, name_item, "#16555D", self.rect.centerx, self.rect.top - 15)
+        draw_text(screen, TITLE_FONT_PATH, 18, name_item, "#16555D", self.rect.centerx, self.rect.top - 15)
 
         # ? Cantidad del item
-        draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}/6", "#16555D", self.rect.centerx + (self.rect.width / 2) + 20, self.rect.bottom - 20)
+        draw_text(screen, TITLE_FONT_PATH, 12, f"{amount_item}/5", "#16555D", self.rect.centerx + (self.rect.width / 2) + 20, self.rect.bottom - 20)
 
         screen.blit(self.image, self.rect)
 
