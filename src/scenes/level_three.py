@@ -207,8 +207,8 @@ class LevelThree:
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, SCIENTIST_HEALTH, self.scientist_image) # -> Barra de vida
         self.puricapsule_item = PuriCapsuleItem(os.path.join(self.wd, "assets", "images", "items", "puricapsula.png"))
         self.ghosts_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "ghost.png"), (242, 148))
-        self.valves_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "valve.png"), (48, 148), (48, 48), len(self.valve_sprites))
-        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225)
+        self.valves_counter = ResourceCounter(os.path.join(self.wd, "assets", "images", "items", "valve.png"), (48, 148), len(self.valve_sprites))
+        self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 225, "#2AFE00")
         self.pause_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "paused.png"), (WINDOW_WIDTH - 105, 40), (96, 96))
         self.resume_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "resume.png"), (WINDOW_WIDTH - 169, 40), (96, 96))
         self.quit_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "quit.png"), (WINDOW_WIDTH - 233, 40), (96, 96))

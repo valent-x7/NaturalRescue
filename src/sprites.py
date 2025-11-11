@@ -250,20 +250,35 @@ class Monkey(pygame.sprite.Sprite):
 class Penguin(pygame.sprite.Sprite):
     def __init__(self, x, y, spritesheet):
         super().__init__()
+        self.wd = os.getcwd()
         self.spritesheet = spritesheet
         self.w = TILE
         self.h = TILE
+        self.lives = 3
+        self.eggs = 0
+        self.current_lives = 3
+        
+        # --- Atributos de Estado y Animación ---
         self.moving = False
         self.direction = 'down'
         self.frame = 1
         self.animation_speed = 8
+        self.alive = True
+        self.is_dying = False
+        self.is_damaged = False
+        self.damage_timer = 0
+        self.dead_timer = 0
+        self.angle = 0  # Para la rotación de muerte
+        self.invulnerable = False
+        self.can_win = False
 
+        # --- Atributos de Física y Movimiento ---
+        self.speed = 3  # ¡Ajusta este valor para cambiar la velocidad!
+        self.x_vel = 0
         self.y_vel = 0
         self.on_ground = False
-        self.x_vel = 0  
-
-        self.alive = True
-
+        
+        # --- Carga de Animaciones ---
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
                                self.spritesheet.get_sprite(64, 0, self.w, self.h)]
@@ -273,26 +288,34 @@ class Penguin(pygame.sprite.Sprite):
                                self.spritesheet.get_sprite(64, 32, self.w, self.h)]
         
         self.right_animation = [self.spritesheet.get_sprite(0, 64, self.w, self.h), 
-                               self.spritesheet.get_sprite(32, 64, self.w, self.h),
-                               self.spritesheet.get_sprite(64, 64, self.w, self.h)]
+                                self.spritesheet.get_sprite(32, 64, self.w, self.h),
+                                self.spritesheet.get_sprite(64, 64, self.w, self.h)]
         
         self.up_animation = [self.spritesheet.get_sprite(0, 96, self.w, self.h), 
-                               self.spritesheet.get_sprite(32, 96, self.w, self.h),
-                               self.spritesheet.get_sprite(64, 96, self.w, self.h)]
+                             self.spritesheet.get_sprite(32, 96, self.w, self.h),
+                             self.spritesheet.get_sprite(64, 96, self.w, self.h)]
         
-        self.image = self.down_animation[1]
-        self.frame = 1
-        
-        self.rect = self.image.get_frect(topleft = (x - self.w // 2, y - self.h // 2))
+        # --- Configuración de Imagen y Rectángulo ---
+        self.original_image = self.down_animation[1] 
+        self.image = self.original_image
+        self.rect = self.image.get_frect(topleft=(x - self.w // 2, y - self.h // 2))
         self.hitbox_rect = self.rect.inflate(-14, -10)
-    
+        self.mask = pygame.mask.from_surface(self.image)
+        self.jump_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "penguin_jump.mp3"))
+        self.damage_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterdrop.mp3"))
+        self.damage_sfx.set_volume(1)
+        self.jump_sfx.set_volume(1)
+
     def animate(self, moving, delta_time):
+        if self.is_dying:
+            self.image = pygame.transform.rotate(self.original_image, self.angle)
+            self.rect = self.image.get_rect(center=self.rect.center)
+            return
+
         if moving: 
             self.frame += self.animation_speed * delta_time
             if self.direction == "down":
                 self.image = self.down_animation[int(self.frame) % len(self.down_animation)]
-            elif self.direction == "up":
-                self.image = self.up_animation[int(self.frame) % len(self.up_animation)]
             elif self.direction == "left":
                 self.image = self.left_animation[int(self.frame) % len(self.left_animation)]
             elif self.direction == "right":
@@ -300,76 +323,166 @@ class Penguin(pygame.sprite.Sprite):
         else:
             if self.direction == "down":
                 self.image = self.down_animation[1]
-            elif self.direction == "up":
-                self.image = self.up_animation[1]
             elif self.direction == "right":
                 self.image = self.right_animation[1]
             elif self.direction == "left":
                 self.image = self.left_animation[1]
+        
+        
+        self.catch = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "pick.mp3"))
+        self.catch.set_volume(1)
+
+    def collect(self):
+        print("Huevo recogido")  
+        self.catch.play()
 
     def damage(self):
-        self.alive = False
-        self.kill()
+        
+        if not self.alive or self.is_dying or self.invulnerable:
+            return
+        
+        self.damage_sfx.play()
+        self.current_lives -= 1
+        
+        if self.current_lives <= 0:
+            self.alive = False
+            self.is_dying = True
+            self.dead_timer = 1.0 # La animación durará 1 segundo
+            self.y_vel = -12.0 # Salto de muerte
+            self.x_vel = 0
+            self.original_image = self.image
+            return
 
-    def update(self, platforms, delta_time):
+        self.is_dying = True
+        self.dead_timer = 1.0 # La animación durará 1 segundo
+        self.y_vel = -12.0 # Salto de muerte
+        self.x_vel = 0
+        self.original_image = self.image
+        self.is_damaged = True
+        self.invulnerable = True
+        self.damage_timer = 2.0
+        self.y_vel = -8.0
+
+        self.original_image = self.image
+
+    def apply_gravity(self):
+        self.y_vel += 0.53
+        self.rect.y += self.y_vel
+
+    def handle_horizontal_collisions(self, platforms):
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                if self.x_vel > 0: # Moviéndose a la derecha
+                    self.rect.right = platform.rect.left
+                    self.x_vel = 0
+                elif self.x_vel < 0: # Moviéndose a la izquierda
+                    self.rect.left = platform.rect.right
+                    self.x_vel = 0
+
+    def handle_vertical_collisions(self, platforms):
+        self.on_ground = False
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                if self.y_vel > 0: # Cayendo
+                    self.rect.bottom = platform.rect.top
+                    self.y_vel = 0
+                    self.on_ground = True
+                elif self.y_vel < 0: # Saltando
+                    self.rect.top = platform.rect.bottom
+                    self.y_vel = 0
+
+    def handle_input(self):
+        keys = pygame.key.get_pressed()
+        
+        self.moving = False
+        self.x_vel = 0
+        
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.x_vel = -self.speed
+            self.direction = 'left'
+            self.moving = True
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.x_vel = self.speed
+            self.direction = 'right'
+            self.moving = True
+            
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            self.direction = 'up'
+            self.moving = True
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            self.direction = 'down'
+            self.moving = True
+            
+        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
+            self.jump_sfx.play()
+            self.y_vel = -12
+            self.on_ground = False
+
+    def update(self, delta_time, platforms):
+        if self.is_damaged and self.invulnerable:
+            self.damage_timer -= delta_time
+            
+            # Efecto de parpadeo durante la invulnerabilidad
+            if int(self.damage_timer * 10) % 2 == 0:  # Parpadeo cada 0.1 segundos
+                self.image.set_alpha(128)  # Semi-transparente
+            else:
+                self.image.set_alpha(255)  # Normal
+            
+            # Fin de la invulnerabilidad
+            if self.damage_timer <= 0:
+                self.is_damaged = False
+                self.invulnerable = False
+                self.image.set_alpha(255)  # Restaurar opacidad normal
+        
+        # 2. LÓGICA DE MUERTE DEFINITIVA
+        if self.is_dying:
+            self.dead_timer -= delta_time
+            self.y_vel += 0.55
+            self.rect.y += self.y_vel
+            self.rect.x += self.x_vel
+            self.angle += 360 * delta_time
+            self.animate(False, delta_time)
+            self.mask = pygame.mask.from_surface(self.image)
+            if self.dead_timer <= 0:
+                self.is_dying = False
+                self.kill()
+            return
 
         if not self.alive:
             return
 
-        keys = pygame.key.get_pressed()
-        self.animate(self.moving, delta_time)
-
-        self.moving = False
-        self.x_vel = 0  # Resetear velocidad horizontal cada frame
-
-        # Movimiento horizontal
-        if keys[pygame.K_a]:
-            self.direction = 'left'
-            self.moving = True
-            self.x_vel = -3
-        if keys[pygame.K_d]:
-            self.direction = 'right'
-            self.moving = True
-            self.x_vel = 3
-
-        # Salto
-        if keys[pygame.K_w] and self.on_ground:
-            self.direction = 'up'
-            self.moving = True
-            self.y_vel = -10
-            self.on_ground = False
-
-        # Aplicar gravedad
-        self.y_vel += 0.55
+        # 3. LÓGICA DE JUEGO NORMAL
+        self.handle_input()
         
-        # MOVIMIENTO HORIZONTAL CON DETECCIÓN DE COLISIONES
+        # Movimiento y colisión horizontal
         self.rect.x += self.x_vel
+        self.handle_horizontal_collisions(platforms)
         
-        # Verificar colisiones horizontales
-        for platform in platforms:
-            if self.rect.colliderect(platform.rect):
-                if self.x_vel > 0:  # Moviéndose a la derecha
-                    self.rect.right = platform.rect.left
-                elif self.x_vel < 0:  # Moviéndose a la izquierda
-                    self.rect.left = platform.rect.right
+        # Movimiento y colisión vertical
+        self.apply_gravity()
+        self.handle_vertical_collisions(platforms)
         
-        # MOVIMIENTO VERTICAL CON DETECCIÓN DE COLISIONES
-        self.rect.y += self.y_vel
-        
-        # Verificar colisiones verticales
-        self.on_ground = False
-        for platform in platforms:
-            if self.rect.colliderect(platform.rect):
-                if self.y_vel > 0:  # Cayendo
-                    self.rect.bottom = platform.rect.top
-                    self.y_vel = 0
-                    self.on_ground = True
-                elif self.y_vel < 0:  # Saltando
-                    self.rect.top = platform.rect.bottom
-                    self.y_vel = 0
-        
-        # Actualizar hitbox (si la usas para algo)
+        # Actualizaciones finales
+        self.animate(self.moving, delta_time)
+        self.mask = pygame.mask.from_surface(self.image)
         self.hitbox_rect.center = self.rect.center
+
+    def reset(self, x, y):
+        self.rect.topleft = (x - self.w // 2, y - self.h // 2)
+        self.hitbox_rect.center = self.rect.center
+        self.alive = True
+        self.is_dying = False
+        self.is_damaged = False
+        self.invulnerable = False
+        self.damage_timer = 0
+        self.dead_timer = 0
+        self.angle = 0
+        self.x_vel = 0
+        self.y_vel = 0
+        self.on_ground = False
+        self.image.set_alpha(255)  # Asegurar opacidad normal
+        self.direction = 'down'
+        self.image = self.down_animation[1]
 
 class Scientist(pygame.sprite.Sprite):
     def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
@@ -604,6 +717,13 @@ class DamageSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
+class DamageSprite_2(pygame.sprite.Sprite):
+    def __init__(self, groups, pos, image):
+        super().__init__(groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=pos)
+        self.mask = pygame.mask.from_surface(self.image)
+
 # ? Sprites de lugar de cultivo
 class PlantSpot(pygame.sprite.Sprite):
     def __init__(self, groups, x, y):
@@ -711,6 +831,10 @@ class PlantSpot(pygame.sprite.Sprite):
                     if self.current_water == self.max_water:
                         self.success_sound.play() # -> Sonido de éxito
                         player.trees += 1 # -> Le sumamos al jugador
+                        if player.health <= 110:
+                            player.health += 10
+                        else:
+                            player.health = 120
                         print(f"Árbol(es) completado(s): {player.trees}")
                         self.is_complete = True # -> Completado
                 
@@ -1193,6 +1317,92 @@ class Enemy(pygame.sprite.Sprite):
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
 
+class WaterEnemy(pygame.sprite.Sprite):
+    def __init__(self, position, player, difficulty="normal"):
+        super().__init__()
+        self.wd = os.getcwd()
+
+        self.frames = [pygame.image.load(os.path.join("assets", "images", "water", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        self.rect = self.image.get_rect(topleft=position)
+
+        self.y_float = float(self.rect.y)
+
+        # Guardar posición inicial para el reset
+        self.initial_position = position
+
+        if difficulty == "easy":
+            self.speed = 20.0
+        elif difficulty == "hard":
+            self.speed = 35.0
+        else:  # normal
+            self.speed = 25.0
+            
+        self.animation_speed = 4
+        self.player = player
+
+        self.mask = pygame.mask.from_surface(self.image)
+        
+        self.last_debug_time = 0
+        print(f"Agua creada en Y: {self.rect.y}, Velocidad: {self.speed} px/seg")
+        self.water_vol = 0.5
+        self.water_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterloop.wav"))
+        self.water_sfx.set_volume(self.water_vol)
+        self.water_sfx.play(loops=1)
+
+    def update(self, delta_time, events=None):
+        movement = self.speed * delta_time
+        self.y_float -= movement
+        self.rect.y = int(self.y_float)
+
+        self.animate(delta_time)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        
+        new_frame_index = int(self.current_frame) % len(self.frames)
+        new_image = self.frames[new_frame_index]
+        
+        if new_image is not self.image:
+            self.image = new_image
+        
+    def reset(self):
+        self.rect.topleft = self.initial_position
+        self.y_float = float(self.rect.y)
+        print(f"Agua reseteada a Y: {self.rect.y}")
+
+
+class Helicopter(pygame.sprite.Sprite):
+    def __init__(self, position, player):
+        super().__init__()
+        self.wd = os.getcwd()
+        self.frames = [pygame.image.load(os.path.join("assets", "images", "helicopter", f"{i}.png")).convert_alpha() for i in range(0, 4)]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        self.rect = self.image.get_rect(topleft=position)
+        self.animation_speed = 8
+        self.player = player
+
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, delta_time, events=None):
+        self.animate(delta_time)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        
+        new_frame_index = int(self.current_frame) % len(self.frames)
+        new_image = self.frames[new_frame_index]
+        
+        if new_image is not self.image:
+            self.image = new_image
+
+
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
@@ -1244,6 +1454,10 @@ class Ghost(pygame.sprite.Sprite):
             self.check_player_collision(delta_time)
             self.animate(delta_time)
             self.move(delta_time)
+    
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.frames[int(self.current_frame) % len(self.frames)]
 
     # ? Mover Personaje
     def move(self, delta_time):
@@ -1381,3 +1595,24 @@ class LabDoor(pygame.sprite.Sprite):
             self.image = self.door_frames[int(self.current_frame) % len(self.door_frames)]
         else:
             self.kill()
+
+class Egg(pygame.sprite.Sprite):
+    def __init__(self, position):
+        super().__init__()
+
+        self.wd = os.getcwd() 
+        self.egg_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "egg", f"{i}.png")).convert_alpha() for i in range(1, 6)]
+        self.current_frame = 0
+        self.image = self.egg_frames[self.current_frame]
+        
+        self.rect = self.image.get_frect(topleft = position)
+        self.hitbox_rect = self.rect.inflate(-20, -45)
+
+        self.animation_speed = random.randint(6, 8)
+
+    def update(self, delta_time, *args):
+        self.animate(delta_time)
+
+    def animate(self, delta_time):
+        self.current_frame += self.animation_speed * delta_time
+        self.image = self.egg_frames[int(self.current_frame) % len(self.egg_frames)]

@@ -32,6 +32,7 @@
         "trees": "Trees",
         "valves": "Valves",
         "puricapsule": "Puricapsule",
+        "egg": "Captured eggs",
 
         "gameover-title-1": "The Forest Awaits!",
         "gameover-subtitle-1": "Don't give up,\nthere are still seeds to plant!",
@@ -51,6 +52,7 @@
         "wingame_subtitle-3": "You defeated the\nghosts of pollution.",
 
         "mission-text": "Head to the lake to collect water to water the tree shoots",
+        "mission-text2": "Collect the penguin chick eggs that are scattered across the mountain",
         "mission-text-3": "Find and close the valves",
         "mission-text-3-warning": "Find them fast... They don't like visitors.",
         "purified-ghosts": "Purified ghosts",
@@ -94,6 +96,7 @@
         "trees": "Árboles",
         "valves": "Valvulas",
         "puricapsule": "Puricápsula",
+        "eggs": "Huevos recogidos",
 
         "gameover-title-1": "¡El Bosque te Espera!",
         "gameover-subtitle-1": "No te rindas,\n¡aún quedan semillas por plantar!",
@@ -113,6 +116,7 @@
         "wingame_subtitle-3": "Venciste a los fantasmas\nde la contaminación.",
 
         "mission-text": "Dirígete al lago para recolectar agua y poder regar los brotes de árbol",
+        "mission-text-2": "Recoge los huevos de cría pingüino que están esparcidas por la montaña",
         "mission-text-3": "Encuentra y cierra las válvulas",
         "mission-text-3-warning": "Encuéntralas rápido... No les gustan las visitas.",
         "purified-ghosts": "Fantasmas purificados",
