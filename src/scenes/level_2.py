@@ -2,6 +2,7 @@ import pygame
 from settings import *
 from os import getcwd, path
 from sprites import *
+from ui.button import ImageButtonUI
 from pytmx import load_pygame
 from ui.timebar import TimeBar
 from ui.utils import draw_text, get_text
@@ -133,6 +134,11 @@ class Level_two:
         self.timebar = TimeBar(0, 0, WINDOW_WIDTH, 32, 100, "#00d5ff")
         self.lives_display = LivesDisplay(self.penguin_icon_path)
 
+        # ? Botones de Reanudar, pausar y quitar
+        self.pause_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "paused.png"), (WINDOW_WIDTH - 105, 40), (96, 96))
+        self.resume_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "resume.png"), (WINDOW_WIDTH - 169, 40), (96, 96))
+        self.quit_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "quit.png"), (WINDOW_WIDTH - 233, 40), (96, 96))
+
     def create_static_cache(self):
         for sprite in self.static_sprites:
             if hasattr(sprite, 'rect') and sprite.rect:
@@ -150,28 +156,29 @@ class Level_two:
 
     # ====================== ACTUALIZACIÓN ======================
 
-    def update(self, dt):
+    def update(self, dt, paused):
         """Actualiza toda la lógica del nivel."""
-        self.all_sprites.update(dt, self.collision_sprites)
+        if not paused:
+            self.all_sprites.update(dt, self.collision_sprites)
 
-        next_state = None  # ← estado de cambio
+            next_state = None  # ← estado de cambio
 
-        if self.penguin.alive:
-            self.handle_egg_collision()
-            self.handle_water_collision()
+            if self.penguin.alive:
+                self.handle_egg_collision()
+                self.handle_water_collision()
 
-            result = self.handle_helicopter_collision()
-            if result == "WINSCREEN":
-                next_state = "WINSCREEN"
+                result = self.handle_helicopter_collision()
+                if result == "WINSCREEN":
+                    next_state = "WINSCREEN"
 
-        self.update_camera()
-        self.timebar.update()
+            self.update_camera()
+            self.timebar.update()
 
-        return next_state  # ← devolvemos el estado si aplica
+            return next_state  # ← devolvemos el estado si aplica
 
     # ====================== DIBUJO ======================
 
-    def draw_level(self):
+    def draw_level(self, game):
         """Dibuja todo el nivel en pantalla."""
         far_x = -self.camera_x * self.parallax_bg_factor
         near_x = -self.camera_x * self.parallax_ice_factor
@@ -195,12 +202,26 @@ class Level_two:
         self.game_screen.blit(scaled_level, (0, 0))
         self.timebar.draw(self.game_screen)
         self.egg_item.draw(self.game_screen, get_text(self.translations, self.game.current_lang, "Huevos"), self.penguin.eggs)
+
+        # --- Botones de UI --- #
+        self.resume_button.draw() # -> Reanudar
+        self.pause_button.draw() # -> Pausar
+        self.quit_button.draw() # -> Quitar
+
         self.draw_lives()
         self.draw_messages(self.game, self.game_screen, ["mission-text-2"])
 
+        if game.paused: # -> Juego pausado
+            draw_text(self.game_screen, TITLE_FONT_PATH, 64,
+                    get_text(self.translations, game.current_lang, "paused-title"),
+                    "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 36,
+                    get_text(self.translations, game.current_lang, "paused-description"),
+                    "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+
     # ====================== LOOP PRINCIPAL ======================
 
-    def run(self):
+    def run(self, game):
         """Bucle principal del nivel."""
         clock = pygame.time.Clock()
         running = True
@@ -218,13 +239,23 @@ class Level_two:
                         return "LEVEL_SELECT"
                     if e.key == pygame.K_r:
                         return "RESTART"
+                    elif e.key == pygame.K_p:
+                        game.paused = not game.paused # -> Invertir el valor de pausa
+                elif self.resume_button.is_clicked(e) and game.paused:
+                    game.paused = False
+
+                elif self.pause_button.is_clicked(e) and not game.paused:
+                    game.paused = True # -> Pausar juego
+
+                elif self.quit_button.is_clicked(e) and not game.paused:
+                    pass # -> Salir
 
             # Lógica y renderizado
-            next_state = self.update(dt)
+            next_state = self.update(dt, game.paused)
             if next_state == "WINSCREEN":
                 return "WINSCREEN"
 
-            self.draw_level()
+            self.draw_level(game)
             pygame.display.flip()
 
             if not self.penguin.alive:
