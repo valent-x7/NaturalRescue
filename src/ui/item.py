@@ -163,7 +163,7 @@ class EggItem:
         self.image = pygame.transform.scale(image, (78, 78)).convert_alpha()
 
         self.rect = self.image.get_frect()
-        self.rect.topleft = (self.display_surface.width - self.rect.width - 64, 64)
+        self.rect.topleft = (self.display_surface.width - self.rect.width - 265, 64)
 
     def draw(self, screen, name_item, amount_item):
         # ? Borde del circulo
