@@ -273,7 +273,7 @@ class Penguin(pygame.sprite.Sprite):
         self.can_win = False
 
         # --- Atributos de Física y Movimiento ---
-        self.speed = 3  # ¡Ajusta este valor para cambiar la velocidad!
+        self.speed = 3.2 
         self.x_vel = 0
         self.y_vel = 0
         self.on_ground = False
@@ -347,14 +347,14 @@ class Penguin(pygame.sprite.Sprite):
         if self.current_lives <= 0:
             self.alive = False
             self.is_dying = True
-            self.dead_timer = 1.0 # La animación durará 1 segundo
+            self.dead_timer = 1.0 
             self.y_vel = -12.0 # Salto de muerte
             self.x_vel = 0
             self.original_image = self.image
             return
 
         self.is_dying = True
-        self.dead_timer = 1.0 # La animación durará 1 segundo
+        self.dead_timer = 1.0 
         self.y_vel = -12.0 # Salto de muerte
         self.x_vel = 0
         self.original_image = self.image
@@ -1333,12 +1333,10 @@ class WaterEnemy(pygame.sprite.Sprite):
         # Guardar posición inicial para el reset
         self.initial_position = position
 
-        if difficulty == "easy":
+        if difficulty == "normal":
             self.speed = 20.0
-        elif difficulty == "hard":
+        else:
             self.speed = 35.0
-        else:  # normal
-            self.speed = 25.0
             
         self.animation_speed = 4
         self.player = player
@@ -1384,7 +1382,7 @@ class Helicopter(pygame.sprite.Sprite):
         self.image = self.frames[self.current_frame]
 
         self.rect = self.image.get_rect(topleft=position)
-        self.animation_speed = 8
+        self.animation_speed = 10
         self.player = player
 
         self.mask = pygame.mask.from_surface(self.image)

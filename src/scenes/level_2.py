@@ -114,7 +114,7 @@ class Level_two:
 
     def setup_water(self):
         start_pos = (0, self.level_height)
-        self.water = WaterEnemy(start_pos, self.penguin)
+        self.water = WaterEnemy(start_pos, self.penguin, self.game.current_difficulty)
         scaled_width = self.level_width
         water_img_height = self.water.image.get_height()
 
@@ -178,8 +178,8 @@ class Level_two:
         far_x = max(-self.bg_far.get_width() + WINDOW_WIDTH, min(0, far_x))
         near_x = max(-self.bg_near.get_width() + WINDOW_WIDTH, min(0, near_x))
 
-        self.game_screen.blit(self.bg_far, (far_x, 0))
-        self.game_screen.blit(self.bg_near, (near_x, 0))
+        self.game_screen.blit(self.bg_far, (far_x, -64))
+        self.game_screen.blit(self.bg_near, (near_x, -512))
         self.level_surface.fill((0, 0, 0, 0))
 
         src_rect = pygame.Rect(self.camera_x, self.camera_y, self.visible_w, self.visible_h)
