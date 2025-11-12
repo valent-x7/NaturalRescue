@@ -275,19 +275,16 @@ class Level_two:
                 self.penguin.eggs += 1
 
         if self.penguin.eggs >= 5:
-            print("Has terminado de recoger los huevos")
             self.penguin.can_win = True
 
     def handle_helicopter_collision(self):
         if self.penguin.can_win:
             if self.collide_with_mask(self.penguin, self.helicopter):
-                print("¡Has llegado al helicóptero!")
                 self.water.water_sfx.stop()
                 return "WINSCREEN"
         return None
 
     def reset_level(self):
-        print(f"¡Vida perdida! Vidas restantes: {self.penguin.current_lives}")
         self.penguin.reset(*self.penguin_start_pos)
         self.water.reset()
         self.camera_x, self.camera_y = 0, max(0, self.level_height - self.visible_h)
