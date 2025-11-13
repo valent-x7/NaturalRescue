@@ -137,7 +137,7 @@ class LevelSelectMenu:
 
     def setup_buttons(self, lang):
         # ? Ancho y espacio entre los botones
-        button_width = 500
+        button_width = 450
         button_height = 150
         spacing = 50
 
