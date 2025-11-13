@@ -19,14 +19,13 @@ class Game:
 
     # Música
     def play_music(self, filepath, loop=-1, fade_ms=500, volume = 0.5):
-            # Si hay música sonando, hacemos fadeout
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.fadeout(fade_ms)
-            # Cargamos y reproducimos la nueva música
-            pygame.mixer.music.load(filepath)
-            pygame.mixer.music.set_volume(volume)
-            pygame.mixer.music.play(loop)
-
+        # Si hay música sonando, hacemos fadeout
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.fadeout(fade_ms)
+        # Cargamos y reproducimos la nueva música
+        pygame.mixer.music.load(filepath)
+        pygame.mixer.music.set_volume(volume)
+        pygame.mixer.music.play(loop)
 
     def play_music_once(self, path, key):
         if getattr(self, "current_music", None) != key:
@@ -95,68 +94,97 @@ class Game:
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):
         self.tutorial_assets = {
-                "keys": {
-                    "W": pygame.image.load(
-                        "assets/images/keys/key_w.png"
-                    ).convert_alpha(),
-                    "A": pygame.image.load(
-                        "assets/images/keys/key_a.png"
-                    ).convert_alpha(),
-                    "S": pygame.image.load(
-                        "assets/images/keys/key_s.png"
-                    ).convert_alpha(),
-                    "D": pygame.image.load(
-                        "assets/images/keys/key_d.png"
-                    ).convert_alpha(),
-                    "H": pygame.image.load(
-                        "assets/images/keys/key_h.png"
-                    ).convert_alpha(),
-                    "R": pygame.image.load(
-                        "assets/images/keys/key_r.png"
-                    ).convert_alpha(),
-                    "P": pygame.image.load(
-                        "assets/images/keys/key_p.png"
-                    ).convert_alpha(),
-                },
-                "monkey": {
-                    "W": pygame.image.load(
-                        "assets/images/chango/chango_up.png"
-                    ).convert_alpha(),
-                    "A": pygame.image.load(
-                        "assets/images/chango/chango_left.png"
-                    ).convert_alpha(),
-                    "S": pygame.image.load(
-                        "assets/images/chango/chango_down.png"
-                    ).convert_alpha(),
-                    "D": pygame.image.load(
-                        "assets/images/chango/chango_right.png"
-                    ).convert_alpha(),
-                },
-                "extras": {
-                    "H_brote": pygame.image.load(
-                        "assets/images/keys/items.png"
-                    ).convert_alpha(),
-                    "R_restart": pygame.image.load(
-                        "assets/images/keys/restart.png"
-                    ).convert_alpha(),
-                    "P_pause": pygame.image.load(
-                        "assets/images/keys/pause.png"
-                    ).convert_alpha(),
-                },
-                "arrows": {
-                     "W": pygame.image.load(
-                         "assets/images/keys/arrow_up.png"
-                         ).convert_alpha(),
-                     "A": pygame.image.load(
-                         "assets/images/keys/arrow_left.png"
-                         ).convert_alpha(),
-                     "S": pygame.image.load(
-                         "assets/images/keys/arrow_down.png"
-                         ).convert_alpha(),
-                     "D": pygame.image.load(
-                         "assets/images/keys/arrow_right.png"
-                         ).convert_alpha(),
-            }
+            "keys": {
+                "W": pygame.image.load("assets/images/keys/key_w.png").convert_alpha(),
+                "A": pygame.image.load("assets/images/keys/key_a.png").convert_alpha(),
+                "S": pygame.image.load("assets/images/keys/key_s.png").convert_alpha(),
+                "D": pygame.image.load("assets/images/keys/key_d.png").convert_alpha(),
+                "SPACE": pygame.image.load(
+                    "assets/images/keys/key_space.png"
+                ).convert_alpha(),
+                "H": pygame.image.load("assets/images/keys/key_h.png").convert_alpha(),
+                "R": pygame.image.load("assets/images/keys/key_r.png").convert_alpha(),
+                "P": pygame.image.load("assets/images/keys/key_p.png").convert_alpha(),
+                "CLICK_LEFT": pygame.image.load(
+                    "assets\images\keys\click_icon.png"
+                ).convert_alpha(),
+            },
+            "monkey": {
+                "W": pygame.image.load(
+                    "assets/images/chango/chango_up.png"
+                ).convert_alpha(),
+                "A": pygame.image.load(
+                    "assets/images/chango/chango_left.png"
+                ).convert_alpha(),
+                "S": pygame.image.load(
+                    "assets/images/chango/chango_down.png"
+                ).convert_alpha(),
+                "D": pygame.image.load(
+                    "assets/images/chango/chango_right.png"
+                ).convert_alpha(),
+            },
+            "penguin": {
+                "A": pygame.image.load(
+                    "assets/images/pinguino/penguin_left.png"
+                ).convert_alpha(),
+                "D": pygame.image.load(
+                    "assets/images/pinguino/penguin_right.png"
+                ).convert_alpha(),
+                "JUMP": pygame.image.load(
+                    "assets/images/pinguino/penguin_jump.png"
+                ).convert_alpha(),
+            },
+            "scientist": {
+                "W": pygame.image.load(
+                    "assets/images/laboratorista/scientist_up.png"
+                ).convert_alpha(),
+                "A": pygame.image.load(
+                    "assets/images/laboratorista/scientist_left.png"
+                ).convert_alpha(),
+                "S": pygame.image.load(
+                    "assets/images/laboratorista/scientist_down.png"
+                ).convert_alpha(),
+                "D": pygame.image.load(
+                    "assets/images/laboratorista/scientist_right.png"
+                ).convert_alpha(),
+            },
+            "extras": {
+                "H_brote": pygame.image.load(
+                    "assets/images/keys/items.png"
+                ).convert_alpha(),
+                "T1_hoyo": pygame.image.load(
+                    "assets/images/DeadSpot.png"
+                ).convert_alpha(),
+                "T1_banana": pygame.image.load(
+                    "assets\images\items\platano.png"
+                ).convert_alpha(),
+                "T2_huevo": pygame.image.load(
+                    "assets/images/egg/1.png"
+                ).convert_alpha(),
+                "T3_pill": pygame.image.load(
+                    "assets/images/items/puricapsula.png"
+                ).convert_alpha(),
+                "T3_ghost": pygame.image.load(
+                    "assets/images/items/ghost.png"
+                ).convert_alpha(),
+                "T3_valve": pygame.image.load(
+                    "assets/images/valve/4.png"
+                ).convert_alpha(),
+            },
+            "arrows": {
+                "W": pygame.image.load(
+                    "assets/images/keys/arrow_up.png"
+                ).convert_alpha(),
+                "A": pygame.image.load(
+                    "assets/images/keys/arrow_left.png"
+                ).convert_alpha(),
+                "S": pygame.image.load(
+                    "assets/images/keys/arrow_down.png"
+                ).convert_alpha(),
+                "D": pygame.image.load(
+                    "assets/images/keys/arrow_right.png"
+                ).convert_alpha(),
+            },
         }
 
     def run(self):
@@ -284,7 +312,7 @@ class Game:
                 self.state = self.Tutorial_Three.draw(
                     self, self.SCREEN, events, self.current_lang
                 )
-            
+
             # ? Niveles
             elif self.state == "LEVEL_1":
                 if getattr(self, "current_music", None) != "level_1":
@@ -300,7 +328,6 @@ class Game:
                 if getattr(self, "current_music", None) != "level_3":
                     self.play_music("assets/music/tutorial.ogg", volume=0.1)
                     self.current_music = "level_3"
-
 
                 if not self.Level_Two:
                     self.Level_Two = Level_two(self, self.SCREEN)
