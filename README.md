@@ -85,16 +85,40 @@ python src/main.py
 
 
 ## Estructura del proyecto
+```text
 AnimalRescue/
 ├──assets
-│     ├──images
-│     ├──maps
-│     ├──music
-│     ├──sound
-├──img
+│     ├──images # Sprites e imagenes del juego
+│     ├──maps # Mapas en TSX y TMX
+│     ├──music # Archivos de sonido para la música del videojuego
+│     └──sound # SFX para el videojuego
+├──img # Elementos visuales 
 └──src
-
-
+    ├──menus
+    │    ├──fuentestexto # Fuentes usadas
+    │    ├──level-select.py
+    │    ├──menu.py
+    │    ├──settings.py
+    │    └──tutorial.py
+    ├──scenes
+    │     ├──gameover.py
+    │     ├──level_2.py
+    │     ├──level_one.py
+    │     ├──level_three.py
+    │     ├──play.py
+    │     └──winscreen.py
+    ├──ui
+    │   ├──button.py
+    │   ├──healthbar.py
+    │   ├──item.py
+    │   ├──timebar.py
+    │   └──utils.py
+    ├──game.py
+    ├──main.py
+    ├──prueba.py
+    ├──settings.py
+    └──sprites.py
+```
 
 ## Contribuidores
 
