@@ -26,7 +26,31 @@ Abre tu terminal y clona el proyecto.
 
 ```bash
 git clone [https://github.com/valent-x7/NaturalRescue.git](https://github.com/valent-x7/NaturalRescue.git)
-cd NaturalRescue
+```
+
+### 2.- Entrar a la carpeta
+```bash
+cd mi-ruta-actual/NaturalRescue
+```
+
+### 2.5.- (RECOMENDADO) Abrir un entorno virtual
+  Crear el entorno virtual
+  ```bash
+  python -m venv venv  
+  ```
+  Activar el entorno virtual
+  ```bash  
+  venv\Script\activate
+  ```
+
+### 3.- Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 4.- Entrar al juego
+```bash
+python src/main.py
 ```
 
 ## Construido con Las siguientes herramientas
@@ -58,6 +82,18 @@ cd NaturalRescue
 | Pausar | P |
 | Regresar al menú | M |
 | Salir | ESC |
+
+
+## Estructura del proyecto
+AnimalRescue/
+├──assets
+│     ├──images
+│     ├──maps
+│     ├──music
+│     ├──sound
+├──img
+└──src
+
 
 
 ## Contribuidores
