@@ -2,7 +2,7 @@ import pygame
 from settings import *
 from os import getcwd, path
 from sprites import *
-from ui.button import ImageButtonUI
+from ui.button import ImageButtonUI, ButtonUI
 from pytmx import load_pygame
 from ui.timebar import TimeBar
 from ui.utils import draw_text, get_text
@@ -138,6 +138,14 @@ class Level_two:
         self.pause_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "paused.png"), (WINDOW_WIDTH - 105, 40), (96, 96))
         self.resume_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "resume.png"), (WINDOW_WIDTH - 169, 40), (96, 96))
         self.quit_button = ImageButtonUI(self.game_screen, os.path.join(self.wd, "assets", "images", "quit.png"), (WINDOW_WIDTH - 233, 40), (96, 96))
+        # ? PopUp
+        self.scrim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        self.scrim.fill((0, 0, 0, 150))
+        self.popup_rect = pygame.FRect(0, 0, WINDOW_WIDTH / 2 + 125, WINDOW_HEIGHT / 3)
+        self.popup_rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+        # -> PopUpButtons
+        self.exit_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85), "#e32227", "#f24449", "idk", 200, 45)
+        self.go_back_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85), "#228b22", "#2ecc40", "idk", 200, 45)
 
     def create_static_cache(self):
         for sprite in self.static_sprites:
@@ -156,9 +164,9 @@ class Level_two:
 
     # ====================== ACTUALIZACIÓN ======================
 
-    def update(self, dt, paused):
+    def update(self, dt, paused, showing_quit_pop):
         """Actualiza toda la lógica del nivel."""
-        if not paused:
+        if not paused and not showing_quit_pop:
             self.all_sprites.update(dt, self.collision_sprites)
 
             next_state = None  # ← estado de cambio
@@ -218,6 +226,26 @@ class Level_two:
             draw_text(self.game_screen, TITLE_FONT_PATH, 36,
                     get_text(self.translations, game.current_lang, "paused-description"),
                     "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+            
+        if game.showing_quit_pop: # -> PopUp de salida
+            self.game_screen.blit(self.scrim, [0, 0])
+            pygame.draw.rect(self.game_screen, "#282D32", self.popup_rect)
+            pygame.draw.rect(self.game_screen, "#969696", self.popup_rect, 2)
+
+            draw_text(self.game_screen, TITLE_FONT_PATH, 24, # -> Titulo
+                    get_text(self.translations, game.current_lang, "exit-game-notice-title") , "yellow",
+                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 20, # -> Descripción
+                    get_text(self.translations, game.current_lang, "exit-game-notice-description") , "white",
+                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 30)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 18, # -> Elección
+                    get_text(self.translations, game.current_lang, "exit-game-notice-prompt") , "#C8C8C8",
+                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 20)
+            
+            self.exit_btn.draw()
+            self.go_back_btn.draw()
+            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
+            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-go-back"), "white", WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85)
 
     # ====================== LOOP PRINCIPAL ======================
 
@@ -229,29 +257,52 @@ class Level_two:
             dt = clock.tick(60) / 1000.0
 
             for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    return "SALIR"
-                elif e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE:
+                if game.showing_quit_pop:
+                    if e.type == pygame.KEYDOWN:
+                        if e.key == pygame.K_y:
+                            game.showing_quit_pop = False
+                            game.paused = False
+                            pygame.mixer.stop()
+                            game.unload_current_level() # -> Eliminar nivel
+                            return "MENU" # -> Salir al menú
+                        
+                        elif e.key == pygame.K_n:
+                            game.showing_quit_pop = False
+                        
+                    elif self.exit_btn.is_clicked(e):
+                            game.showing_quit_pop = False
+                            game.paused = False
+                            pygame.mixer.stop()
+                            game.unload_current_level() # -> Eliminar nivel
+                            return "MENU" # -> Salir al menú
+                    
+                    elif self.go_back_btn.is_clicked(e):
+                            game.showing_quit_pop = False
+                
+                else:
+                    if e.type == pygame.QUIT:
                         return "SALIR"
-                    if e.key == pygame.K_m:
-                        self.water.water_sfx.stop()
-                        return "LEVEL_SELECT"
-                    if e.key == pygame.K_r:
-                        return "RESTART"
-                    elif e.key == pygame.K_p:
-                        game.paused = not game.paused # -> Invertir el valor de pausa
-                elif self.resume_button.is_clicked(e) and game.paused:
-                    game.paused = False
+                    elif e.type == pygame.KEYDOWN:
+                        if e.key == pygame.K_m and not game.paused:
+                            self.water.water_sfx.stop()
+                            game.showing_quit_pop = True
+                        elif e.key == pygame.K_p and not game.showing_quit_pop:
+                            game.paused = not game.paused # -> Invertir el valor de pausa
 
-                elif self.pause_button.is_clicked(e) and not game.paused:
-                    game.paused = True # -> Pausar juego
+                        elif e.key == pygame.K_ESCAPE:
+                            return "SALIR"
+                    
+                    elif self.resume_button.is_clicked(e) and game.paused:
+                        game.paused = False
 
-                elif self.quit_button.is_clicked(e) and not game.paused:
-                    pass # -> Salir
+                    elif self.pause_button.is_clicked(e) and not game.paused:
+                        game.paused = True # -> Pausar juego
+
+                    elif self.quit_button.is_clicked(e) and not game.paused:
+                        game.showing_quit_pop = True
 
             # Lógica y renderizado
-            next_state = self.update(dt, game.paused)
+            next_state = self.update(dt, game.paused, game.showing_quit_pop)
             if next_state == "WINSCREEN":
                 return "WINSCREEN"
 
