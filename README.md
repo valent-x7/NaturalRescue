@@ -1,4 +1,4 @@
-f<p align="center">
+<p align="center">
   <img src="img/ANIMALRESCUE (1).png" alt="Logo de Animal Rescue con un pingüino y un mono">
 </p>
 
