@@ -11,17 +11,23 @@ El año es 2045. La Tierra sufre las consecuencias devastadoras de la negligenci
 
 Al unirse a la brigada **"ANIMAL RESCUE"**, se embarcan en una misión para restaurar los biomas devastados y devolver la esperanza a un planeta que agoniza. Cada misión representa una carrera contra el tiempo para salvar lo que queda de la biodiversidad terrestre.
 
-# Guía de instalación
-Para poder jugar Animal Rescue, principalmente necesitamos tener instalado python en nuestro entorno, seguido de ello, ocupas clonar el repositorio a tu dispositivo con el siguiente comando:
+## 🛠️ Guía de Instalación
 
-    git clone https://github.com/valent-x7/NaturalRescue.git
-Habiendo clonado ya el repositorio, necesitamos instalar todos los requerimentos, para ello puedes usar:
+Para poder jugar Animal Rescue, sigue estos pasos. Es altamente recomendable usar un entorno virtual para aislar las dependencias del proyecto.
 
-    pip install -r "requirements.txt"
-Finalmente, habiendo preparado todo, en la consola del proyecto necesitas correr:
-   
+### Requisitos Previos
+* **Python:** Versión 3.8 o superior.
+* **Git:** Instalado en tu sistema.
 
-    python src/main.py
+### Pasos
+
+#### 1. Clonar el Repositorio
+Abre tu terminal y clona el proyecto.
+
+```bash
+git clone [https://github.com/valent-x7/NaturalRescue.git](https://github.com/valent-x7/NaturalRescue.git)
+cd NaturalRescue
+
 
 ## Construido con Las siguientes herramientas
 
