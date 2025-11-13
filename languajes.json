@@ -36,7 +36,7 @@
 
         "gameover-title-1": "The Forest Awaits!",
         "gameover-subtitle-1": "Don't give up,\nthere are still seeds to plant!",
-        "gameover-title-2": "The Ice Needs a Hero!",
+        "gameover-title-2": "The Ice Needs a \nHero!",
         "gameover-subtitle-2": "Try again,\nthe eggs are counting on you!",
         "gameover-title-3": "¡Lab Alert!",
         "gameover-subtitle-3": "Go back in\nand stop that leak in time!",
@@ -99,11 +99,11 @@
         "eggs": "Huevos recogidos",
 
         "gameover-title-1": "¡El Bosque te Espera!",
-        "gameover-subtitle-1": "No te rindas,\n¡aún quedan semillas por plantar!",
+        "gameover-subtitle-1": "No te rindas,¡quedan semillas por plantar!",
         "gameover-title-2": "¡El Hielo Necesita un Héroe!",
-        "gameover-subtitle-2": "Inténtalo otra vez,\n¡los huevos cuentan contigo!",
+        "gameover-subtitle-2": "¡Intentalo de nuevo!",
         "gameover-title-3": "¡Alerta en el Laboratorio!",
-        "gameover-subtitle-3": "¡Vuelve a entrar\ny detén esa fuga a tiempo!",
+        "gameover-subtitle-3": "¡Vuelve a entrar y detén esa fuga a tiempo!",
 
         "press-m-to-menu": "Presiona M para ir al Menú",
         "press-r-to-restart": "Presiona R para reiniciar el nivel",
