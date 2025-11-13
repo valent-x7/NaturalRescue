@@ -19,7 +19,6 @@ class Game:
 
     # Música
     def play_music(self, filepath, loop=-1, fade_ms=500, volume = 0.5):
-        try:
             # Si hay música sonando, hacemos fadeout
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.fadeout(fade_ms)
@@ -27,18 +26,14 @@ class Game:
             pygame.mixer.music.load(filepath)
             pygame.mixer.music.set_volume(volume)
             pygame.mixer.music.play(loop)
-        except Exception as e:
-            print("Error al reproducir la música:", e)
+
 
     def play_music_once(self, path, key):
         if getattr(self, "current_music", None) != key:
             pygame.mixer.music.stop()
-            try:
-                pygame.mixer.music.load(path)
-                pygame.mixer.music.play(loops=0)  # solo una vez
-                self.current_music = key
-            except Exception as e:
-                print("Error al reproducir música:", e)
+            pygame.mixer.music.load(path)
+            pygame.mixer.music.play(loops=0)  # solo una vez
+            self.current_music = key
 
     # Ponemos un parametro para no iniciar siempre con el estado de Menu
     def __init__(self, state="MENU"):
@@ -226,7 +221,6 @@ class Game:
                 else:
                     self.state = "LEVEL_2"
 
-            # <--- CAMBIO: Añadido START_LEVEL_3
             elif self.state == "START_LEVEL_3":
                 self.current_level = 3
                 if not self.tutorial_3_done:
@@ -234,9 +228,8 @@ class Game:
                 else:
                     self.state = "LEVEL_3"
 
-            # <--- CAMBIO: Lógica de TUTORIAL_1 actualizada
             elif self.state == "TUTORIAL_1":
-                if not self.Tutorial_One:  # Si no existe la instancia
+                if not self.Tutorial_One: 
                     if not hasattr(
                         self, "tutorial_assets"
                     ):  # Carga assets si es necesario
@@ -256,7 +249,6 @@ class Game:
                     self, self.SCREEN, events, self.current_lang
                 )
 
-            # <--- CAMBIO: Añadida lógica para TUTORIAL_2
             elif self.state == "TUTORIAL_2":
                 if not self.Tutorial_Two:
                     if not hasattr(self, "tutorial_assets"):
@@ -275,7 +267,6 @@ class Game:
                     self, self.SCREEN, events, self.current_lang
                 )
 
-            # <--- CAMBIO: Añadida lógica para TUTORIAL_3
             elif self.state == "TUTORIAL_3":
                 if not self.Tutorial_Three:
                     if not hasattr(self, "tutorial_assets"):
@@ -313,7 +304,7 @@ class Game:
 
                 if not self.Level_Two:
                     self.Level_Two = Level_two(self, self.SCREEN)
-                self.state = self.Level_Two.run()
+                self.state = self.Level_Two.run(self)
 
             elif self.state == "LEVEL_3":
                 if getattr(self, "current_music", None) != "level_3":

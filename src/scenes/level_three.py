@@ -43,6 +43,8 @@ class LevelThree:
                     if event.key == pygame.K_y:
                         game.showing_quit_pop = False
                         game.paused = False
+                        pygame.mixer.stop()
+                        game.unload_current_level() # -> Eliminar nivel
                         return "MENU" # -> Salir al menú
                     elif event.key == pygame.K_n:
                         game.showing_quit_pop = False
@@ -50,6 +52,8 @@ class LevelThree:
                 elif self.exit_btn.is_clicked(event):
                     game.showing_quit_pop = False
                     game.paused = False
+                    pygame.mixer.stop()
+                    game.unload_current_level() # -> Eliminar nivel
                     return "MENU" # -> Salir al menú
             
                 elif self.go_back_btn.is_clicked(event):
@@ -57,9 +61,9 @@ class LevelThree:
 
             else:
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_m:
+                    if event.key == pygame.K_m and not game.paused:
                         game.showing_quit_pop = True
-                    elif event.key == pygame.K_p:
+                    elif event.key == pygame.K_p and not game.showing_quit_pop:
                         game.paused = not game.paused # -> Invertimos el valor de pausa
 
                 elif self.resume_button.is_clicked(event) and game.paused:

@@ -88,12 +88,8 @@ class Monkey(pygame.sprite.Sprite):
     def plant(self):
         if self.seeds > 0:
             self.seeds -= 1
-            print("Arbol plantado, te quedan", self.seeds)
         elif self.seeds == 0:
             pass
-
-        else:
-            print("No tienes mas semillas")
 
     def update(self, delta_time, events):
         current_time = pygame.time.get_ticks()
@@ -124,8 +120,6 @@ class Monkey(pygame.sprite.Sprite):
             if self.water_amount < self.max_player_water:
                 self.refill_sound.play() # Tocamos sonido de refill
                 self.water_amount += 25
-                print(self.water_amount)
-
     # Disparar bellotas
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
         current_time = pygame.time.get_ticks()
@@ -333,7 +327,6 @@ class Penguin(pygame.sprite.Sprite):
         self.catch.set_volume(1)
 
     def collect(self):
-        print("Huevo recogido")  
         self.catch.play()
 
     def damage(self):
@@ -835,7 +828,6 @@ class PlantSpot(pygame.sprite.Sprite):
                             player.health += 10
                         else:
                             player.health = 120
-                        print(f"Árbol(es) completado(s): {player.trees}")
                         self.is_complete = True # -> Completado
                 
                 else: # -> Si no hay agua para regar
@@ -870,7 +862,6 @@ class Valve(pygame.sprite.Sprite):
         if self.check_player_collision(player) and keystate[pygame.K_h] and self.is_leaking:
             player.valves += 1
             self.is_leaking = False
-            print(f"Valvulas cerradas: {player.valves}/5")
             self.close_sound.play()
 
         self.animate(delta_time)
@@ -1048,7 +1039,6 @@ class Acorn(pygame.sprite.Sprite):
         if self.time_to_live <= 0 or self.check_collisions():
             self.kill()
             self.impact_sound.play()
-            print("Bellota eliminada!!!")
         else:
             # Movemos sprite
             self.rect.center += self.direction * ACORN_SPEED * dt
@@ -1344,7 +1334,6 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         
         self.last_debug_time = 0
-        print(f"Agua creada en Y: {self.rect.y}, Velocidad: {self.speed} px/seg")
         self.water_vol = 0.5
         self.water_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterloop.wav"))
         self.water_sfx.set_volume(self.water_vol)
@@ -1370,7 +1359,6 @@ class WaterEnemy(pygame.sprite.Sprite):
     def reset(self):
         self.rect.topleft = self.initial_position
         self.y_float = float(self.rect.y)
-        print(f"Agua reseteada a Y: {self.rect.y}")
 
 
 class Helicopter(pygame.sprite.Sprite):
@@ -1529,7 +1517,6 @@ class Ghost(pygame.sprite.Sprite):
             self.kill() # -> Matar sprite
             self.player.health = min(self.player.health + 1, SCIENTIST_HEALTH)
             self.player.ghosts += 1
-            print(f"Fantasma(s) eliminado: {self.player.ghosts}")
             return
         
 class Acid(pygame.sprite.Sprite):
