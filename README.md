@@ -27,7 +27,7 @@ Abre tu terminal y clona el proyecto.
 ```bash
 git clone [https://github.com/valent-x7/NaturalRescue.git](https://github.com/valent-x7/NaturalRescue.git)
 cd NaturalRescue
-
+```
 
 ## Construido con Las siguientes herramientas
 
