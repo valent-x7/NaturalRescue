@@ -106,7 +106,7 @@ class Game:
                 "R": pygame.image.load("assets/images/keys/key_r.png").convert_alpha(),
                 "P": pygame.image.load("assets/images/keys/key_p.png").convert_alpha(),
                 "CLICK_LEFT": pygame.image.load(
-                    "assets\images\keys\click_icon.png"
+                    "assets/images/keys/click_icon.png"
                 ).convert_alpha(),
             },
             "monkey": {
@@ -156,7 +156,7 @@ class Game:
                     "assets/images/DeadSpot.png"
                 ).convert_alpha(),
                 "T1_banana": pygame.image.load(
-                    "assets\images\items\platano.png"
+                    "assets/images/items/platano.png"
                 ).convert_alpha(),
                 "T2_huevo": pygame.image.load(
                     "assets/images/egg/1.png"
