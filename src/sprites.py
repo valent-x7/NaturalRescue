@@ -658,11 +658,11 @@ class Scientist(pygame.sprite.Sprite):
             hit_acid[0].acid_burn.play()
 
     # Disparar capsulas
-    def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
+    def shoot(self, groups, player, mouse_pos, camera_offset, zoom, capsule_img, dissolve_frames, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot >= self.cooldown_shot and self.capsules > 0:
             # ? Creamos capsula
-            PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
+            PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
             self.last_shot = current_time
             self.capsules -= 1
 
@@ -838,19 +838,18 @@ class PlantSpot(pygame.sprite.Sprite):
 
 # ? Valvula
 class Valve(pygame.sprite.Sprite):
-    def __init__(self, groups, position):
+    def __init__(self, groups, position, frames, close_sound):
         super().__init__(groups)
         self.wd = os.getcwd() # -> Get working direction
 
-        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 7)]
+        self.frames = frames
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
         self.rect = self.image.get_frect(topleft = (position))
         self.hitbox_rect = self.rect.inflate(-5, -20)
 
         # ? Sonido
-        self.close_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "release_air.mp3"))
-        self.close_sound.set_volume(0.1)
+        self.close_sound = close_sound
 
         # ? Atributes
         self.animation_speed = 10
@@ -1072,24 +1071,19 @@ class Acorn(pygame.sprite.Sprite):
         return cls(groups, player_pos, direction, collision_sprites)
     
 class PuriCapsule(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, direction, collision_sprites):
+    def __init__(self, groups, pos, direction, collision_sprites, original_img, dissolve_frames, throw_sound, impact_sound):
         super().__init__(groups)
 
         # ? Imagen y gráficos
-        working_directory = os.getcwd()
-        image_path = os.path.join(working_directory, "assets", "images", "items", "puricapsula.png")
-        original_image = pygame.image.load(image_path).convert_alpha()
-        self.original_image = pygame.transform.scale(original_image, (18, 18)).convert_alpha()
+        self.original_image = original_img
         self.image = self.original_image
 
-        self.dissolve_frames = [pygame.image.load(os.path.join(working_directory, "assets", "images", "items", "capsule", "dissolve", f"{x}.png")).convert_alpha() for x in range(1, 6)]
+        self.dissolve_frames = dissolve_frames
         self.current_disolve_frame = 0
 
         # ? Audio
-        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
-        self.throw_sound.set_volume(0.1)
-        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "metal_hit.mp3"))
-        self.impact_sound.set_volume(0.1)
+        self.throw_sound = throw_sound
+        self.impact_sound = impact_sound
 
         # Rectangulo y HitBox
         self.rect = self.image.get_frect(center = pos)
@@ -1150,7 +1144,7 @@ class PuriCapsule(pygame.sprite.Sprite):
             self.kill() # -> Matar sprite después de animar
 
     @classmethod # * Crear PuriCapsule
-    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites):
+    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound):
         player_pos = pygame.Vector2(player.rect.center) # -> Posición del jugador
 
         # ? La posición real del mouse cuidando el zoom!!
@@ -1161,7 +1155,7 @@ class PuriCapsule(pygame.sprite.Sprite):
         direction = target_pos - player_pos # -> Dirección
 
         # ? Creamos puricapsula (Grupo, posicion jugador, dirección, sprites de colisión)
-        return cls(groups, player_pos, direction, collision_sprites)
+        return cls(groups, player_pos, direction, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
 
 # ? Sprite de enemigos
 class Enemy(pygame.sprite.Sprite):
@@ -1390,13 +1384,12 @@ class Helicopter(pygame.sprite.Sprite):
 
 
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, groups, position, player, capsules_group, difficulty = "normal"):
+    def __init__(self, groups, position, player, capsules_group, frames, dissolve_frames, impact_sound, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
-        self.wd = os.getcwd() # -> Directorio de trabajo
         
-        self.frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.frames = frames
         self.current_frame = 0
-        self.dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", "dissolve", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.dissolve_frames = dissolve_frames
         self.current_dissolve_frame = 0
 
         self.image = self.frames[self.current_frame]
@@ -1407,8 +1400,7 @@ class Ghost(pygame.sprite.Sprite):
         self.capsules_group = capsules_group
 
         # ? Sonido
-        self.impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ghost_impact.mp3"))
-        self.impact_sound.set_volume(0.1)
+        self.impact_sound = impact_sound
 
         # ? Enemy Attributes
         self.speed = random.randint(55, 62) if difficulty == "normal" else random.randint(62, 76)
@@ -1520,17 +1512,15 @@ class Ghost(pygame.sprite.Sprite):
             return
         
 class Acid(pygame.sprite.Sprite):
-    def __init__(self, groups, position):
+    def __init__(self, groups, position, frames, burn_sound):
         super().__init__(groups)
 
-        self.wd = os.getcwd() # -> Working directory
-        self.acid_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "acid", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.acid_frames = frames
         self.current_frame = 0
         self.image = self.acid_frames[self.current_frame]
 
         # ? Sonido
-        self.acid_burn = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "acid_burn.mp3"))
-        self.acid_burn.set_volume(0.1)
+        self.acid_burn = burn_sound
         
         self.rect = self.image.get_frect(topleft = (position))
         self.hitbox_rect = self.rect.inflate(-20, -45)
@@ -1546,12 +1536,10 @@ class Acid(pygame.sprite.Sprite):
         self.image = self.acid_frames[int(self.current_frame) % len(self.acid_frames)]
 
 class LabDoor(pygame.sprite.Sprite):
-    def __init__(self, groups, position):
+    def __init__(self, groups, position, frames, metalic_door_sound):
         super().__init__(groups)
 
-        self.wd = os.getcwd()
-
-        self.door_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "labdoor", f"{x}.png")).convert_alpha() for x in range(1, 10)]
+        self.door_frames = frames
         self.current_frame = 0
 
         self.image = self.door_frames[self.current_frame]
@@ -1559,8 +1547,7 @@ class LabDoor(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(topleft = (position))
 
         # ? Sonido
-        self.metalic_door = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "metal_door.mp3"))
-        self.metalic_door.set_volume(0.1)
+        self.metalic_door = metalic_door_sound
 
         # ? Attributes
         self.required_ghosts = 0
