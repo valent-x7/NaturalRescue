@@ -7,7 +7,7 @@ from ui.button import ImageButtonUI, ButtonUI
 from pytmx import load_pygame
 from os import getcwd
 from os.path import join
-from ui.utils import get_text, draw_text
+from ui.utils import get_text, draw_text, draw_text_optimized
 from random import choice
 from textwrap import wrap
 
@@ -28,16 +28,36 @@ class LevelOne:
         self.acorn_sprites = pygame.sprite.Group() # -> Bellotas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
 
+        self.setup_sprites() # -> Preparar elementos para Sprites
         self.setup_map() # -> Crear mapa
         self.setup_ui() # -> Crear elementos de UI
         
         self.translations = game.translations # -> Traducciones
 
+        self.setup_fonts() # -> Fonts del juego
+        self.setup_text(game.current_lang)
+
+        # ? Message
+        self.message_surface = None 
+        self.message_rect_pos = None
+
+        self.was_paused = False
         self.game_over = False
         self.finished_level = False
 
     def run(self, game, events):
         self.game_screen.fill("black")
+
+        should_be_paused = game.paused or game.showing_quit_pop
+
+        if should_be_paused != self.was_paused:
+            if should_be_paused:
+                pygame.mixer.pause()
+                pygame.mixer.music.pause()
+            else:
+                pygame.mixer.unpause()
+                pygame.mixer.music.unpause()
+            self.was_paused = should_be_paused
 
         # ? Dibujamos juego
         if game:
@@ -45,16 +65,11 @@ class LevelOne:
             self.healthbar.hp = self.player.health
 
             # ? Si el juego NO esta pausado
-            if not game.paused and not game.showing_quit_pop:
-                pygame.mixer.unpause() # -> Reanudar todos los sonidos
-                pygame.mixer.music.unpause() # Reanudar música
+            if not should_be_paused:
                 self.player.input(events)
                 self.all_sprites.update(game.dt, events, self.player)
                 self.timebar.update()
                 self.waterbar_item.update(self.player.water_amount)
-            else:
-                pygame.mixer.pause() # -> Pausar sonidos
-                pygame.mixer.music.pause() # -> Pausar música
 
             self.all_sprites.center_on_target(self.player, self.map_width, self.map_height)
             self.all_sprites.draw_sprites()
@@ -64,12 +79,12 @@ class LevelOne:
             # ? Draw UI
             self.healthbar.draw(self.game_screen) # -> Vida
             self.timebar.draw(self.game_screen) # -> Barra de tiempo
-            self.treesprout_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "tree-sprout"),
+            self.treesprout_item.draw(self.game_screen, self.txt_tree_sprout,
                                       self.player.seeds) # -> Brotes de árbol
-            self.waterbar_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "water-tank"), 
+            self.waterbar_item.draw(self.game_screen, self.txt_water_tank, 
                                     get_text(self.translations, game.current_lang, water_item_key)) # -> Tanque de agua
-            self.acorn_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "acorn"), self.player.acorns)
-            self.plantSpotsCounter.draw(self.game_screen, get_text(self.translations, game.current_lang, "trees"), self.player.trees) 
+            self.acorn_item.draw(self.game_screen, self.txt_acorn, self.player.acorns)
+            self.plantSpotsCounter.draw(self.game_screen, self.txt_trees, self.player.trees) 
             self.resume_button.draw()
             self.pause_button.draw()
             self.quit_button.draw()
@@ -81,12 +96,10 @@ class LevelOne:
 
             # ? Si el juego esta pausado
             if game.paused:
-                draw_text(self.game_screen, TITLE_FONT_PATH, 64,
-                        get_text(self.translations, game.current_lang, "paused-title"),
-                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
-                draw_text(self.game_screen, TITLE_FONT_PATH, 36,
-                        get_text(self.translations, game.current_lang, "paused-description"),
-                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+                draw_text_optimized(self.game_screen, self.paused_title_font, self.txt_paused_title, "white", 
+                                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4) # -> Titulo pausa
+                draw_text_optimized(self.game_screen, self.paused_description_font, self.txt_paused_description, "white", 
+                                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3) # -> Descripción pausa
 
         for event in events:
             if game.showing_quit_pop:
@@ -129,33 +142,33 @@ class LevelOne:
                 # ? Crear bellotas
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game.paused:
                     self.player.shoot((self.all_sprites, self.acorn_sprites), self.player, event.pos,
-                                    self.all_sprites.camera_offset, self.all_sprites.zoom)
+                                    self.all_sprites.camera_offset, self.all_sprites.zoom, self.banana_img, self.banana_throw_sound, self.banana_impact_sound)
                 
                 # ? Crear enemigos
                 elif event.type == self.enemy_event and len(self.enemy_sprites) < 5:
                     Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
-                        self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites,
-                        game.current_difficulty)
+                        self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites, self.tornado_frames,
+                        self.smog_frames, self.tornado_sizzle_sound, self.tornado_swoosh_sound, game.current_difficulty)
                 
         if game.showing_quit_pop: # -> PopUp de salida
             self.game_screen.blit(self.scrim, [0, 0])
             pygame.draw.rect(self.game_screen, "#3E2A1E", self.popup_rect)
             pygame.draw.rect(self.game_screen, "#969696", self.popup_rect, 2)
 
-            draw_text(self.game_screen, TITLE_FONT_PATH, 24, # -> Titulo
-                      get_text(self.translations, game.current_lang, "exit-game-notice-title") , "#F7E251",
-                      WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 20, # -> Descripción
-                    get_text(self.translations, game.current_lang, "exit-game-notice-description") , "#FDF6E3",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 30)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 18, # -> Elección
-                    get_text(self.translations, game.current_lang, "exit-game-notice-prompt") , "#A49B8D",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 20)
+            draw_text_optimized(self.game_screen, self.quit_title_font, self.txt_exit_title, "#F7E251", WINDOW_WIDTH / 2, 
+                                WINDOW_HEIGHT / 2 - 80) # -> Titulo
+            draw_text_optimized(self.game_screen, self.quit_description_font, self.txt_exit_description, "#FDF6E3", WINDOW_WIDTH / 2, 
+                                WINDOW_HEIGHT / 2 - 30) # -> Descripción
+            draw_text_optimized(self.game_screen, self.quit_choice_font, self.txt_exit_choice, "#A49B8D", WINDOW_WIDTH / 2, 
+                                WINDOW_HEIGHT / 2 + 30) # -> Elección
             
             self.exit_btn.draw()
             self.go_back_btn.draw()
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-go-back"), "white", WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85)
+
+            draw_text_optimized(self.game_screen, self.quit_action_font, self.txt_btn_exit, "white", WINDOW_WIDTH / 2 - 155,
+                                WINDOW_HEIGHT / 2 + 85)
+            draw_text_optimized(self.game_screen, self.quit_action_font, self.txt_btn_go_back, "white", WINDOW_WIDTH / 2 + 155,
+                                WINDOW_HEIGHT / 2 + 85)
 
         return new_state
 
@@ -246,6 +259,33 @@ class LevelOne:
         self.exit_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85), "#C65D26", "#E07A40", "idk", 200, 45)
         self.go_back_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85), "#5DA9E0", "#7DC0F0", "idk", 200, 45)
 
+    def setup_sprites(self):
+        # ? --- Platanos ---
+        banana_img = pygame.image.load(os.path.join(self.wd , "assets", "images", "items", "platano.png"))
+        self.banana_img = pygame.transform.scale(banana_img, (28, 28)).convert_alpha()
+        self.banana_throw_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "throw.ogg"))
+        self.banana_throw_sound.set_volume(0.4)
+        self.banana_impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "impact.ogg"))
+        self.banana_impact_sound.set_volume(0.8)
+
+        # ? --- Tornados ---
+        self.tornado_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "tornado", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.smog_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "smog", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.tornado_sizzle_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "sizzle.mp3"))
+        self.tornado_swoosh_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "swoosh.mp3"))
+
+    def setup_fonts(self):
+        self.message_font = pygame.font.Font(TITLE_FONT_PATH, 22) # -> Font mensaje inicial
+
+        self.paused_title_font = pygame.font.Font(TITLE_FONT_PATH, 64) # -> Font titulo de pausa
+        self.paused_description_font = pygame.font.Font(TITLE_FONT_PATH, 36) # -> Font descripción de pausa
+
+        # ? --- Quit Fonts ---
+        self.quit_title_font = pygame.font.Font(TITLE_FONT_PATH, 24) # -> Quit Showing Title
+        self.quit_description_font = pygame.font.Font(TITLE_FONT_PATH, 20) # -> Quit Showing Description
+        self.quit_choice_font = pygame.font.Font(TITLE_FONT_PATH, 18) # -> Quit Showing Choice
+        self.quit_action_font = pygame.font.Font(TITLE_FONT_PATH, 14) # -> Quit Showing Action
+
     def check_new_state(self):
         if self.player.trees >= 6:
             self.finished_level = True
@@ -255,39 +295,62 @@ class LevelOne:
             return "GAMEOVER" # -> Return gameover state
         return "LEVEL_1" # -> Return same state
     
+    def setup_text(self, lang):
+        # ? --- UI text ---
+        self.txt_tree_sprout = get_text(self.translations, lang, "tree-sprout")
+        self.txt_water_tank = get_text(self.translations, lang, "water-tank")
+        self.txt_acorn = get_text(self.translations, lang, "acorn")
+        self.txt_trees = get_text(self.translations, lang, "trees")
+
+        # ? -> --- Paused Menu ---
+        self.txt_paused_title = get_text(self.translations, lang, "paused-title")
+        self.txt_paused_description = get_text(self.translations, lang, "paused-description")
+
+        # ? -> --- Quit Showing Menu ---
+        self.txt_exit_title = get_text(self.translations, lang, "exit-game-notice-title")
+        self.txt_exit_description = get_text(self.translations, lang, "exit-game-notice-description")
+        self.txt_exit_choice = get_text(self.translations, lang, "exit-game-notice-prompt")
+
+        self.txt_btn_exit = get_text(self.translations, lang, "exit-btn-exit")
+        self.txt_btn_go_back = get_text(self.translations, lang, "exit-btn-go-back")
+
     def draw_message(self, game, screen):
-        #  Mostrar texto en rectángulo por 5 segundos
         if not hasattr(game, "tutorial_start_time"):
             game.tutorial_start_time = pygame.time.get_ticks()
 
         elapsed = (pygame.time.get_ticks() - game.tutorial_start_time) / 1000
-        if elapsed < 10:
-            message = get_text(
-                self.translations,
-                game.current_lang,
-                "mission-text"
-            )
 
-            # Dividir el texto en líneas cortas
+        if elapsed >= 10: # -> Salimos del metodo
+            self.message_surface = None
+            return
+
+        # * Creamos mensaje
+        if self.message_surface is None:
+            message = get_text(self.translations, game.current_lang, "mission-text")
+            
+            # Calcular líneas
             wrapped_text = wrap(message, width=50)
-            font = pygame.font.Font(TITLE_FONT_PATH, 22)
-            line_height = font.size("Tg")[1]
+            line_height = self.message_font.size("Tg")[1]
+            text_width = max(self.message_font.size(line)[0] for line in wrapped_text) + 40
             text_height = line_height * len(wrapped_text) + 20
-            text_width = max(font.size(line)[0] for line in wrapped_text) + 40
 
             # Crear rectángulo semitransparente
-            rect_x = (WINDOW_WIDTH - text_width) // 2
-            rect_y = 30
-            rect_surface = pygame.Surface((text_width, text_height), pygame.SRCALPHA)
-            rect_surface.fill((0, 0, 0, 160))  # Negro con transparencia
+            self.message_surface = pygame.Surface((text_width, text_height), pygame.SRCALPHA)
+            self.message_surface.fill((0, 0, 0, 160))
 
-            # Dibujar rectángulo
-            screen.blit(rect_surface, (rect_x, rect_y))
-
-            # Dibujar texto dentro del rectángulo
-            y_offset = rect_y + 10
+            y_offset = 10
+            center_x = text_width // 2
+            
             for line in wrapped_text:
-                text_surface = font.render(line, True, (255, 255, 255))
-                text_rect = text_surface.get_rect(centerx=WINDOW_WIDTH // 2, y=y_offset)
-                screen.blit(text_surface, text_rect)
+                text_render = self.message_font.render(line, True, (255, 255, 255))
+                text_rect = text_render.get_rect(centerx=center_x, y=y_offset)
+                self.message_surface.blit(text_render, text_rect)
                 y_offset += line_height
+            
+            screen_x = (WINDOW_WIDTH - text_width) // 2
+            screen_y = 30
+            self.message_rect_pos = (screen_x, screen_y)
+
+        # -> Si hay mensaje lo dibujamos
+        if self.message_surface:
+            screen.blit(self.message_surface, self.message_rect_pos)

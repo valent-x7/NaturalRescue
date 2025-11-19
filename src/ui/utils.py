@@ -80,3 +80,8 @@ def draw_text_space(screen, font_path, font_size, text, color, x, y, line_spacin
         # Dibujamos en pantalla
         screen.blit(text_surface, text_rect)
         current_y += line_height * line_spacing # -> Avanzamos la pos de y
+
+def draw_text_optimized(screen: pygame.Surface, font: pygame.Font, text, color, x, y):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_frect(center = (x, y))
+    screen.blit(text_surface, text_rect)

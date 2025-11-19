@@ -120,12 +120,13 @@ class Monkey(pygame.sprite.Sprite):
             if self.water_amount < self.max_player_water:
                 self.refill_sound.play() # Tocamos sonido de refill
                 self.water_amount += 25
-    # Disparar bellotas
-    def shoot(self, groups, player, mouse_pos, camera_offset, zoom):
+    
+    # Disparar platanos
+    def shoot(self, groups, player, mouse_pos, camera_offset, zoom, banana_img, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot >= self.cooldown_shot and self.acorns > 0:
             # ? Creamos bellota
-            Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites)
+            Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, banana_img, throw_sound, impact_sound)
             self.last_shot = current_time
             self.acorns -= 1
 
@@ -992,21 +993,16 @@ class AllSprites3(pygame.sprite.Group):
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, direction, collision_sprites):
+    def __init__(self, groups, pos, direction, collision_sprites, image, throw_sound, impact_sound):
         super().__init__(groups)
 
         # ? Imagen y gráficos
-        working_directory = os.getcwd()
-        image_path = os.path.join(working_directory, "assets", "images", "items", "platano.png")
-        original_image = pygame.image.load(image_path).convert_alpha()
-        self.original_image = pygame.transform.scale(original_image, (28, 28)).convert_alpha()
+        self.original_image = image
         self.image = self.original_image
 
         # ? Audio del platano
-        self.throw_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "throw.ogg"))
-        self.throw_sound.set_volume(0.4)
-        self.impact_sound = pygame.mixer.Sound(os.path.join(working_directory, "assets", "sound", "impact.ogg"))
-        self.impact_sound.set_volume(0.8)
+        self.throw_sound = throw_sound
+        self.impact_sound = impact_sound
 
         # Rectangulo
         self.rect = self.image.get_frect(center = pos)
@@ -1053,7 +1049,7 @@ class Acorn(pygame.sprite.Sprite):
 
     # ? Este metodo creará una clase Acorn
     @classmethod 
-    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites):
+    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, image, throw_sound, impact_sound):
         # Definimos la posición del jugador
         player_pos = pygame.Vector2(player.rect.center)
 
@@ -1068,7 +1064,7 @@ class Acorn(pygame.sprite.Sprite):
         direction = target_pos - player_pos
 
         # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
-        return cls(groups, player_pos, direction, collision_sprites)
+        return cls(groups, player_pos, direction, collision_sprites, image, throw_sound, impact_sound)
     
 class PuriCapsule(pygame.sprite.Sprite):
     def __init__(self, groups, pos, direction, collision_sprites, original_img, dissolve_frames, throw_sound, impact_sound):
@@ -1157,9 +1153,9 @@ class PuriCapsule(pygame.sprite.Sprite):
         # ? Creamos puricapsula (Grupo, posicion jugador, dirección, sprites de colisión)
         return cls(groups, player_pos, direction, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
 
-# ? Sprite de enemigos
+# ? Sprite de enemigos (tornados)
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, difficulty = "normal"):
+    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, tornado_frames, smog_frames, sizzle, swoosh, difficulty = "normal"):
         super().__init__(groups)
         self.player = player # -> Jugador
 
@@ -1183,29 +1179,19 @@ class Enemy(pygame.sprite.Sprite):
         self.acorn_group = acorn_group # -> Grupo de las bellotas
 
         # ? Imagenes y rect inicial
-        wd = os.getcwd() # -> Directorio
-
-        tornado_frames = [x for x in range(1, 5)]
-        img_path_1 = [os.path.join(wd, "assets", "images", "enemies", "tornado", f"{tornado}.png") for tornado in tornado_frames]
-
-        smog_frames = [x for x in range(1, 4)]
-        img_path_2 = [os.path.join(wd, "assets", "images", "enemies", "smog", f"{smog}.png") for smog in smog_frames]
-
         num = random.randint(1, 2)
-        images_path = img_path_1 if num == 1 else img_path_2
-
-        self.tornado_frames = [pygame.image.load(image).convert_alpha() for image in images_path]
+        self.frames = tornado_frames if num == 1 else smog_frames
 
         # ? Sonidos de enemigo (smog / tornado)
-        self.sizzle_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "sizzle.mp3"))
-        self.swoosh_sound = pygame.mixer.Sound(os.path.join(wd, "assets", "sound", "swoosh.mp3"))
+        self.sizzle_sound = sizzle
+        self.swoosh_sound = swoosh
 
         # Vida
         self.health = 3
 
         # ? Imagen y frame
         self.frame = 1
-        self.image = self.tornado_frames[self.frame]
+        self.image = self.frames[self.frame]
 
         self.rect = self.image.get_frect(center = pos) # -> Posición inicial
         self.hitbox_rect = self.rect.inflate(-14, -10) # Hitbox rect -> Donde se checarán colisiones
@@ -1250,7 +1236,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def animate(self, delta_time): # -> Animación del tornado
         self.frame += self.animation_speed * delta_time
-        self.image = self.tornado_frames[int(self.frame) % len(self.tornado_frames)]
+        self.image = self.frames[int(self.frame) % len(self.frames)]
 
     def check_collisions(self, direction):
         for sprite in self.all_solid_sprites:
@@ -1354,7 +1340,6 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.rect.topleft = self.initial_position
         self.y_float = float(self.rect.y)
 
-
 class Helicopter(pygame.sprite.Sprite):
     def __init__(self, position, player):
         super().__init__()
@@ -1381,7 +1366,6 @@ class Helicopter(pygame.sprite.Sprite):
         
         if new_image is not self.image:
             self.image = new_image
-
 
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, groups, position, player, capsules_group, frames, dissolve_frames, impact_sound, difficulty = "normal"):
