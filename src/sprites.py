@@ -1572,3 +1572,54 @@ class Egg(pygame.sprite.Sprite):
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
         self.image = self.egg_frames[int(self.current_frame) % len(self.egg_frames)]
+
+class Pickup(pygame.sprite.Sprite):
+    def __init__(self, groups, player, type, frames, pos, coords):
+        super().__init__(groups)
+        if pos in coords:
+            coords.remove(pos) # -> Quitar posición
+
+        self.coords = coords # -> Coords
+        self.pos = pos # -> Posición
+        self.player = player # -> Jugador
+        self.type = type # -> Tipo de PickUp
+
+        self.frames = frames
+        self.frame = 0
+        self.image = self.frames[self.frame]
+        self.rect = self.image.get_frect(topleft = (self.pos))
+        self.hitbox_rect = self.rect.inflate(-20, -45)
+
+        self.speed_animation = 4
+        self.creation_time = pygame.time.get_ticks() # -> Tiempo de creación
+        self.lifetime = 20000 # -> 20 segundos
+
+    def update(self, delta_time, *args):
+        self.animate(delta_time)
+        self.check_player_collision()
+        self.check_time()
+
+    def animate(self, delta_time):
+        self.frame += self.speed_animation * delta_time
+        self.image = self.frames[int(self.frame) % len(self.frames)]
+
+    def check_player_collision(self):
+        if self.hitbox_rect.colliderect(self.player.hitbox_rect):
+            if self.type == "Life":
+                self.player.health = min(self.player.health + 10, SCIENTIST_HEALTH)
+            else:
+                self.player.capsules += 12
+            self.despawn()
+            return
+        
+    def check_time(self):
+        now = pygame.time.get_ticks()
+
+        if now - self.creation_time >= self.lifetime:
+            self.despawn()
+            return
+        
+    def despawn(self):
+        if self.pos not in self.coords:
+            self.coords.append(self.pos)
+        self.kill()

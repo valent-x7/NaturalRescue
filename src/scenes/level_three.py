@@ -26,6 +26,7 @@ class LevelThree:
         self.capsules_sprites = pygame.sprite.Group() # -> Capsulas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
         self.acid_sprites = pygame.sprite.Group() # -> Acido
+        self.pickup_sprites = pygame.sprite.Group() # -> PickUps Items
 
         # ? --- Methods ---
         self.setup_images() # -> Setup Images
@@ -89,6 +90,12 @@ class LevelThree:
                 elif event.type == self.enemy_event and len(self.enemy_sprites) < 3:
                     Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords),
                         self.player, self.capsules_sprites, self.ghost_frames, self.ghost_dissolve_frames, self.ghost_impact_sound, game.current_difficulty)
+
+                elif event.type == self.pickup_event and len(self.pickup_coords) > 0:
+                    option = choice(self.pickup_types)
+
+                    frames = self.capsule_pickup_frames if option == "Item" else self.life_pickups_frames 
+                    Pickup((self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option, frames, choice(self.pickup_coords), self.pickup_coords)
 
         self.healthbar.hp =  self.player.health
         if not game.paused and not game.showing_quit_pop:
@@ -164,6 +171,7 @@ class LevelThree:
                     Sprite(self.all_sprites.background_sprites, (x * TILE, y * TILE), image)
 
         self.enemy_spawn_coords = [] # -> Spawn de enemigos
+        self.pickup_coords = [] # -> Coords de Spawn Capsulas
 
         # ? Objects
         for obj in map.objects:
@@ -189,6 +197,9 @@ class LevelThree:
             elif obj.name == "Ghost": # -> Coordenadas de enemigos
                 self.enemy_spawn_coords.append((obj.x, obj.y))
 
+            elif obj.name == "PickUp": # -> Coordenadas de Spawn
+                self.pickup_coords.append((obj.x, obj.y))
+
             elif obj.name == "Acid":
                 Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y), self.acid_frames, self.acid_burn_sound)
             
@@ -206,6 +217,11 @@ class LevelThree:
         # ? Enemy Event
         self.enemy_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemy_event, 4000) # -> Evento de enemigos cada 4 sg
+
+        # ? Pickup Event
+        self.pickup_types = ["Life", "Item"]
+        self.pickup_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.pickup_event, 8000) # -> Cada 8 sg
 
     def setup_images(self):
         vignette = pygame.image.load(os.path.join(self.wd, "assets", "images", "screens", "vignette.png"))
@@ -248,6 +264,12 @@ class LevelThree:
         self.ghost_dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", "dissolve", f"{i}.png")).convert_alpha() for i in range(1, 5)]
         self.ghost_impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ghost_impact.mp3"))
         self.ghost_impact_sound.set_volume(0.1) # -> Sound
+
+        # ? --- PickUps ---
+        capsule_pickup_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "capsule", f"{x}.png")) for x in range(1, 6)]
+        self.capsule_pickup_frames = [pygame.transform.scale(frame, (16, 16)).convert_alpha() for frame in capsule_pickup_frames]
+
+        self.life_pickups_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "heart", f"{x}.png")).convert_alpha() for x in range(1, 7)]
 
     def setup_ui(self):
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, SCIENTIST_HEALTH, self.scientist_image) # -> Barra de vida
