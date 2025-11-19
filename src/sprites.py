@@ -1326,7 +1326,7 @@ class WaterEnemy(pygame.sprite.Sprite):
         if difficulty == "normal":
             self.speed = 20.0
         else:
-            self.speed = 35.0
+            self.speed = 32.0
             
         self.animation_speed = 4
         self.player = player
