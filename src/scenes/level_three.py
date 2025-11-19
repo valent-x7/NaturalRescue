@@ -26,10 +26,17 @@ class LevelThree:
         self.capsules_sprites = pygame.sprite.Group() # -> Capsulas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
         self.acid_sprites = pygame.sprite.Group() # -> Acido
+        self.pickup_sprites = pygame.sprite.Group() # -> PickUps Items
 
+        # ? --- Methods ---
         self.setup_images() # -> Setup Images
+        self.setup_sprites() # -> Setup sprites elements
         self.setup_map() # -> Setup map
         self.setup_ui() # -> UI Elements
+
+        # ? --- Fonts ---
+        self.message_font = pygame.font.Font(TITLE_FONT_PATH, 22)
+        self.labdoor_font = pygame.font.Font(TITLE_FONT_PATH, 12)
 
         self.translations = game.translations # -> Traducciones
 
@@ -77,11 +84,18 @@ class LevelThree:
                     
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game.paused:
                     self.player.shoot((self.all_sprites, self.all_sprites.depth_sprites, self.capsules_sprites), self.player, event.pos,
-                                    self.all_sprites.camera_offset, self.all_sprites.zoom)
+                                    self.all_sprites.camera_offset, self.all_sprites.zoom, self.capsule_img, self.capsule_dissolve_frames,
+                                    self.capsule_throw_sound, self.capsule_impact_sound)
                 
                 elif event.type == self.enemy_event and len(self.enemy_sprites) < 3:
                     Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords),
-                        self.player, self.capsules_sprites, game.current_difficulty)
+                        self.player, self.capsules_sprites, self.ghost_frames, self.ghost_dissolve_frames, self.ghost_impact_sound, game.current_difficulty)
+
+                elif event.type == self.pickup_event and len(self.pickup_coords) > 0:
+                    option = choice(self.pickup_types)
+
+                    frames = self.capsule_pickup_frames if option == "Item" else self.life_pickups_frames 
+                    Pickup((self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option, frames, choice(self.pickup_coords), self.pickup_coords)
 
         self.healthbar.hp =  self.player.health
         if not game.paused and not game.showing_quit_pop:
@@ -157,6 +171,7 @@ class LevelThree:
                     Sprite(self.all_sprites.background_sprites, (x * TILE, y * TILE), image)
 
         self.enemy_spawn_coords = [] # -> Spawn de enemigos
+        self.pickup_coords = [] # -> Coords de Spawn Capsulas
 
         # ? Objects
         for obj in map.objects:
@@ -177,16 +192,19 @@ class LevelThree:
                     CollisionSprite((self.all_sprites.depth_sprites), "Collision", (obj.x, obj.y), image)
             
             elif obj.name == "Valve Position": # -> Valvulas
-                Valve((self.all_sprites, self.all_sprites.depth_sprites, self.valve_sprites), (obj.x, obj.y))
+                Valve((self.all_sprites, self.all_sprites.depth_sprites, self.valve_sprites), (obj.x, obj.y), self.valve_frames, self.valve_close_sound)
             
             elif obj.name == "Ghost": # -> Coordenadas de enemigos
                 self.enemy_spawn_coords.append((obj.x, obj.y))
 
+            elif obj.name == "PickUp": # -> Coordenadas de Spawn
+                self.pickup_coords.append((obj.x, obj.y))
+
             elif obj.name == "Acid":
-                Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y))
+                Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y), self.acid_frames, self.acid_burn_sound)
             
             elif obj.name == "Door":
-                door = LabDoor((self.all_sprites, self.all_sprites.background_sprites, self.collision_sprites), (obj.x, obj.y))
+                door = LabDoor((self.all_sprites, self.all_sprites.background_sprites, self.collision_sprites), (obj.x, obj.y), self.labdoor_frames, self.labdoor_sound)
 
                 if hasattr(obj, "properties") and "required_ghosts" in obj.properties:
                     door.required_ghosts = obj.properties["required_ghosts"]
@@ -200,12 +218,58 @@ class LevelThree:
         self.enemy_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemy_event, 4000) # -> Evento de enemigos cada 4 sg
 
+        # ? Pickup Event
+        self.pickup_types = ["Life", "Item"]
+        self.pickup_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.pickup_event, 8000) # -> Cada 8 sg
+
     def setup_images(self):
         vignette = pygame.image.load(os.path.join(self.wd, "assets", "images", "screens", "vignette.png"))
         self.vignette= pygame.transform.scale(vignette, (WINDOW_WIDTH, WINDOW_HEIGHT)).convert_alpha()
 
         scientist_img = pygame.image.load(join(self.wd, "img", "scientist.png"))
         self.scientist_image = pygame.transform.scale(scientist_img, (42, 42)).convert_alpha()
+
+    def setup_sprites(self):
+        # ? --- Capsule ---
+        capsule_img = pygame.image.load(os.path.join(self.wd, "assets", "images", "items", "puricapsula.png"))
+        self.capsule_img = pygame.transform.scale(capsule_img, (18, 18)).convert_alpha() # -> Image
+
+        # -> Frames Dissolve Animation
+        self.capsule_dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "items", "capsule", "dissolve", f"{x}.png")).convert_alpha() for x in range(1, 6)]
+
+        self.capsule_throw_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "throw.ogg"))
+        self.capsule_throw_sound.set_volume(0.1) # -> Throw Sound
+
+        self.capsule_impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "metal_hit.mp3"))
+        self.capsule_impact_sound.set_volume(0.1) # -> Impact Sound
+
+        # ? --- Valve ---
+        self.valve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "valve", f"{i}.png")).convert_alpha() for i in range(1, 7)]
+        self.valve_close_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "release_air.mp3"))
+        self.valve_close_sound.set_volume(0.1) # -> Close Sound
+
+        # ? --- Acid ---
+        self.acid_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "acid", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.acid_burn_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "acid_burn.mp3"))
+        self.acid_burn_sound.set_volume(0.1) # -> Acid Sound
+
+        # ? --- LabDoors ---
+        self.labdoor_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "labdoor", f"{x}.png")).convert_alpha() for x in range(1, 10)]
+        self.labdoor_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "metal_door.mp3"))
+        self.labdoor_sound.set_volume(0.1) # -> Sound
+
+        # ? --- Ghosts ---
+        self.ghost_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", f"{i}.png")).convert_alpha() for i in range(1, 4)]
+        self.ghost_dissolve_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "ghost", "dissolve", f"{i}.png")).convert_alpha() for i in range(1, 5)]
+        self.ghost_impact_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "ghost_impact.mp3"))
+        self.ghost_impact_sound.set_volume(0.1) # -> Sound
+
+        # ? --- PickUps ---
+        capsule_pickup_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "capsule", f"{x}.png")) for x in range(1, 6)]
+        self.capsule_pickup_frames = [pygame.transform.scale(frame, (16, 16)).convert_alpha() for frame in capsule_pickup_frames]
+
+        self.life_pickups_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "heart", f"{x}.png")).convert_alpha() for x in range(1, 7)]
 
     def setup_ui(self):
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, SCIENTIST_HEALTH, self.scientist_image) # -> Barra de vida
@@ -260,10 +324,9 @@ class LevelThree:
 
         # Dividir el texto en líneas cortas
         wrapped_text = wrap(message, width=50)
-        font = pygame.font.Font(TITLE_FONT_PATH, 22)
-        line_height = font.size("Tg")[1]
+        line_height = self.message_font.size("Tg")[1]
         text_height = line_height * len(wrapped_text) + 20
-        text_width = max(font.size(line)[0] for line in wrapped_text) + 40
+        text_width = max(self.message_font.size(line)[0] for line in wrapped_text) + 40
 
         # Crear rectángulo semitransparente
         rect_x = (WINDOW_WIDTH - text_width) // 2
@@ -277,7 +340,7 @@ class LevelThree:
         # Dibujar texto dentro del rectángulo
         y_offset = rect_y + 10
         for line in wrapped_text:
-            text_surface = font.render(line, True, (255, 255, 255))
+            text_surface = self.message_font.render(line, True, (255, 255, 255))
             text_rect = text_surface.get_rect(centerx=WINDOW_WIDTH // 2, y=y_offset)
             screen.blit(text_surface, text_rect)
             y_offset += line_height
@@ -301,9 +364,15 @@ class LevelThree:
                 screen_x = (door.rect.x - self.all_sprites.camera_offset.x) * self.all_sprites.zoom
                 screen_y = (door.rect.y - self.all_sprites.camera_offset.y) * self.all_sprites.zoom
                 ghosts = max(0, door.required_ghosts - self.player.ghosts)
-                draw_text(self.game_screen, TITLE_FONT_PATH, 12, 
-                          get_text(self.translations, current_lang, "purify-ghosts").format(count = ghosts),
-                            "yellow", screen_x, screen_y - 30 * self.all_sprites.zoom)
+
+                # ? Dibujar texto
+                text_surf = self.labdoor_font.render(
+                    get_text(self.translations, current_lang, "purify-ghosts").format(count = ghosts),
+                    True,
+                    "yellow"
+                )
+                text_rect = text_surf.get_frect(center = (screen_x, screen_y - 30 * self.all_sprites.zoom))
+                self.game_screen.blit(text_surf, text_rect)
                 
                 # ? Cada puerta tiene un requisito de fantasmas
                 if hasattr(door, "required_ghosts") and self.player.ghosts >= door.required_ghosts:
