@@ -38,6 +38,8 @@ class LevelThree:
         self.message_font = pygame.font.Font(TITLE_FONT_PATH, 22)
         self.labdoor_font = pygame.font.Font(TITLE_FONT_PATH, 12)
 
+        self.door_text_cache = {} # -> Guardar textos ya renderizados
+
         self.translations = game.translations # -> Traducciones
 
     def run(self, game, events):
@@ -95,7 +97,8 @@ class LevelThree:
                     option = choice(self.pickup_types)
 
                     frames = self.capsule_pickup_frames if option == "Item" else self.life_pickups_frames 
-                    Pickup((self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option, frames, choice(self.pickup_coords), self.pickup_coords)
+                    Pickup((self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option,
+                           frames, choice(self.pickup_coords), self.pickup_coords, self.pickup_powerup_sound)
 
         self.healthbar.hp =  self.player.health
         if not game.paused and not game.showing_quit_pop:
@@ -115,7 +118,7 @@ class LevelThree:
         # ? Draw UI
         self.timebar.draw(self.game_screen)
         self.healthbar.draw(self.game_screen)
-        self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), self.player.capsules)
+        self.puricapsule_item.draw(self.game_screen, get_text(self.translations, game.current_lang, "puricapsule"), self.player.projectiles)
         self.ghosts_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "purified-ghosts"), self.player.ghosts)
         self.valves_counter.draw(self.game_screen, get_text(self.translations, game.current_lang, "valves"), self.player.valves)
         self.resume_button.draw() # -> Botón de reanudar
@@ -270,6 +273,8 @@ class LevelThree:
         self.capsule_pickup_frames = [pygame.transform.scale(frame, (16, 16)).convert_alpha() for frame in capsule_pickup_frames]
 
         self.life_pickups_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "heart", f"{x}.png")).convert_alpha() for x in range(1, 7)]
+        self.pickup_powerup_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "PowerUp.mp3"))
+        self.pickup_powerup_sound.set_volume(0.2) # -> PowerUp Sound
 
     def setup_ui(self):
         self.healthbar = HealthBar(64, 78, 64 * 6, 32, SCIENTIST_HEALTH, self.scientist_image) # -> Barra de vida
@@ -365,12 +370,11 @@ class LevelThree:
                 screen_y = (door.rect.y - self.all_sprites.camera_offset.y) * self.all_sprites.zoom
                 ghosts = max(0, door.required_ghosts - self.player.ghosts)
 
-                # ? Dibujar texto
-                text_surf = self.labdoor_font.render(
-                    get_text(self.translations, current_lang, "purify-ghosts").format(count = ghosts),
-                    True,
-                    "yellow"
-                )
+                if ghosts not in self.door_text_cache:
+                    text = get_text(self.translations, current_lang, "purify-ghosts").format(count = ghosts)
+                    self.door_text_cache[ghosts] = self.labdoor_font.render(text, True, "yellow")
+
+                text_surf = self.door_text_cache[ghosts]
                 text_rect = text_surf.get_frect(center = (screen_x, screen_y - 30 * self.all_sprites.zoom))
                 self.game_screen.blit(text_surf, text_rect)
                 
