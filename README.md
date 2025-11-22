@@ -1,23 +1,41 @@
 <p align="center">
-  <img src="img/ANIMALRESCUE (1).png" alt="Logo de Animal Rescue con un pingüino y un mono">
+  <img src="img/banner.png" alt="Banner Promocional Animal Rescue">
 </p>
 
-# 🐾 ANIMAL RESCUE: Misión 2045
-![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Hecho con Pygame](https://img.shields.io/badge/Hecho%20con-Pygame-green)
+# 🐒ANIMAL RESCUE: Misión 2050🧊
+
+![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
+![Hecho con Pygame](https://img.shields.io/badge/Hecho%20con-Pygame-green?style=for-the-badge&logo=pygame)
+![Status](https://img.shields.io/badge/Estado-Finalizado-success?style=for-the-badge)
+![ODS 13](https://img.shields.io/badge/ODS-13_Acción_por_el_Clima-orange?style=for-the-badge)
 
 ---
-El año es 2045. La Tierra sufre las consecuencias devastadoras de la negligencia humana: la huella de carbono ha superado todos los límites, los ecosistemas colapsan y las especies luchan por sobrevivir en hábitats irreconocibles. TinTin el pingüino y Tofu el changuito, siendo rescatados por un laboratorio ecológico, toman cartas en el asunto de la situación.
 
-Al unirse a la brigada **"ANIMAL RESCUE"**, se embarcan en una misión para restaurar los biomas devastados y devolver la esperanza a un planeta que agoniza. Cada misión representa una carrera contra el tiempo para salvar lo que queda de la biodiversidad terrestre.
+El año es 2050. La Tierra sufre las consecuencias devastadoras de la negligencia humana: la huella de carbono ha superado todos los límites, los ecosistemas colapsan y las especies luchan por sobrevivir en hábitats irreconocibles. *TinTin* el pingüino y *Tofu* el changuito, siendo rescatados por un laboratorio ecológico, toman cartas en el asunto.
 
-## 🛠️ Guía de Instalación
+Al unirse a la brigada *"ANIMAL RESCUE"*, se embarcan en una misión para restaurar los biomas devastados. Cada nivel representa una carrera contra el tiempo para salvar lo que queda de la biodiversidad terrestre.
 
-Para poder jugar Animal Rescue, sigue estos pasos. Es altamente recomendable usar un entorno virtual para aislar las dependencias del proyecto.
+## Galería del Juego
+
+| Nivel 1: La Selva | Nivel 2: El Ártico | Nivel 3: Laboratorio |
+|:---:|:---:|:---:|
+| ![Gameplay Selva](assets/screenshots/screenshot1.png) | ![Gameplay Artico](assets/screenshots/screenshot2.png) | ![Gameplay Lab](assets/screenshots/screenshot3.png) |
+
+## Objetivo de Desarrollo Sostenible (ODS 13)
+
+Este proyecto académico está alineado con el *ODS 13: Acción por el Clima* de la ONU.
+El videojuego busca concientizar a niños de primaria sobre:
+* *Reforestación:* La importancia de recuperar la flora (Nivel 1).
+* *Contaminación de Océanos:* El impacto de los desechos en la fauna marina (Nivel 2).
+* *Emisiones de CO2:* La urgencia de detener los gases de efecto invernadero (Nivel 3).
+
+## Guía de Instalación
+
+Para poder jugar Animal Rescue, sigue estos pasos. Es altamente recomendable usar un entorno virtual.
 
 ### Requisitos Previos
-* **Python:** Versión 3.8 o superior.
-* **Git:** Instalado en tu sistema.
+* *Python:* Versión 3.8 o superior.
+* *Git:* Instalado en tu sistema.
 
 ### Pasos
 
@@ -27,51 +45,24 @@ Abre tu terminal y clona el proyecto.
 ```bash
 git clone [https://github.com/valent-x7/NaturalRescue.git](https://github.com/valent-x7/NaturalRescue.git)
 ```
-
-### 2.- Entrar a la carpeta
+2. Entrar a la carpeta
 ```bash
-cd mi-ruta-actual/NaturalRescue
+cd NaturalRescue
 ```
-
-### 2.5.- (RECOMENDADO) Abrir un entorno virtual
-  Crear el entorno virtual
-  ```bash
-  python -m venv venv  
-  ```
-  Activar el entorno virtual
-  ```bash  
-  venv\Script\activate
-  ```
-
-### 3.- Instalar dependencias
+3. (RECOMENDADO) Crear entorno virtual
+```bash
+python -m venv venv      # Crear
+venv\Scripts\activate    # Activar en Windows
+# source venv/bin/activate  # Activar en Mac/Linux
+```
+4. Instalar dependencias
 ```bash
 pip install -r requirements.txt
 ```
-
-### 4.- Entrar al juego
+5. Ejecutar el juego
 ```bash
 python src/main.py
 ```
-
-## Construido con Las siguientes herramientas
-
- - **Python 3.8** 
- - **JSON**
- 
-
-## Librerías y frameworks
-
- - **Pygame**
- - **PyTSX**
- - **PyTMX**
-
-## Herramientas de diseño utlizadas
-
- - **Libresprite**
- - **Tiled**
- - **Photoshop**
- - **Pixelorama**
-
 ## Controles para jugar
 
 
@@ -119,11 +110,9 @@ AnimalRescue/
     ├──settings.py
     └──sprites.py
 ```
-
 ## Contribuidores
-
- 1. Axl Enrique Díaz Hernández
- 2. Estefanía Radillo Domínguez
- 4. Greco Alejandro Serna Díaz
- 5. Manuel Isahit Martínez Contreras
- 6. Valentín Vaca Ciprés
+1.Axl Enrique Díaz Hernández
+2.Estefanía Radillo Domínguez
+3.Greco Alejandro Serna Díaz
+4.Manuel Isahit Martínez Contreras
+5.Valentín Vaca Ciprés
