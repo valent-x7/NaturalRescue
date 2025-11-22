@@ -5,7 +5,7 @@ from ui.healthbar import HealthBar
 from ui.timebar import TimeBar
 from ui.item import PuriCapsuleItem, ResourceCounter
 from ui.button import ImageButtonUI, ButtonUI
-from ui.utils import draw_text, get_text
+from ui.utils import draw_text, get_text, draw_text_optimized
 from os import getcwd
 from os.path import join
 from random import choice
@@ -15,6 +15,7 @@ class LevelThree:
     def __init__(self, game, screen: pygame.Surface):
         self.game_screen = screen # -> Game Screen
         self.wd = getcwd() # -> Working Directory
+        self.translations = game.translations # -> Traducciones
 
         # ? Scientist Sprites
         self.scientist_spritesheet = Spritesheet(join(self.wd, "img", "scientist_spritesheet.png"))
@@ -33,14 +34,14 @@ class LevelThree:
         self.setup_sprites() # -> Setup sprites elements
         self.setup_map() # -> Setup map
         self.setup_ui() # -> UI Elements
+        self.setup_fonts() # -> Setup Fonts
+        self.setup_text(game.current_lang) # -> Setup Text
 
         # ? --- Fonts ---
         self.message_font = pygame.font.Font(TITLE_FONT_PATH, 22)
         self.labdoor_font = pygame.font.Font(TITLE_FONT_PATH, 12)
 
         self.door_text_cache = {} # -> Guardar textos ya renderizados
-
-        self.translations = game.translations # -> Traducciones
 
     def run(self, game, events):
         self.game_screen.fill("black")
@@ -131,33 +132,31 @@ class LevelThree:
         new_state = self.check_new_state() # -> Check new state
 
         if game.paused: # -> Juego pausado
-                draw_text(self.game_screen, TITLE_FONT_PATH, 64,
-                        get_text(self.translations, game.current_lang, "paused-title"),
-                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4)
-                draw_text(self.game_screen, TITLE_FONT_PATH, 36,
-                        get_text(self.translations, game.current_lang, "paused-description"),
-                        "#FFFFFF", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
+            draw_text_optimized(self.game_screen, self.paused_title_font, self.txt_paused_title, "white",
+                                WINDOW_WIDTH / 2, WINDOW_WIDTH / 4)
+            draw_text_optimized(self.game_screen, self.paused_description_font, self.txt_paused_description, "white",
+                                WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
 
         if game.showing_quit_pop: # -> PopUp de salida
             self.game_screen.blit(self.scrim, [0, 0])
             pygame.draw.rect(self.game_screen, "#282D32", self.popup_rect)
             pygame.draw.rect(self.game_screen, "#969696", self.popup_rect, 2)
 
-            draw_text(self.game_screen, TITLE_FONT_PATH, 24, # -> Titulo
-                      get_text(self.translations, game.current_lang, "exit-game-notice-title") , "yellow",
-                      WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 20, # -> Descripción
-                    get_text(self.translations, game.current_lang, "exit-game-notice-description") , "white",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 30)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 18, # -> Elección
-                    get_text(self.translations, game.current_lang, "exit-game-notice-prompt") , "#C8C8C8",
-                    WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 20)
+            draw_text_optimized(self.game_screen, self.quit_title_font, self.txt_exit_title, "yellow",
+                                WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80) # -> Titulo
+            draw_text_optimized(self.game_screen, self.quit_description_font, self.txt_exit_description, "white",
+                                WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 30) # -> Descripción
+            draw_text_optimized(self.game_screen, self.quit_choice_font, self.txt_exit_choice, "#C8C8C8",
+                                WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 20) # -> Elección
             
             self.exit_btn.draw()
             self.go_back_btn.draw()
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
-            draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-go-back"), "white", WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85)
-        
+
+            draw_text_optimized(self.game_screen, self.quit_action_font, self.txt_btn_exit, "white",
+                                WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
+            draw_text_optimized(self.game_screen, self.quit_action_font, self.txt_btn_go_back, "white",
+                                WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85)
+    
         return new_state
 
     def setup_map(self):
@@ -294,6 +293,30 @@ class LevelThree:
         # -> PopUpButtons
         self.exit_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85), "#e32227", "#f24449", "idk", 200, 45)
         self.go_back_btn = ButtonUI(self.game_screen, (WINDOW_WIDTH / 2 + 155, WINDOW_HEIGHT / 2 + 85), "#228b22", "#2ecc40", "idk", 200, 45)
+
+    def setup_fonts(self):
+        # ? --- Paused Fonts
+        self.paused_title_font = pygame.font.Font(TITLE_FONT_PATH, 64) # -> Font titulo de pausa
+        self.paused_description_font = pygame.font.Font(TITLE_FONT_PATH, 36) # -> Font descripción de pausa
+
+        # ? --- Quit Fonts ---
+        self.quit_title_font = pygame.font.Font(TITLE_FONT_PATH, 24) # -> Quit Showing Title
+        self.quit_description_font = pygame.font.Font(TITLE_FONT_PATH, 20) # -> Quit Showing Description
+        self.quit_choice_font = pygame.font.Font(TITLE_FONT_PATH, 18) # -> Quit Showing Choice
+        self.quit_action_font = pygame.font.Font(TITLE_FONT_PATH, 14) # -> Quit Showing Action
+    
+    def setup_text(self, lang):
+        # ? --- Paused Menu ---
+        self.txt_paused_title = get_text(self.translations, lang, "paused-title")
+        self.txt_paused_description = get_text(self.translations, lang, "paused-description")
+
+        # ? -> --- Quit Showing Menu ---
+        self.txt_exit_title = get_text(self.translations, lang, "exit-game-notice-title")
+        self.txt_exit_description = get_text(self.translations, lang, "exit-game-notice-description")
+        self.txt_exit_choice = get_text(self.translations, lang, "exit-game-notice-prompt")
+
+        self.txt_btn_exit = get_text(self.translations, lang, "exit-btn-exit")
+        self.txt_btn_go_back = get_text(self.translations, lang, "exit-btn-go-back")
 
     def draw_messages(self, game, screen, messages, paused = False, showing_popup = False):
         #  Mostrar texto en rectángulo por 5 segundos
