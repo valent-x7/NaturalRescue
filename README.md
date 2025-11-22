@@ -111,6 +111,7 @@ AnimalRescue/
     └──sprites.py
 ```
 ## Contribuidores
+
 1.Axl Enrique Díaz Hernández
 2.Estefanía Radillo Domínguez
 3.Greco Alejandro Serna Díaz
