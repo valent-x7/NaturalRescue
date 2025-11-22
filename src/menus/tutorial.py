@@ -468,7 +468,7 @@ class Tutorial_levelthree:
 
     def draw(self, game, screen, events, current_lang):
         # --- 1. Fondo y Título ---
-        bg = pygame.image.load("assets/images/tutorial/background_forest.png").convert()
+        bg = pygame.image.load("assets/images/tutorial/background_lab.png").convert()
         bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
         screen.blit(bg, (0, 0))
         title = get_text(self.translations, current_lang, "tutorial-title-3")
