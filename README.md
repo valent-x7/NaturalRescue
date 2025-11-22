@@ -112,8 +112,8 @@ AnimalRescue/
 ```
 ## Contribuidores
 
-1.Axl Enrique Díaz Hernández
-2.Estefanía Radillo Domínguez
-3.Greco Alejandro Serna Díaz
-4.Manuel Isahit Martínez Contreras
-5.Valentín Vaca Ciprés
+1. Axl Enrique Díaz Hernández
+2. Estefanía Radillo Domínguez
+3. Greco Alejandro Serna Díaz
+4. Manuel Isahit Martínez Contreras
+5. Valentín Vaca Ciprés
