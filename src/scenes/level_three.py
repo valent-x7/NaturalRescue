@@ -13,6 +13,7 @@ from textwrap import wrap
 
 class LevelThree:
     def __init__(self, game, screen: pygame.Surface):
+        self.game = game
         self.game_screen = screen # -> Game Screen
         self.wd = getcwd() # -> Working Directory
         self.translations = game.translations # -> Traducciones
@@ -59,14 +60,14 @@ class LevelThree:
                     elif event.key == pygame.K_n:
                         game.showing_quit_pop = False
                     
-                elif self.exit_btn.is_clicked(event):
+                elif self.exit_btn.is_clicked(event, game.muted):
                     game.showing_quit_pop = False
                     game.paused = False
                     pygame.mixer.stop()
                     game.unload_current_level() # -> Eliminar nivel
                     return "MENU" # -> Salir al menú
             
-                elif self.go_back_btn.is_clicked(event):
+                elif self.go_back_btn.is_clicked(event, game.muted):
                     game.showing_quit_pop = False
 
             else:
@@ -76,29 +77,29 @@ class LevelThree:
                     elif event.key == pygame.K_p and not game.showing_quit_pop:
                         game.paused = not game.paused # -> Invertimos el valor de pausa
 
-                elif self.resume_button.is_clicked(event) and game.paused:
+                elif self.resume_button.is_clicked(event, game.muted) and game.paused:
                     game.paused = False
 
-                elif self.pause_button.is_clicked(event) and not game.paused:
+                elif self.pause_button.is_clicked(event, game.muted) and not game.paused:
                     game.paused = True
 
-                elif self.quit_button.is_clicked(event) and not game.paused:
+                elif self.quit_button.is_clicked(event, game.muted) and not game.paused:
                     game.showing_quit_pop = True
                     
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not game.paused:
-                    self.player.shoot((self.all_sprites, self.all_sprites.depth_sprites, self.capsules_sprites), self.player, event.pos,
+                    self.player.shoot(self.game, (self.all_sprites, self.all_sprites.depth_sprites, self.capsules_sprites), self.player, event.pos,
                                     self.all_sprites.camera_offset, self.all_sprites.zoom, self.capsule_img, self.capsule_dissolve_frames,
                                     self.capsule_throw_sound, self.capsule_impact_sound)
                 
                 elif event.type == self.enemy_event and len(self.enemy_sprites) < 3:
-                    Ghost((self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords),
+                    Ghost(game, (self.all_sprites, self.all_sprites.depth_sprites, self.enemy_sprites), choice(self.enemy_spawn_coords),
                         self.player, self.capsules_sprites, self.ghost_frames, self.ghost_dissolve_frames, self.ghost_impact_sound, game.current_difficulty)
 
                 elif event.type == self.pickup_event and len(self.pickup_coords) > 0:
                     option = choice(self.pickup_types)
 
                     frames = self.capsule_pickup_frames if option == "Item" else self.life_pickups_frames 
-                    Pickup((self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option,
+                    Pickup(game, (self.all_sprites, self.all_sprites.depth_sprites, self.pickup_sprites), self.player, option,
                            frames, choice(self.pickup_coords), self.pickup_coords, self.pickup_powerup_sound)
 
         self.healthbar.hp =  self.player.health
@@ -194,7 +195,7 @@ class LevelThree:
                     CollisionSprite((self.all_sprites.depth_sprites), "Collision", (obj.x, obj.y), image)
             
             elif obj.name == "Valve Position": # -> Valvulas
-                Valve((self.all_sprites, self.all_sprites.depth_sprites, self.valve_sprites), (obj.x, obj.y), self.valve_frames, self.valve_close_sound)
+                Valve(self.game, (self.all_sprites, self.all_sprites.depth_sprites, self.valve_sprites), (obj.x, obj.y), self.valve_frames, self.valve_close_sound)
             
             elif obj.name == "Ghost": # -> Coordenadas de enemigos
                 self.enemy_spawn_coords.append((obj.x, obj.y))
@@ -203,17 +204,17 @@ class LevelThree:
                 self.pickup_coords.append((obj.x, obj.y))
 
             elif obj.name == "Acid":
-                Acid((self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y), self.acid_frames, self.acid_burn_sound)
+                Acid(self.game, (self.all_sprites, self.all_sprites.background_sprites, self.acid_sprites), (obj.x, obj.y), self.acid_frames, self.acid_burn_sound)
             
             elif obj.name == "Door":
-                door = LabDoor((self.all_sprites, self.all_sprites.background_sprites, self.collision_sprites), (obj.x, obj.y), self.labdoor_frames, self.labdoor_sound)
+                door = LabDoor(self.game, (self.all_sprites, self.all_sprites.background_sprites, self.collision_sprites), (obj.x, obj.y), self.labdoor_frames, self.labdoor_sound)
 
                 if hasattr(obj, "properties") and "required_ghosts" in obj.properties:
                     door.required_ghosts = obj.properties["required_ghosts"]
 
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
-        self.player = Scientist(self.scientist_spritesheet, (self.all_sprites, self.all_sprites.depth_sprites),
+        self.player = Scientist(self.game, self.scientist_spritesheet, (self.all_sprites, self.all_sprites.depth_sprites),
                                 (player_obj.x, player_obj.y), self.collision_sprites, self.acid_sprites)
         
         # ? Enemy Event

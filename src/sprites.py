@@ -12,10 +12,11 @@ class Spritesheet:
         sprite = pygame.Surface([width, height], pygame.SRCALPHA)
         sprite.blit(self.sheet, (0,0), (x,y,width,height))
         return sprite
-    
+
 class Monkey(pygame.sprite.Sprite):
-    def __init__(self, spritesheet, x, y, groups, collision_sprites, water_collision_sprites, damage_sprites, plant_spots):
+    def __init__(self, game, spritesheet, x, y, groups, collision_sprites, water_collision_sprites, damage_sprites, plant_spots):
         super().__init__(groups)
+        self.game = game
         self.spritesheet = spritesheet
         self.width = TILE
         self.height = TILE
@@ -118,15 +119,16 @@ class Monkey(pygame.sprite.Sprite):
 
             # ? Llenar agua
             if self.water_amount < self.max_player_water:
-                self.refill_sound.play() # Tocamos sonido de refill
-                self.water_amount += 25
+               if not self.game.muted:
+                 self.refill_sound.play() # Tocamos sonido de refill
+            self.water_amount += 25
     
     # Disparar platanos
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom, banana_img, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot >= self.cooldown_shot and self.projectiles > 0:
             # ? Creamos bellota
-            Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, banana_img, throw_sound, impact_sound)
+            Acorn.launch(self.game, groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, banana_img, throw_sound, impact_sound)
             self.last_shot = current_time
             self.projectiles -= 1
 
@@ -231,7 +233,8 @@ class Monkey(pygame.sprite.Sprite):
                 
                 # Si es de daño y no estamos inmunes
                 if is_SpriteDamage and not self.invincible:
-                    self.hit_sound.play()
+                    if not self.game.muted:
+                     self.hit_sound.play()
                     self.health -= 10
 
                     # ? Activamos inmunidad
@@ -243,8 +246,9 @@ class Monkey(pygame.sprite.Sprite):
                 #     pass
 
 class Penguin(pygame.sprite.Sprite):
-    def __init__(self, x, y, spritesheet):
+    def __init__(self, game, x, y, spritesheet):
         super().__init__()
+        self.game = game
         self.wd = os.getcwd()
         self.spritesheet = spritesheet
         self.w = TILE
@@ -252,7 +256,7 @@ class Penguin(pygame.sprite.Sprite):
         self.lives = 3
         self.eggs = 0
         self.current_lives = 3
-        
+
         # --- Atributos de Estado y Animación ---
         self.moving = False
         self.direction = 'down'
@@ -272,24 +276,24 @@ class Penguin(pygame.sprite.Sprite):
         self.x_vel = 0
         self.y_vel = 0
         self.on_ground = False
-        
+
         # --- Carga de Animaciones ---
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 0, self.w, self.h),
                                self.spritesheet.get_sprite(64, 0, self.w, self.h)]
-        
+
         self.left_animation = [self.spritesheet.get_sprite(0, 32, self.w, self.h), 
                                self.spritesheet.get_sprite(32, 32, self.w, self.h),
                                self.spritesheet.get_sprite(64, 32, self.w, self.h)]
-        
+
         self.right_animation = [self.spritesheet.get_sprite(0, 64, self.w, self.h), 
                                 self.spritesheet.get_sprite(32, 64, self.w, self.h),
                                 self.spritesheet.get_sprite(64, 64, self.w, self.h)]
-        
+
         self.up_animation = [self.spritesheet.get_sprite(0, 96, self.w, self.h), 
                              self.spritesheet.get_sprite(32, 96, self.w, self.h),
                              self.spritesheet.get_sprite(64, 96, self.w, self.h)]
-        
+
         # --- Configuración de Imagen y Rectángulo ---
         self.original_image = self.down_animation[1] 
         self.image = self.original_image
@@ -322,22 +326,22 @@ class Penguin(pygame.sprite.Sprite):
                 self.image = self.right_animation[1]
             elif self.direction == "left":
                 self.image = self.left_animation[1]
-        
-        
+
         self.catch = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "pick.mp3"))
         self.catch.set_volume(1)
 
     def collect(self):
-        self.catch.play()
+        if not self.game.muted:
+         self.catch.play()
 
     def damage(self):
-        
+
         if not self.alive or self.is_dying or self.invulnerable:
             return
-        
-        self.damage_sfx.play()
+        if not self.game.muted:
+         self.damage_sfx.play()
         self.current_lives -= 1
-        
+
         if self.current_lives <= 0:
             self.alive = False
             self.is_dying = True
@@ -387,10 +391,10 @@ class Penguin(pygame.sprite.Sprite):
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
-        
+
         self.moving = False
         self.x_vel = 0
-        
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x_vel = -self.speed
             self.direction = 'left'
@@ -399,35 +403,36 @@ class Penguin(pygame.sprite.Sprite):
             self.x_vel = self.speed
             self.direction = 'right'
             self.moving = True
-            
+
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             self.direction = 'up'
             self.moving = True
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.direction = 'down'
             self.moving = True
-            
+
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
-            self.jump_sfx.play()
+            if not self.game.muted:
+                self.jump_sfx.play()
             self.y_vel = -12
             self.on_ground = False
 
     def update(self, delta_time, platforms):
         if self.is_damaged and self.invulnerable:
             self.damage_timer -= delta_time
-            
+
             # Efecto de parpadeo durante la invulnerabilidad
             if int(self.damage_timer * 10) % 2 == 0:  # Parpadeo cada 0.1 segundos
                 self.image.set_alpha(128)  # Semi-transparente
             else:
                 self.image.set_alpha(255)  # Normal
-            
+
             # Fin de la invulnerabilidad
             if self.damage_timer <= 0:
                 self.is_damaged = False
                 self.invulnerable = False
                 self.image.set_alpha(255)  # Restaurar opacidad normal
-        
+
         # 2. LÓGICA DE MUERTE DEFINITIVA
         if self.is_dying:
             self.dead_timer -= delta_time
@@ -447,15 +452,15 @@ class Penguin(pygame.sprite.Sprite):
 
         # 3. LÓGICA DE JUEGO NORMAL
         self.handle_input()
-        
+
         # Movimiento y colisión horizontal
         self.rect.x += self.x_vel
         self.handle_horizontal_collisions(platforms)
-        
+
         # Movimiento y colisión vertical
         self.apply_gravity()
         self.handle_vertical_collisions(platforms)
-        
+
         # Actualizaciones finales
         self.animate(self.moving, delta_time)
         self.mask = pygame.mask.from_surface(self.image)
@@ -479,8 +484,9 @@ class Penguin(pygame.sprite.Sprite):
         self.image = self.down_animation[1]
 
 class Scientist(pygame.sprite.Sprite):
-    def __init__(self, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
+    def __init__(self, game, spritesheet: Spritesheet, groups, position, collision_sprites, acid_sprites):
         super().__init__(groups)
+        self.game = game
         self.wd = os.getcwd()
 
         self.collision_sprites = collision_sprites
@@ -490,19 +496,19 @@ class Scientist(pygame.sprite.Sprite):
         self.down_frames = [spritesheet.get_sprite(0, 0, TILE, TILE),
                             spritesheet.get_sprite(32, 0, TILE, TILE),
                             spritesheet.get_sprite(64, 0, TILE, TILE)]
-        
+
         self.left_frames = [spritesheet.get_sprite(0, 32, TILE, TILE),
                             spritesheet.get_sprite(32, 32, TILE, TILE),
                             spritesheet.get_sprite(64, 32, TILE, TILE)]
-        
+
         self.right_frames = [spritesheet.get_sprite(0, 64, TILE, TILE),
                             spritesheet.get_sprite(32, 64, TILE, TILE),
                             spritesheet.get_sprite(64, 64, TILE, TILE)]
-        
+
         self.up_frames = [spritesheet.get_sprite(0, 96, TILE, TILE),
                             spritesheet.get_sprite(32, 96, TILE, TILE),
                             spritesheet.get_sprite(64, 96, TILE, TILE)]
-    
+
         self.current_frame = 1
         self.direction_frame = "down" # -> Imagen (Player caminando hacia abajo)
         self.image = self.down_frames[self.current_frame] # -> Imagen de inicio
@@ -542,6 +548,9 @@ class Scientist(pygame.sprite.Sprite):
         self.check_acid_collision()
         self.animate(self.moving, delta_time)
 
+        if self.game.muted:
+            self.footsteps_sound.stop()
+            
     def input(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -610,7 +619,7 @@ class Scientist(pygame.sprite.Sprite):
     def animate(self, moving, delta_time):
         if moving:
             self.current_frame += self.animation_speed * delta_time # -> Aumentamos frame
-            
+
             if self.direction_frame == "down":
                 self.image = self.down_frames[int(self.current_frame) % len(self.down_frames)]
             elif self.direction_frame == "up":
@@ -620,9 +629,13 @@ class Scientist(pygame.sprite.Sprite):
             elif self.direction_frame == "left":
                 self.image = self.left_frames[int(self.current_frame) % len(self.left_frames)]
 
-            if not self.footsteps_sound.get_num_channels(): # -> Sonido de pasos
+            if not self.footsteps_sound.get_num_channels() and not self.game.muted:
                 self.footsteps_sound.play(-1)
-        
+
+            else:
+
+                self.footsteps_sound.stop() # -> Detener el sonido de pasos
+
         else:
             if self.direction_frame == "down":
                 self.image = self.down_frames[1]
@@ -655,15 +668,16 @@ class Scientist(pygame.sprite.Sprite):
             self.health -= 5
             self.can_be_damaged = False
             self.last_time_damaged = pygame.time.get_ticks()
-            self.grunt_sound.play()
-            hit_acid[0].acid_burn.play()
+            if not self.game.muted:
+                self.grunt_sound.play()
+                hit_acid[0].acid_burn.play()
 
     # Disparar capsulas
-    def shoot(self, groups, player, mouse_pos, camera_offset, zoom, capsule_img, dissolve_frames, throw_sound, impact_sound):
+    def shoot(self, game,  groups, player, mouse_pos, camera_offset, zoom, capsule_img, dissolve_frames, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot >= self.cooldown_shot and self.projectiles > 0:
             # ? Creamos capsula
-            PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
+            PuriCapsule.launch(game, groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
             self.last_shot = current_time
             self.projectiles -= 1
 
@@ -674,7 +688,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
-# ? Clase Sprite de Collisión de Agua   
+# ? Clase Sprite de Collisión de Agua
 class WaterCollisionSprite(pygame.sprite.Sprite):
     def __init__(self, groups, name, position, image):
         super().__init__(groups)
@@ -684,7 +698,7 @@ class WaterCollisionSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(topleft = position)
 
-# ? Clase Sprite de Collisión     
+# ? Clase Sprite de Collisión
 class CollisionSprite(pygame.sprite.Sprite):
     def __init__(self, groups, name, position, image):
         super().__init__(groups)
@@ -720,9 +734,9 @@ class DamageSprite_2(pygame.sprite.Sprite):
 
 # ? Sprites de lugar de cultivo
 class PlantSpot(pygame.sprite.Sprite):
-    def __init__(self, groups, x, y):
+    def __init__(self, game, groups, x, y):
         super().__init__(groups)
-
+        self.game = game
         self.sprite_type = "Collision"
 
         # Working Directory
@@ -809,7 +823,8 @@ class PlantSpot(pygame.sprite.Sprite):
 
             if not self.is_used: # -> Si el espacio no esta usado
                 self.is_used = True # -> Plantar
-                self.shine_sound.play()
+                if not self.game.muted:
+                 self.shine_sound.play()
                 player.plant()
                 self.current_water = 0
 
@@ -817,13 +832,15 @@ class PlantSpot(pygame.sprite.Sprite):
                 # ? Spot a llenar
                 if player.water_amount > 0 and self.current_water < self.max_water:
                     player.water_amount -= 25 # Restamos agua al jugador
-                    self.upgrade_sound.play()
+                    if not self.game.muted:
+                     self.upgrade_sound.play()
                     self.current_water += 25 # Añadimos el agua al spot
                     self.current_water = min(self.current_water, self.max_water)  # Que no exceda el máximo
 
                     # ? Si ya se llenó al regar
                     if self.current_water == self.max_water:
-                        self.success_sound.play() # -> Sonido de éxito
+                        if not self.game.muted:
+                         self.success_sound.play() # -> Sonido de éxito
                         player.trees += 1 # -> Le sumamos al jugador
                         if player.health <= 110:
                             player.health += 10
@@ -832,15 +849,17 @@ class PlantSpot(pygame.sprite.Sprite):
                         self.is_complete = True # -> Completado
                 
                 else: # -> Si no hay agua para regar
-                    self.error_sound.play()
+                    if not self.game.muted:
+                     self.error_sound.play()
 
             # ? Cambiamos imagen si o si
             self.image = self.get_image_by_water()
 
 # ? Valvula
 class Valve(pygame.sprite.Sprite):
-    def __init__(self, groups, position, frames, close_sound):
+    def __init__(self, game, groups, position, frames, close_sound):
         super().__init__(groups)
+        self.game = game
         self.wd = os.getcwd() # -> Get working direction
 
         self.frames = frames
@@ -862,7 +881,8 @@ class Valve(pygame.sprite.Sprite):
         if self.check_player_collision(player) and keystate[pygame.K_h] and self.is_leaking:
             player.valves += 1
             self.is_leaking = False
-            self.close_sound.play()
+            if not self.game.muted:
+             self.close_sound.play()
 
         self.animate(delta_time)
 
@@ -936,7 +956,7 @@ class AllSprites(pygame.sprite.Group):
 
         # Dibujar superficie
         self.display_surface.blit(scaled_surf, (0, 0))
-        
+
 # ? Clase de los sprites!!
 class AllSprites3(pygame.sprite.Group):
     def __init__(self):
@@ -993,9 +1013,9 @@ class AllSprites3(pygame.sprite.Group):
 
 # ? Clase Platano
 class Acorn(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, direction, collision_sprites, image, throw_sound, impact_sound):
+    def __init__(self, game, groups, pos, direction, collision_sprites, image, throw_sound, impact_sound):
         super().__init__(groups)
-
+        self.game = game
         # ? Imagen y gráficos
         self.original_image = image
         self.image = self.original_image
@@ -1022,7 +1042,8 @@ class Acorn(pygame.sprite.Sprite):
         self.rotation_speed = 360
 
         # ? Sonido de throw
-        self.throw_sound.play()
+        if not self.game.muted:
+            self.throw_sound.play()
 
     def update(self, dt, events = None):
         # Descontamos tiempo de vida
@@ -1033,7 +1054,8 @@ class Acorn(pygame.sprite.Sprite):
         # Eliminamos sprite si su tiempo de vida pasó o colisiona
         if self.time_to_live <= 0 or self.check_collisions():
             self.kill()
-            self.impact_sound.play()
+            if not self.game.muted:
+                self.impact_sound.play()
         else:
             # Movemos sprite
             self.rect.center += self.direction * ACORN_SPEED * dt
@@ -1042,14 +1064,14 @@ class Acorn(pygame.sprite.Sprite):
         self.angle += self.rotation_speed * delta_time
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_frect(center = self.rect.center)
-    
+
     # ? Si choca con un sprite de collision
     def check_collisions(self):
         return pygame.sprite.spritecollideany(self, self.collision_sprites)
 
     # ? Este metodo creará una clase Acorn
     @classmethod 
-    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, image, throw_sound, impact_sound):
+    def launch(cls, game, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, image, throw_sound, impact_sound):
         # Definimos la posición del jugador
         player_pos = pygame.Vector2(player.rect.center)
 
@@ -1064,12 +1086,12 @@ class Acorn(pygame.sprite.Sprite):
         direction = target_pos - player_pos
 
         # ? Creamos bellota (Grupo, posicion jugador, dirección, sprites de colisión)
-        return cls(groups, player_pos, direction, collision_sprites, image, throw_sound, impact_sound)
-    
-class PuriCapsule(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, direction, collision_sprites, original_img, dissolve_frames, throw_sound, impact_sound):
-        super().__init__(groups)
+        return cls(game, groups, player_pos, direction, collision_sprites, image, throw_sound, impact_sound)
 
+class PuriCapsule(pygame.sprite.Sprite):
+    def __init__(self, game, groups, pos, direction, collision_sprites, original_img, dissolve_frames, throw_sound, impact_sound):
+        super().__init__(groups)
+        self.game = game
         # ? Imagen y gráficos
         self.original_image = original_img
         self.image = self.original_image
@@ -1098,8 +1120,8 @@ class PuriCapsule(pygame.sprite.Sprite):
         self.collision_sprites = collision_sprites
         self.angle = 0 
         self.rotation_speed = 360 # -> Velocidad de rotación
-
-        self.throw_sound.play()
+        if not self.game.muted:
+         self.throw_sound.play()
 
     def update(self, dt, events = None):
         if self.is_dissolving:
@@ -1112,7 +1134,8 @@ class PuriCapsule(pygame.sprite.Sprite):
 
         # Eliminamos sprite si su tiempo de vida pasó o colisiona
         if self.time_to_live <= 0 or self.check_collisions():
-            self.impact_sound.play()
+            if not self.game.muted:
+             self.impact_sound.play()
             self.is_dissolving = True
             self.current_disolve_frame = 0
             return
@@ -1140,7 +1163,7 @@ class PuriCapsule(pygame.sprite.Sprite):
             self.kill() # -> Matar sprite después de animar
 
     @classmethod # * Crear PuriCapsule
-    def launch(cls, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound):
+    def launch(cls, game, groups, player, mouse_pos, camera_offset, zoom, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound):
         player_pos = pygame.Vector2(player.rect.center) # -> Posición del jugador
 
         # ? La posición real del mouse cuidando el zoom!!
@@ -1151,12 +1174,13 @@ class PuriCapsule(pygame.sprite.Sprite):
         direction = target_pos - player_pos # -> Dirección
 
         # ? Creamos puricapsula (Grupo, posicion jugador, dirección, sprites de colisión)
-        return cls(groups, player_pos, direction, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
+        return cls(game, groups, player_pos, direction, collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
 
 # ? Sprite de enemigos (tornados)
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, tornado_frames, smog_frames, sizzle, swoosh, difficulty = "normal"):
+    def __init__(self, game, groups, pos, player, collision_sprites, water_sprites, plant_spots, acorn_group, tornado_frames, smog_frames, sizzle, swoosh, difficulty = "normal"):
         super().__init__(groups)
+        self.game = game
         self.player = player # -> Jugador
 
         # ? Lógica de evasión
@@ -1264,11 +1288,13 @@ class Enemy(pygame.sprite.Sprite):
 
         if hit_acorn: # -> Si una bellota golpea
             for acorn in hit_acorn:
-                self.sizzle_sound.play()
+                if not self.game.muted:
+                 self.sizzle_sound.play()
                 self.health -= 1 # -> Bajamos vida
 
                 if self.health <= 0:
-                    self.swoosh_sound.play()
+                    if not self.game.muted:
+                     self.swoosh_sound.play()
                     self.kill() # -> Matamos al sprite
                     return
                 
@@ -1283,13 +1309,15 @@ class Enemy(pygame.sprite.Sprite):
 
         if self.hitbox_rect.colliderect(self.player.hitbox_rect) and self.can_damage:
             self.player.health -= self.base_damage
-            self.player.hit_sound.play()
+            if not self.game.muted:
+             self.player.hit_sound.play()
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
 
 class WaterEnemy(pygame.sprite.Sprite):
-    def __init__(self, position, player, difficulty="normal"):
+    def __init__(self, game, position, player, difficulty="normal"):
         super().__init__()
+        self.game = game
         self.wd = os.getcwd()
 
         self.frames = [pygame.image.load(os.path.join("assets", "images", "water", f"{i}.png")).convert_alpha() for i in range(1, 4)]
@@ -1307,17 +1335,18 @@ class WaterEnemy(pygame.sprite.Sprite):
             self.speed = 20.0
         else:
             self.speed = 32.0
-            
+
         self.animation_speed = 4
         self.player = player
 
         self.mask = pygame.mask.from_surface(self.image)
-        
+
         self.last_debug_time = 0
         self.water_vol = 0.5
         self.water_sfx = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "waterloop.wav"))
         self.water_sfx.set_volume(self.water_vol)
-        self.water_sfx.play(loops=1)
+        if not self.game.muted:
+            self.water_sfx.play(-1)
 
     def update(self, delta_time, events=None):
         movement = self.speed * delta_time
@@ -1327,15 +1356,22 @@ class WaterEnemy(pygame.sprite.Sprite):
         self.animate(delta_time)
         self.mask = pygame.mask.from_surface(self.image)
 
+        if self.game.muted:
+            self.water_sfx.stop()
+        elif (
+            not self.water_sfx.get_num_channels()
+        ):  # Si no está sonando y NO está muteado
+            self.water_sfx.play(-1)
+
     def animate(self, delta_time):
         self.current_frame += self.animation_speed * delta_time
-        
+
         new_frame_index = int(self.current_frame) % len(self.frames)
         new_image = self.frames[new_frame_index]
-        
+
         if new_image is not self.image:
             self.image = new_image
-        
+
     def reset(self):
         self.rect.topleft = self.initial_position
         self.y_float = float(self.rect.y)
@@ -1368,9 +1404,9 @@ class Helicopter(pygame.sprite.Sprite):
             self.image = new_image
 
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, groups, position, player, capsules_group, frames, dissolve_frames, impact_sound, difficulty = "normal"):
+    def __init__(self, game, groups, position, player, capsules_group, frames, dissolve_frames, impact_sound, difficulty = "normal"):
         super().__init__(groups) # -> Grupos
-        
+        self.game = game
         self.frames = frames
         self.current_frame = 0
         self.dissolve_frames = dissolve_frames
@@ -1452,7 +1488,8 @@ class Ghost(pygame.sprite.Sprite):
             self.player.health -= self.base_damage
             self.player.last_time_damaged = pygame.time.get_ticks()
             self.player.can_be_damaged = False
-            self.player.ouch_sound.play()
+            if not self.game.muted:
+             self.player.ouch_sound.play()
 
             self.can_damage = False # -> No puede hacer daño y reiniciamos lógica de cooldown
             self.damage_timer = self.damage_cooldown
@@ -1472,7 +1509,8 @@ class Ghost(pygame.sprite.Sprite):
                 a_new_hit_occured = True
                 
                 if self.can_be_damaged:
-                    self.impact_sound.play()
+                    if not self.game.muted:
+                     self.impact_sound.play()
                     self.health -= 1
 
                     if self.health <= 0 and not self.is_dissolving:
@@ -1494,11 +1532,11 @@ class Ghost(pygame.sprite.Sprite):
             self.player.health = min(self.player.health + 1, SCIENTIST_HEALTH)
             self.player.ghosts += 1
             return
-        
-class Acid(pygame.sprite.Sprite):
-    def __init__(self, groups, position, frames, burn_sound):
-        super().__init__(groups)
 
+class Acid(pygame.sprite.Sprite):
+    def __init__(self, game,  groups, position, frames, burn_sound):
+        super().__init__(groups)
+        self.game = game
         self.acid_frames = frames
         self.current_frame = 0
         self.image = self.acid_frames[self.current_frame]
@@ -1520,9 +1558,9 @@ class Acid(pygame.sprite.Sprite):
         self.image = self.acid_frames[int(self.current_frame) % len(self.acid_frames)]
 
 class LabDoor(pygame.sprite.Sprite):
-    def __init__(self, groups, position, frames, metalic_door_sound):
+    def __init__(self, game, groups, position, frames, metalic_door_sound):
         super().__init__(groups)
-
+        self.game = game
         self.door_frames = frames
         self.current_frame = 0
 
@@ -1544,7 +1582,8 @@ class LabDoor(pygame.sprite.Sprite):
     def open(self, delta_time):
         if not self.is_open:
             self.is_open = True
-            self.metalic_door.play()
+            if not self.game.muted:
+             self.metalic_door.play()
 
         self.current_frame += self.animation_speed * delta_time
         if int(self.current_frame) < len(self.door_frames):
@@ -1574,8 +1613,9 @@ class Egg(pygame.sprite.Sprite):
         self.image = self.egg_frames[int(self.current_frame) % len(self.egg_frames)]
 
 class Pickup(pygame.sprite.Sprite):
-    def __init__(self, groups, player, type, frames, pos, coords, sound):
+    def __init__(self, game, groups, player, type, frames, pos, coords, sound):
         super().__init__(groups)
+        self.game = game
         if pos in coords:
             coords.remove(pos) # -> Quitar posición
 
@@ -1610,7 +1650,8 @@ class Pickup(pygame.sprite.Sprite):
                 self.player.health = min(self.player.health + 10, SCIENTIST_HEALTH)
             else:
                 self.player.projectiles += 12
-            self.sound.play()
+            if not self.game.muted:
+             self.sound.play()
             self.despawn()
             return
         

@@ -22,9 +22,18 @@ class Game:
         # Si hay música sonando, hacemos fadeout
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.fadeout(fade_ms)
+
         # Cargamos y reproducimos la nueva música
         pygame.mixer.music.load(filepath)
         pygame.mixer.music.set_volume(volume)
+        pygame.mixer.music.play(loop)
+
+        # Verificamos si el juego está muteado antes de poner volumen
+        if hasattr(self, "muted") and self.muted:
+            pygame.mixer.music.set_volume(0) # Si está muteado, volumen 0
+        else:
+            pygame.mixer.music.set_volume(volume) # Si no, volumen normal
+
         pygame.mixer.music.play(loop)
 
     def play_music_once(self, path, key):
@@ -80,6 +89,10 @@ class Game:
         self.tutorial_2_done = False 
         self.tutorial_3_done = False
 
+        # ? Variable para saber si está muteado
+        self.muted = False 
+        self.saved_volume = 0.5 # Para recordar el volumen anterior
+
     # ? Cargar el lenguaje y crear botones
     def reload_language(self, lang):
         # ? Actualizar (crear) los botones en base al lenguaje
@@ -90,6 +103,25 @@ class Game:
 
         if self.Level_Select_Menu:
             self.Level_Select_Menu.setup_buttons(lang)
+
+    # ? Función para alternar el silencio
+    def toggle_mute(self):
+        self.muted = not self.muted # Cambia de True a False y viceversa
+
+        if self.muted:
+            # Guardar y silenciar MÚSICA
+            current_vol = pygame.mixer.music.get_volume()
+            if current_vol > 0:
+                self.saved_volume = current_vol
+            pygame.mixer.music.set_volume(0)
+
+            # Detener todos los EFECTOS DE SONIDO actuales
+            pygame.mixer.stop()
+
+        else:
+            # Restaurar MÚSICA
+            vol_to_restore = getattr(self, "saved_volume", 0.5)
+            pygame.mixer.music.set_volume(vol_to_restore)
 
     # ? Este metodo creará las instancias de tutorial
     def setup_tutorial(self):

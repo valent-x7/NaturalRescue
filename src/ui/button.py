@@ -58,10 +58,14 @@ class Button:
         self.screen.blit(self.image, self.image_rect)
 
     # Detectar clic
-    def is_clicked(self, event):
+    def is_clicked(self, event, is_muted=False):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.top_rect.collidepoint(event.pos):
-                self.sound.play()
+
+                # SOLO reproducimos si NO está muteado
+                if hasattr(self, "sound") and not is_muted:
+                    self.sound.play()
+                    
                 return True
         return False
 
@@ -81,12 +85,17 @@ class ImageButtonUI:
         self.screen.blit(self.image, self.rect)
 
     # Detectar clic
-    def is_clicked(self, event):
+    def is_clicked(self, event, is_muted=False):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
+
+                # SOLO reproducimos si NO está muteado
+                if hasattr(self, "sound") and not is_muted:
+                    self.sound.play()
+                    
                 return True
         return False
-    
+
 class ButtonUI:
     def __init__(self, screen, position, color, hover_color, text, width, height, thickness = 2):
         self.screen = screen
@@ -115,8 +124,13 @@ class ButtonUI:
             pygame.draw.rect(self.screen, self.hover_color, self.rect, 0, 12)
 
     # Detectar clic
-    def is_clicked(self, event):
+    def is_clicked(self, event, is_muted=False):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
+                
+                # SOLO reproducimos si NO está muteado
+                if hasattr(self, "sound") and not is_muted:
+                    self.sound.play()
+                    
                 return True
         return False

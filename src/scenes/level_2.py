@@ -10,14 +10,19 @@ from ui.item import EggItem, LivesDisplay
 from textwrap import wrap
 
 class Level_two:
+
     def __init__(self, game, screen):
         self.game_screen = screen
         self.game = game
         self.wd = getcwd()
 
         # Spritesheets y recursos
-        self.penguin_spritesheet = Spritesheet(path.join(self.wd, "img", "penguin_spritesheet.png"))
-        self.penguin_icon_path = path.join(self.wd, "assets", "images", "items", "penguinheart.png")
+        self.penguin_spritesheet = Spritesheet(
+            path.join(self.wd, "img", "penguin_spritesheet.png")
+        )
+        self.penguin_icon_path = path.join(
+            self.wd, "assets", "images", "items", "penguinheart.png"
+        )
         map_path = path.join(self.wd, "assets", "maps", "tmx", "ice.tmx")
         self.map = load_pygame(map_path)
         self.level_width = self.map.width * TILE
@@ -30,11 +35,19 @@ class Level_two:
         self.visible_h = int(WINDOW_HEIGHT / self.zoom)
 
         # --- Fondos con parallax ---
-        bg_original = pygame.image.load(path.join(self.wd, 'img', 'bgiceberg.png')).convert()
-        iceberg_bg = pygame.image.load(path.join(self.wd, 'img', 'icebergbg.png')).convert_alpha()
+        bg_original = pygame.image.load(
+            path.join(self.wd, "img", "bgiceberg.png")
+        ).convert()
+        iceberg_bg = pygame.image.load(
+            path.join(self.wd, "img", "icebergbg.png")
+        ).convert_alpha()
 
-        ZOOMED_W, ZOOMED_H = int(WINDOW_WIDTH * self.zoom), int(WINDOW_HEIGHT * self.zoom)
-        self.bg_far = pygame.transform.scale(bg_original, (ZOOMED_W*0.6, ZOOMED_H*0.6))
+        ZOOMED_W, ZOOMED_H = int(WINDOW_WIDTH * self.zoom), int(
+            WINDOW_HEIGHT * self.zoom
+        )
+        self.bg_far = pygame.transform.scale(
+            bg_original, (ZOOMED_W * 0.6, ZOOMED_H * 0.6)
+        )
         self.bg_near = pygame.transform.scale(iceberg_bg, (ZOOMED_W, ZOOMED_H))
         self.parallax_bg_factor = 0.2
         self.parallax_ice_factor = 0.5
@@ -53,19 +66,32 @@ class Level_two:
 
         # --- Jugador ---
         self.penguin_start_pos = (TILE * 8, TILE * 28)
-        self.penguin = Penguin(*self.penguin_start_pos, self.penguin_spritesheet)
+
+        # <--- CAMBIO IMPORTANTE: Pasamos self.game al Pingüino
+        self.penguin = Penguin(
+            self.game, *self.penguin_start_pos, self.penguin_spritesheet
+        )
+
         self.all_sprites.add(self.penguin, layer=6)
         self.dynamic_sprites.add(self.penguin)
 
         # --- Helicóptero (meta) ---
+        # (Si el helicóptero tiene sonido, también pásale self.game, si no, déjalo así)
         self.helicopter = Helicopter((TILE * 31, -TILE * 3), self.penguin)
+
         self.all_sprites.add(self.helicopter, layer=10)
         self.dynamic_sprites.add(self.helicopter)
         self.win_sprites.add(self.helicopter)
 
         # --- Huevos ---
         self.eggs_group = pygame.sprite.Group()
-        for pos in [(40*TILE, 23*TILE), (56*TILE, 8*TILE), (7*TILE, 16*TILE), (18*TILE, 4*TILE), (58*TILE, 16*TILE)]:
+        for pos in [
+            (40 * TILE, 23 * TILE),
+            (56 * TILE, 8 * TILE),
+            (7 * TILE, 16 * TILE),
+            (18 * TILE, 4 * TILE),
+            (58 * TILE, 16 * TILE),
+        ]:
             egg = Egg(pos)
             self.all_sprites.add(egg, layer=12)
             self.eggs_group.add(egg)
@@ -78,8 +104,12 @@ class Level_two:
         self.setup_ui()
 
         # --- Cámara y caché ---
-        self.level_surface = pygame.Surface((self.visible_w, self.visible_h), pygame.SRCALPHA)
-        self.static_sprites_cache = pygame.Surface((self.level_width, self.level_height), pygame.SRCALPHA)
+        self.level_surface = pygame.Surface(
+            (self.visible_w, self.visible_h), pygame.SRCALPHA
+        )
+        self.static_sprites_cache = pygame.Surface(
+            (self.level_width, self.level_height), pygame.SRCALPHA
+        )
         self.create_static_cache()
         self.camera_x, self.camera_y = 0, max(0, self.level_height - self.visible_h)
         self.precalculate_masks()
@@ -115,7 +145,7 @@ class Level_two:
 
     def setup_water(self):
         start_pos = (0, self.level_height)
-        self.water = WaterEnemy(start_pos, self.penguin, self.game.current_difficulty)
+        self.water = WaterEnemy(self.game, start_pos, self.penguin, self.game.current_difficulty)
         scaled_width = self.level_width
         water_img_height = self.water.image.get_height()
 
@@ -226,7 +256,7 @@ class Level_two:
             draw_text(self.game_screen, TITLE_FONT_PATH, 36,
                     get_text(self.translations, game.current_lang, "paused-description"),
                     "black", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3)
-            
+
         if game.showing_quit_pop: # -> PopUp de salida
             self.game_screen.blit(self.scrim, [0, 0])
             pygame.draw.rect(self.game_screen, "#282D32", self.popup_rect)
@@ -241,7 +271,7 @@ class Level_two:
             draw_text(self.game_screen, TITLE_FONT_PATH, 18, # -> Elección
                     get_text(self.translations, game.current_lang, "exit-game-notice-prompt") , "#C8C8C8",
                     WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2  + 20)
-            
+
             self.exit_btn.draw()
             self.go_back_btn.draw()
             draw_text(self.game_screen, TITLE_FONT_PATH, 14, get_text(self.translations, game.current_lang, "exit-btn-exit"), "white", WINDOW_WIDTH / 2 - 155, WINDOW_HEIGHT / 2 + 85)
@@ -265,20 +295,20 @@ class Level_two:
                             pygame.mixer.stop()
                             game.unload_current_level() # -> Eliminar nivel
                             return "MENU" # -> Salir al menú
-                        
+
                         elif e.key == pygame.K_n:
                             game.showing_quit_pop = False
-                        
+
                     elif self.exit_btn.is_clicked(e):
-                            game.showing_quit_pop = False
-                            game.paused = False
-                            pygame.mixer.stop()
-                            game.unload_current_level() # -> Eliminar nivel
-                            return "MENU" # -> Salir al menú
-                    
+                        game.showing_quit_pop = False
+                        game.paused = False
+                        pygame.mixer.stop()
+                        game.unload_current_level() # -> Eliminar nivel
+                        return "MENU" # -> Salir al menú
+
                     elif self.go_back_btn.is_clicked(e):
-                            game.showing_quit_pop = False
-                
+                        game.showing_quit_pop = False
+
                 else:
                     if e.type == pygame.QUIT:
                         return "SALIR"
@@ -291,7 +321,7 @@ class Level_two:
 
                         elif e.key == pygame.K_ESCAPE:
                             return "SALIR"
-                    
+
                     elif self.resume_button.is_clicked(e) and game.paused:
                         game.paused = False
 
@@ -314,7 +344,6 @@ class Level_two:
                 return "GAMEOVER"
 
         return "LEVEL_2"
-
 
     # ====================== COLISIONES Y OTROS ======================
 
@@ -373,7 +402,7 @@ class Level_two:
 
     def draw_lives(self):
         self.lives_display.draw(self.game_screen, self.penguin.current_lives)
-    
+
     def draw_messages(self, game, screen, messages):
         #  Mostrar texto en rectángulo por 5 segundos
         if not hasattr(self, "message_state"):
@@ -382,7 +411,7 @@ class Level_two:
                 "index": 0,
                 "start-time": pygame.time.get_ticks()
             }
-        
+
         state = self.message_state
 
         if state["index"] >= len(state["messages_list"]):

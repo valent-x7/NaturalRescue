@@ -90,12 +90,13 @@ class MainMenu:
 
         # ? Recorremos eventos
         for event in events:
-            if self.play_btn.is_clicked(event):
+            
+            if self.play_btn.is_clicked(event, game.muted):
                 return "LEVEL_SELECT"
 
-            elif self.settings_btn.is_clicked(event):
+            elif self.settings_btn.is_clicked(event, game.muted):
                 return "SETTINGS"
-            elif self.exit_btn.is_clicked(event):
+            elif self.exit_btn.is_clicked(event, game.muted):
                 return "SALIR"
 
         return "MENU"
