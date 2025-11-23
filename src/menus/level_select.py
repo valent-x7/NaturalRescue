@@ -38,10 +38,14 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         self.screen.blit(text_surface, text_rect)
 
-    def is_clicked(self, event):
+    def is_clicked(self, event, is_muted=False):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.sound.play()
+                
+                # SOLO reproducimos si NO está muteado
+                if hasattr(self, "sound") and not is_muted:
+                    self.sound.play()
+                    
                 return True
         return False
 
@@ -101,20 +105,20 @@ class LevelSelectMenu:
                     return "MENU"
                 
             # ? Manejar niveles
-            elif self.level1_btn.is_clicked(event):
+            elif self.level1_btn.is_clicked(event, game.muted):
                 return "START_LEVEL_1" # -> Nivel 1
             
-            elif self.level2_btn.is_clicked(event):
+            elif self.level2_btn.is_clicked(event, game.muted):
                 return "START_LEVEL_2" # -> Nivel 2
             
-            elif self.level3_btn.is_clicked(event):
+            elif self.level3_btn.is_clicked(event, game.muted):
                 return "START_LEVEL_3" # -> Nivel 3
             
-            elif self.normal_difficulty_btn.is_clicked(event):
+            elif self.normal_difficulty_btn.is_clicked(event, game.muted):
                 set_difficulty("config.json", "normal")
                 game.current_difficulty = "normal"
 
-            elif self.advanced_difficulty_btn.is_clicked(event):
+            elif self.advanced_difficulty_btn.is_clicked(event, game.muted):
                 set_difficulty("config.json", "advanced")
                 game.current_difficulty = "advanced"
                 

@@ -13,6 +13,7 @@ from textwrap import wrap
 
 class LevelOne:
     def __init__(self, game, screen: pygame.Surface):
+        self.game = game
         self.game_screen = screen # -> Pantalla del juego
         self.wd = getcwd() # -> Working Directory
 
@@ -114,14 +115,14 @@ class LevelOne:
                     elif event.key == pygame.K_n:
                         game.showing_quit_pop = False
                 
-                elif self.exit_btn.is_clicked(event):
+                elif self.exit_btn.is_clicked(event, game.muted):
                     game.showing_quit_pop = False
                     game.paused = False
                     pygame.mixer.stop()
                     game.unload_current_level() # -> Eliminar nivel
                     return "MENU" # -> Salir al menú
                 
-                elif self.go_back_btn.is_clicked(event):
+                elif self.go_back_btn.is_clicked(event, game.muted):
                     game.showing_quit_pop = False
 
             else:
@@ -131,13 +132,13 @@ class LevelOne:
                     elif event.key == pygame.K_p and not game.showing_quit_pop:
                         game.paused = not game.paused # -> Invertimos el valor de pausa
             
-                elif self.resume_button.is_clicked(event) and game.paused: # -> Reanudar
+                elif self.resume_button.is_clicked(event, game.muted) and game.paused: # -> Reanudar
                     game.paused = False
 
-                elif self.pause_button.is_clicked(event) and not game.paused: # -> Pausar
+                elif self.pause_button.is_clicked(event, game.muted) and not game.paused: # -> Pausar
                     game.paused = True
 
-                elif self.quit_button.is_clicked(event) and not game.paused: # -> Salir
+                elif self.quit_button.is_clicked(event, game.muted) and not game.paused: # -> Salir
                     game.showing_quit_pop = True
 
                 # ? Crear bellotas
@@ -147,7 +148,7 @@ class LevelOne:
                 
                 # ? Crear enemigos
                 elif event.type == self.enemy_event and len(self.enemy_sprites) < 5:
-                    Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
+                    Enemy(game, (self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
                         self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites, self.tornado_frames,
                         self.smog_frames, self.tornado_sizzle_sound, self.tornado_swoosh_sound, game.current_difficulty)
                     
@@ -155,7 +156,7 @@ class LevelOne:
                     option = choice(self.pickup_types)
 
                     frames = self.banana_pickups_frames if option == "Item" else self.life_pickups_frames 
-                    Pickup((self.all_sprites, self.pickup_sprites), self.player, option,
+                    Pickup(game, (self.all_sprites, self.pickup_sprites), self.player, option,
                            frames, choice(self.pickup_coords), self.pickup_coords, self.pickup_powerup_sound)
                 
         if game.showing_quit_pop: # -> PopUp de salida
@@ -222,7 +223,7 @@ class LevelOne:
 
             # -> PlantSpots
             elif obj.name == "Plant Position":
-                PlantSpot((self.all_sprites, self.plant_spots), obj.x, obj.y)
+                PlantSpot(self.game, (self.all_sprites, self.plant_spots), obj.x, obj.y)
             
             elif obj.name == "ObjectCollision":
                 CollisionSpriteRect((self.collision_sprites), obj.x, obj.y, obj.width, obj.height)
@@ -239,7 +240,7 @@ class LevelOne:
 
         # ? Create Player
         player_obj = map.get_object_by_name("Player")
-        self.player = Monkey(self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, 
+        self.player = Monkey(self.game, self.monkey_spritesheet, player_obj.x, player_obj.y, self.all_sprites, self.collision_sprites, 
                             self.water_sprites, self.damage_sprites, self.plant_spots)
         
         # ? Enemy Event
