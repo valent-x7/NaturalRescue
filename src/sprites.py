@@ -21,7 +21,7 @@ class Monkey(pygame.sprite.Sprite):
         self.height = TILE
         self.health = MONKEY_HEALTH
         self.seeds = MONKEY_SEEDS
-        self.acorns = MONKEY_ACORNS
+        self.projectiles = MONKEY_ACORNS
         self.trees = 0
 
         self.down_animation = [self.spritesheet.get_sprite(0,0, self.width, self.height), 
@@ -124,11 +124,11 @@ class Monkey(pygame.sprite.Sprite):
     # Disparar platanos
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom, banana_img, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot >= self.cooldown_shot and self.acorns > 0:
+        if current_time - self.last_shot >= self.cooldown_shot and self.projectiles > 0:
             # ? Creamos bellota
             Acorn.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, banana_img, throw_sound, impact_sound)
             self.last_shot = current_time
-            self.acorns -= 1
+            self.projectiles -= 1
 
     def input(self, events):
         for event in events:
@@ -525,7 +525,7 @@ class Scientist(pygame.sprite.Sprite):
         self.last_axis = None # -> Ultima tecla
         self.health = SCIENTIST_HEALTH
         self.speed = SCIENTIST_SPEED
-        self.capsules = 100
+        self.projectiles = 100
         self.animation_speed = 14
         self.ghosts = 0
 
@@ -661,11 +661,11 @@ class Scientist(pygame.sprite.Sprite):
     # Disparar capsulas
     def shoot(self, groups, player, mouse_pos, camera_offset, zoom, capsule_img, dissolve_frames, throw_sound, impact_sound):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot >= self.cooldown_shot and self.capsules > 0:
+        if current_time - self.last_shot >= self.cooldown_shot and self.projectiles > 0:
             # ? Creamos capsula
             PuriCapsule.launch(groups, player, mouse_pos, camera_offset, zoom, self.collision_sprites, capsule_img, dissolve_frames, throw_sound, impact_sound)
             self.last_shot = current_time
-            self.capsules -= 1
+            self.projectiles -= 1
 
 # ? Clase Sprite Normal
 class Sprite(pygame.sprite.Sprite):
@@ -1574,7 +1574,7 @@ class Egg(pygame.sprite.Sprite):
         self.image = self.egg_frames[int(self.current_frame) % len(self.egg_frames)]
 
 class Pickup(pygame.sprite.Sprite):
-    def __init__(self, groups, player, type, frames, pos, coords):
+    def __init__(self, groups, player, type, frames, pos, coords, sound):
         super().__init__(groups)
         if pos in coords:
             coords.remove(pos) # -> Quitar posición
@@ -1593,6 +1593,7 @@ class Pickup(pygame.sprite.Sprite):
         self.speed_animation = 4
         self.creation_time = pygame.time.get_ticks() # -> Tiempo de creación
         self.lifetime = 20000 # -> 20 segundos
+        self.sound = sound
 
     def update(self, delta_time, *args):
         self.animate(delta_time)
@@ -1608,7 +1609,8 @@ class Pickup(pygame.sprite.Sprite):
             if self.type == "Life":
                 self.player.health = min(self.player.health + 10, SCIENTIST_HEALTH)
             else:
-                self.player.capsules += 12
+                self.player.projectiles += 12
+            self.sound.play()
             self.despawn()
             return
         

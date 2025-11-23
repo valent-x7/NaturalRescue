@@ -27,6 +27,7 @@ class LevelOne:
         self.plant_spots = pygame.sprite.Group() # -> Lugares de cultivo
         self.acorn_sprites = pygame.sprite.Group() # -> Bellotas
         self.enemy_sprites = pygame.sprite.Group() # -> Enemigos
+        self.pickup_sprites = pygame.sprite.Group() # -> PickUps
 
         self.setup_sprites() # -> Preparar elementos para Sprites
         self.setup_map() # -> Crear mapa
@@ -83,7 +84,7 @@ class LevelOne:
                                       self.player.seeds) # -> Brotes de árbol
             self.waterbar_item.draw(self.game_screen, self.txt_water_tank, 
                                     get_text(self.translations, game.current_lang, water_item_key)) # -> Tanque de agua
-            self.acorn_item.draw(self.game_screen, self.txt_acorn, self.player.acorns)
+            self.acorn_item.draw(self.game_screen, self.txt_acorn, self.player.projectiles)
             self.plantSpotsCounter.draw(self.game_screen, self.txt_trees, self.player.trees) 
             self.resume_button.draw()
             self.pause_button.draw()
@@ -149,6 +150,13 @@ class LevelOne:
                     Enemy((self.all_sprites, self.enemy_sprites), choice(self.spawn_enemies_cords), self.player,
                         self.collision_sprites, self.water_sprites, self.plant_spots, self.acorn_sprites, self.tornado_frames,
                         self.smog_frames, self.tornado_sizzle_sound, self.tornado_swoosh_sound, game.current_difficulty)
+                    
+                elif event.type == self.pickup_event and len(self.pickup_coords) > 0:
+                    option = choice(self.pickup_types)
+
+                    frames = self.banana_pickups_frames if option == "Item" else self.life_pickups_frames 
+                    Pickup((self.all_sprites, self.pickup_sprites), self.player, option,
+                           frames, choice(self.pickup_coords), self.pickup_coords, self.pickup_powerup_sound)
                 
         if game.showing_quit_pop: # -> PopUp de salida
             self.game_screen.blit(self.scrim, [0, 0])
@@ -194,6 +202,7 @@ class LevelOne:
 
         # -> Enemies Coords
         self.spawn_enemies_cords = []
+        self.pickup_coords = [] # -> Coords de Spawn PickUps
 
         # ? Objects
         for obj in map.objects:
@@ -222,6 +231,9 @@ class LevelOne:
             elif obj.name == "Enemy":
                 self.spawn_enemies_cords.append((obj.x, obj.y)) # -> Guardamos las coords en la lista
 
+            elif obj.name == "PickUp":
+                self.pickup_coords.append((obj.x, obj.y)) # -> Guardamos en PickUps coords
+
         self.map_width = map.width * TILE
         self.map_height = map.height * TILE
 
@@ -233,6 +245,11 @@ class LevelOne:
         # ? Enemy Event
         self.enemy_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemy_event, 3000) # -> Evento de enemigos cada 3 sg
+
+        # ? Pickup Event
+        self.pickup_types = ["Life", "Item"]
+        self.pickup_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.pickup_event, 8000) # -> Cada 8 sg
 
     def setup_ui(self):
         self.setup_image_for_ui() # -> Imagenes para la UI
@@ -273,6 +290,13 @@ class LevelOne:
         self.smog_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "enemies", "smog", f"{i}.png")).convert_alpha() for i in range(1, 4)]
         self.tornado_sizzle_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "sizzle.mp3"))
         self.tornado_swoosh_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "swoosh.mp3"))
+
+        # ? --- PickUps ---
+        self.banana_pickups_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "banana", f"{x}.png")).convert_alpha() for x in range(1, 6)]
+
+        self.life_pickups_frames = [pygame.image.load(os.path.join(self.wd, "assets", "images", "pickups", "heart", f"{x}.png")).convert_alpha() for x in range(1, 7)]
+        self.pickup_powerup_sound = pygame.mixer.Sound(os.path.join(self.wd, "assets", "sound", "PowerUp.mp3"))
+        self.pickup_powerup_sound.set_volume(0.2) # -> PowerUp Sound
 
     def setup_fonts(self):
         self.message_font = pygame.font.Font(TITLE_FONT_PATH, 22) # -> Font mensaje inicial
