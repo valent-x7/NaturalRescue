@@ -221,8 +221,11 @@ class Game:
         }
 
     def run(self):
+        if self.current_lang == "es":
+            reproducir_intro(os.path.join(os.getcwd(), "assets", "vod", "intro.mp4"), os.path.join(os.getcwd(), "assets", "music", "intro.mpeg"), self.SCREEN)
+        else:
+            reproducir_intro(os.path.join(os.getcwd(), "assets", "vod", "intro_english.mp4"), os.path.join(os.getcwd(), "assets", "music", "intro.mpeg"), self.SCREEN)
 
-        reproducir_intro(os.path.join(os.getcwd(), "assets", "vod", "intro.mp4"), os.path.join(os.getcwd(), "assets", "music", "intro.mpeg"), self.SCREEN)
 
         while self.running:
 
