@@ -4,6 +4,7 @@ from menus.settings import SettingsMenu
 from menus.tutorial import Tutorial_levelone, Tutorial_leveltwo, Tutorial_levelthree
 from sprites import *
 from ui.utils import *
+from ui.video_player import reproducir_intro
 from menus.level_select import LevelSelectMenu
 import settings as main_settings
 from scenes.level_one import LevelOne
@@ -220,6 +221,8 @@ class Game:
         }
 
     def run(self):
+
+        reproducir_intro(os.path.join(os.getcwd(), "assets", "vod", "intro.mp4"), os.path.join(os.getcwd(), "assets", "music", "intro.mpeg"), self.SCREEN)
 
         while self.running:
 
