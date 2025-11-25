@@ -112,8 +112,8 @@ AnimalRescue/
 ```
 ## Contribuidores
 
-1. Axl Enrique Díaz Hernández
-2. Estefanía Radillo Domínguez
-3. Greco Alejandro Serna Díaz
-4. Manuel Isahit Martínez Contreras
-5. Valentín Vaca Ciprés
+1. Axl Enrique Díaz Hernández [Ver perfil](https://github.com/AxlDiazDev)
+2. Estefanía Radillo Domínguez [Ver perfil](https://github.com/Estef-07)
+3. Greco Alejandro Serna Díaz [Ver perfil](https://github.com/Gasdcoder07)
+4. Manuel Isahit Martínez Contreras [Ver perfil](https://github.com/IsahitMartinez)
+5. Valentín Vaca Ciprés [Ver perfil](https://github.com/valent-x7)
