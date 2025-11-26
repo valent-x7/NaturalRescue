@@ -4,7 +4,7 @@
 
 # 🐒ANIMAL RESCUE: Misión 2050🧊
 
-![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
+![Python 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue?style=for-the-badge&logo=python)
 ![Hecho con Pygame](https://img.shields.io/badge/Hecho%20con-Pygame-green?style=for-the-badge&logo=pygame)
 ![Status](https://img.shields.io/badge/Estado-Finalizado-success?style=for-the-badge)
 ![ODS 13](https://img.shields.io/badge/ODS-13_Acción_por_el_Clima-orange?style=for-the-badge)
